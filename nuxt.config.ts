@@ -1,3 +1,5 @@
+const baseURL = "/dark-souls-tools/";
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
@@ -7,6 +9,7 @@ export default defineNuxtConfig({
     colorMode: false,
   },
   app: {
+    baseURL,
     head: {
       title: "Dark Souls Tools",
       htmlAttrs: {
