@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/d3b2432a-f21b-457f-8392-70842421aab5/deploy-status)](https://app.netlify.com/projects/dark-souls-tools/deploys)
+
 # Nuxt Minimal Starter
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
