@@ -1,7 +1,7 @@
 <script></script>
 
 <template>
-  <UApp>
+  <UApp class="font-sans">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />

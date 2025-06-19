@@ -1,75 +1,20 @@
-# Nuxt Minimal Starter
+# Dark Souls Tools
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A set of simple web tools for planning and optimizing your _Dark Souls_ playthrough.
 
-## Setup
+## Features
 
-Make sure to install dependencies:
+- Soul level and weapon upgrade calculators
+- Fast, responsive, and theme-aware UI
 
-```bash
-# npm
-npm install
+## Technologies
 
-# pnpm
-pnpm install
+- Built with Nuxt 3, Vue 3, Tailwind 4, Nuxt UI 3, and TypeScript
 
-# yarn
-yarn install
+## Contributing
 
-# bun
-bun install
-```
+Contributions are welcome! Please open issues or pull requests on [GitHub](https://github.com/JPisani4/dark-souls-tools).
 
-## Development Server
+## Legal
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+_Dark Souls_ is a registered trademark of BANDAI NAMCO ENTERTAINMENT INC. This project is not affiliated with or endorsed by BANDAI NAMCO.

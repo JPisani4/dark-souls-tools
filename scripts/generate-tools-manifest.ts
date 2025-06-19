@@ -8,15 +8,32 @@ import traverse from "@babel/traverse";
 const toolsDir = path.resolve(process.cwd(), "components/Tools");
 const manifestPath = path.resolve(process.cwd(), "tools.ts");
 
+// Utility: Recursively collect only Index.vue files from a directory
+async function getVueFiles(dir: string): Promise<string[]> {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const res = path.resolve(dir, entry.name);
+      if (entry.isDirectory()) {
+        return getVueFiles(res);
+      } else if (entry.isFile() && entry.name === "Index.vue") {
+        return [res];
+      }
+      return [];
+    })
+  );
+  return files.flat();
+}
+
 // Utility: slugify component name to kebab-case URL slug
 function slugify(str: string): string {
   return str
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2") // Insert hyphen between camelCase
-    .replace(/[\s_]+/g, "-") // Replace spaces/underscores
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[\s_]+/g, "-")
     .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "") // Remove invalid chars
+    .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, ""); // Trim hyphens
+    .replace(/^-+|-+$/g, "");
 }
 
 // Utility: fallback title from filename
@@ -90,21 +107,18 @@ async function extractMetaFromVueFile(
 
 // Main generation function
 async function generateManifest() {
-  const files = await fs.readdir(toolsDir);
-  const vueFiles = files.filter(
-    (f) => f.endsWith(".vue") && f !== "ToolList.vue"
-  );
+  const vueFiles = await getVueFiles(toolsDir);
 
   const toolEntries = [];
 
-  for (const file of vueFiles) {
-    const baseName = file.replace(".vue", "");
-    const filePath = path.join(toolsDir, file);
-    const slug = slugify(baseName);
-    const importPath = `~/components/Tools/${file}`;
+  for (const filePath of vueFiles) {
+    const relativePath = path.relative(toolsDir, filePath).replace(/\\/g, "/"); // Normalize slashes
+    const baseDirName = path.basename(path.dirname(filePath));
+    const slug = slugify(baseDirName);
+    const importPath = `~/components/Tools/${relativePath}`;
 
     const meta = (await extractMetaFromVueFile(filePath)) || {
-      title: titleFromFilename(baseName),
+      title: titleFromFilename(baseDirName),
       description: "No description provided.",
     };
 
@@ -135,7 +149,6 @@ ${toolEntries
 `;
 
   await fs.writeFile(manifestPath, output, "utf-8");
-  console.log(`✅ tools.ts generated with ${toolEntries.length} entries.`);
 }
 
 generateManifest().catch((err) => {

@@ -1,3 +1,264 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 @plugin "@tailwindcss/typography";
+
+/* Ultra-performance optimized CSS for mobile and battery efficiency */
+
+/* Ensure text selection works in tables */
+.select-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Optimized button interactions for mobile */
+button {
+  pointer-events: auto;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
+}
+
+/* Ensure table cells are selectable */
+td,
+th {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Prevent text selection on interactive elements */
+button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow text selection on button content */
+button * {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Prevent text selection on form inputs */
+input,
+select,
+textarea {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ultra-optimized table performance */
+table {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Ultra-optimized table row rendering */
+tbody tr {
+  contain: layout style paint;
+}
+
+/* Mobile-optimized pagination buttons */
+.pagination-button {
+  pointer-events: auto;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ultra-optimized table container */
+.table-container {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
+/* Ensure text selection works in table cells */
+td.select-text,
+th.select-text {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Mobile-optimized scrolling */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Ultra-optimized transitions for mobile */
+.transition-colors {
+  will-change: color, background-color;
+}
+
+/* Ultra-mobile optimizations */
+@media (max-width: 480px) {
+  /* Minimal transitions on ultra-mobile */
+  .transition-colors {
+    transition-duration: 50ms;
+  }
+
+  /* Ultra-compact table for small screens */
+  .table-container {
+    contain: layout style paint;
+  }
+
+  /* Minimal hover effects */
+  .hover\:bg-muted\/30:hover {
+    background-color: rgba(var(--color-muted), 0.15);
+  }
+
+  /* Optimized button interactions */
+  .pagination-button {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  /* Ultra-compact padding */
+  .px-6 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .py-4 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .py-3 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Reduced transition durations on mobile */
+  .transition-colors {
+    transition-duration: 75ms;
+  }
+
+  /* Optimize table for mobile */
+  .table-container {
+    contain: layout style paint;
+  }
+
+  /* Reduce hover effects on mobile */
+  .hover\:bg-muted\/30:hover {
+    background-color: rgba(var(--color-muted), 0.2);
+  }
+
+  /* Optimize button interactions */
+  .pagination-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Reduce padding on mobile for better space usage */
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .py-4 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .py-3 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .transition-colors {
+    transition-duration: 100ms;
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Battery optimization for low-power devices */
+@media (prefers-reduced-data: reduce) {
+  .bg-gradient-to-r,
+  .bg-gradient-to-br {
+    background: var(--color-primary-500) !important;
+  }
+
+  .blur-3xl {
+    display: none !important;
+  }
+
+  /* Disable all transitions for ultra-low-power mode */
+  .transition-colors {
+    transition: none !important;
+  }
+}
+
+/* High-performance mode for modern devices */
+@media (min-width: 1024px) {
+  .table-container {
+    contain: layout style paint;
+    will-change: scroll-position;
+  }
+
+  .transition-colors {
+    will-change: color, background-color;
+  }
+}
+
+/* Ultra-low-power mode for older devices */
+@media (max-width: 480px) and (max-height: 600px) {
+  /* Disable all decorative elements */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br {
+    background: var(--color-primary-500) !important;
+  }
+
+  /* Minimal spacing */
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
+
+  .mt-4 {
+    margin-top: 0.75rem !important;
+  }
+}
+
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}

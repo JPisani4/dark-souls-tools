@@ -9,12 +9,6 @@ export default defineNuxtModule({
     configKey: "generateTools",
   },
   setup() {
-    console.log("🛠️  Generating tool manifest...");
-    try {
-      execSync("npm run generate:tools", { stdio: "inherit" });
-      console.log("✅ Tool manifest generated");
-    } catch (err) {
-      console.error("❌ Failed to generate tool manifest:", err);
-    }
+    execSync("npm run generate:tools", { stdio: "inherit" });
   },
 });
