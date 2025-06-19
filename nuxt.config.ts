@@ -38,18 +38,6 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     minify: true,
   },
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            "soul-costs": ["~/utils/soulCosts"],
-            "ui-components": ["@nuxt/ui"],
-          },
-        },
-      },
-    },
-  },
   experimental: {
     payloadExtraction: false,
   },
