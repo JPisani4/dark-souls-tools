@@ -2,6 +2,7 @@
   "name": "dark-souls-tools",
   "private": true,
   "scripts": {
+    "pregenerate": "npm run generate:tools",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
