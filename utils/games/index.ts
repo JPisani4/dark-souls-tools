@@ -61,8 +61,14 @@ export const GAMES: Record<GameId, GameMetadata> = {
   },
 };
 
-// Cache for available games to avoid repeated dynamic imports
-let availableGamesCache: GameId[] | null = null;
+// Static imports for available games
+// This approach is more build-friendly and avoids dynamic import issues
+import ds1GameData from "./ds1/index";
+
+// Registry of available game data modules
+const GAME_DATA_MODULES: Record<string, GameData> = {
+  ds1: ds1GameData,
+};
 
 // Get game metadata by ID
 export function getGameMetadata(gameId: GameId): GameMetadata {
@@ -70,77 +76,48 @@ export function getGameMetadata(gameId: GameId): GameMetadata {
 }
 
 /**
- * Dynamically discover available games by attempting to import their data modules
- * This allows for lazy loading of game data and prevents errors for unimplemented games
+ * Get available games based on static imports
+ * This avoids dynamic import issues during build
  */
-export async function getAvailableGames(): Promise<GameId[]> {
-  if (availableGamesCache) {
-    return availableGamesCache;
-  }
-
-  const availableGames: GameId[] = [];
-
-  // Try to import each game's data module
-  for (const gameId of Object.keys(GAMES) as GameId[]) {
-    try {
-      await import(`./${gameId}/index`);
-      availableGames.push(gameId);
-    } catch (error) {
-      // Game data module doesn't exist, skip it
-      console.debug(`Game data module not found for ${gameId}:`, error);
-    }
-  }
-
-  availableGamesCache = availableGames;
-  return availableGames;
+export function getAvailableGames(): GameId[] {
+  return Object.keys(GAME_DATA_MODULES) as GameId[];
 }
 
 // Get all available game metadata
-export async function getAvailableGameMetadata(): Promise<GameMetadata[]> {
-  const availableGames = await getAvailableGames();
+export function getAvailableGameMetadata(): GameMetadata[] {
+  const availableGames = getAvailableGames();
   return availableGames.map((id) => GAMES[id]);
 }
 
 /**
  * Check if a game is available (has a data module)
  * @param gameId - The game identifier to check
- * @returns Promise<boolean> - Whether the game data is available
+ * @returns boolean - Whether the game data is available
  */
-export async function isGameAvailable(gameId: GameId): Promise<boolean> {
-  const availableGames = await getAvailableGames();
+export function isGameAvailable(gameId: GameId): boolean {
+  const availableGames = getAvailableGames();
   return availableGames.includes(gameId);
 }
 
 /**
- * Get game data by ID (dynamic loading)
+ * Get game data by ID (static loading)
  * @param gameId - The game identifier
- * @returns Promise<GameData> - The complete game data
+ * @returns GameData - The complete game data
  * @throws Error if game is not supported
  */
-export async function getGameData(gameId: GameId): Promise<GameData> {
-  try {
-    // Dynamic import based on game ID
-    const gameModule = await import(`./${gameId}/index`);
-    return gameModule.default;
-  } catch (error) {
+export function getGameData(gameId: GameId): GameData {
+  const gameData = GAME_DATA_MODULES[gameId];
+  if (!gameData) {
     throw new Error(`Game ${gameId} is not currently supported`);
   }
+  return gameData;
 }
 
 // Get all available game data
-export async function getAllAvailableGameData(): Promise<GameData[]> {
-  const availableGames = await getAvailableGames();
-  const gameDataPromises = availableGames.map((game) => getGameData(game));
-  return Promise.all(gameDataPromises);
+export function getAllAvailableGameData(): GameData[] {
+  const availableGames = getAvailableGames();
+  return availableGames.map((game) => getGameData(game));
 }
-
-// Clear the cache (useful for development when adding new games)
-export function clearAvailableGamesCache(): void {
-  availableGamesCache = null;
-}
-
-// Clear cache on module load to ensure fresh detection
-clearAvailableGamesCache();
 
 // Dark Souls: Remastered game data
 export * from "./ds1";

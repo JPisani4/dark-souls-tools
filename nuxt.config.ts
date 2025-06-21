@@ -58,28 +58,18 @@ export default defineNuxtConfig({
       wasm: true,
     },
   },
-  // Build optimizations for better code splitting and performance
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Separate vendor chunks for better caching
-            vendor: ["vue", "vue-router"],
-            ui: ["@nuxt/ui"],
-          },
-        },
-      },
-    },
-    optimizeDeps: {
-      include: ["vue", "vue-router"],
-    },
-  },
   // Experimental features for modern build optimizations
   experimental: {
     payloadExtraction: false,
     treeshakeClientOnly: true,
     componentIslands: false,
+  },
+  // Import protection configuration
+  imports: {
+    // Allow imports from utils directory
+    dirs: ["utils/**", "composables/**"],
+    // Global imports that should be available
+    global: true,
   },
   // Bundle analysis for performance monitoring
   build: {

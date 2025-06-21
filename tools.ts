@@ -11,7 +11,7 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-21T12:08:22.664Z'),
+    createdAt: new Date('2025-06-21T12:58:36.054Z'),
     gameCategories: ["ds1"],
   },
   {
@@ -23,7 +23,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-21T12:08:22.664Z'),
+    createdAt: new Date('2025-06-21T12:58:36.055Z'),
     gameCategories: ["ds1"],
   }
 ]

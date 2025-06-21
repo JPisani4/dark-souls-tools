@@ -62,7 +62,7 @@ export function useGameToolLoader() {
       tool.value = foundTool;
 
       // Check if game is available before loading data
-      const gameAvailable = await isGameAvailable(gameId);
+      const gameAvailable = isGameAvailable(gameId);
       if (!gameAvailable) {
         error.value = new Error(`Game ${gameId} is not currently supported`);
         tool.value = null;
@@ -74,7 +74,7 @@ export function useGameToolLoader() {
 
       // Load game data
       try {
-        gameData.value = await getGameData(gameId);
+        gameData.value = getGameData(gameId);
       } catch (gameDataError) {
         error.value = new Error(
           `Failed to load game data for ${gameId}: ${gameDataError instanceof Error ? gameDataError.message : String(gameDataError)}`
