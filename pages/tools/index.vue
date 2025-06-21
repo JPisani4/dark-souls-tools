@@ -16,7 +16,11 @@ const {
 </script>
 
 <template>
-  <ToolLayout>
+  <ToolLayout
+    title="Soulsborne Tools - Calculators & Tools"
+    description="Browse and use essential Soulsborne tools and calculators. Find soul level calculators, weapon upgrade tools, and more for Dark Souls, Bloodborne, and Elden Ring."
+    icon-name="i-game-icons:sword-wound"
+  >
     <template #hero>
       <div class="flex justify-center mb-8 px-4">
         <div class="flex flex-col items-center gap-3 text-center">
@@ -32,7 +36,7 @@ const {
             <h1
               class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center text-gray-900 dark:text-white drop-shadow-sm"
             >
-              Souls Tools
+              Soulsborne Tools
             </h1>
             <p
               class="text-base sm:text-lg text-center text-gray-700 dark:text-white/80 drop-shadow-sm"

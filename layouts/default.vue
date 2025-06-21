@@ -5,8 +5,17 @@ import NavFooter from "~/components/NavFooter.vue";
 
 <template>
   <div>
+    <!-- Skip to main content link for accessibility -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only absolute left-2 top-2 z-50 bg-primary text-white px-4 py-2 rounded shadow focus:outline-none"
+    >
+      Skip to main content
+    </a>
     <NavHeader />
-    <NuxtPage />
+    <main id="main-content" tabindex="-1" role="main">
+      <NuxtPage />
+    </main>
     <NavFooter />
   </div>
 </template>

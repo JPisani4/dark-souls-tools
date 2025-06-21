@@ -35,8 +35,9 @@ const { selectedTheme } = useToolLayout({
   title: props.toolConfig?.title || "Weapon Upgrade Calculator",
   description:
     props.toolConfig?.description ||
-    "Calculate souls and materials needed to reinforce weapons",
-  iconPath: props.toolConfig?.icon || "public/titanite_chunk.png",
+    "Calculate the souls and materials needed to upgrade weapons",
+  iconPath:
+    props.toolConfig?.icon || "public/weapon-upgrade-calculator-icon.png",
   enablePerformanceMonitoring: true,
 });
 
@@ -63,9 +64,9 @@ const {
     :title="toolConfig?.title || 'Weapon Upgrade Calculator'"
     :description="
       toolConfig?.description ||
-      'Calculate souls and materials needed to reinforce weapons'
+      'Calculate the souls and materials needed to upgrade weapons'
     "
-    :icon-path="toolConfig?.icon || 'public/titanite_chunk.png'"
+    :icon-path="toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'"
     :theme="safeTheme"
     :game-data="gameData"
   />
@@ -79,10 +80,10 @@ const {
     <UCard>
       <template #header>
         <div class="flex items-center justify-center gap-2">
-          <h2 class="text-lg font-semibold">
+          <h3 class="text-lg font-semibold">
             {{ terminology.weapon || "Weapon" }}
             {{ terminology.upgrade || "Upgrade" }} Calculator
-          </h2>
+          </h3>
         </div>
       </template>
 
@@ -187,7 +188,9 @@ const {
       :steps="unwrappedResult.steps"
       :selected-merchant-id="merchantIdString"
       :selected-theme="safeTheme"
-      :icon-path="toolConfig?.icon || 'public/titanite_chunk.png'"
+      :icon-path="
+        toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'
+      "
       :terminology="terminology"
     />
   </ErrorBoundary>

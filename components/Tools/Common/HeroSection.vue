@@ -9,7 +9,7 @@
         <img
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg)$/i.test(iconPath)"
           :src="iconPath.replace(/^public\//, '/')"
-          alt="icon"
+          :alt="`${title} icon`"
           class="w-10 h-10 object-contain"
         />
         <svg
@@ -29,15 +29,23 @@
       </div>
       <div class="flex flex-col items-center justify-center min-w-0">
         <h1
+          v-if="variant === 'homepage'"
           :class="[
             'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
-            variant === 'homepage'
-              ? 'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
-              : 'text-gray-900 dark:text-white drop-shadow-sm',
+            'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]',
           ]"
         >
           {{ title }}
         </h1>
+        <h2
+          v-else
+          :class="[
+            'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
+            'text-gray-900 dark:text-white drop-shadow-sm',
+          ]"
+        >
+          {{ title }}
+        </h2>
         <p
           :class="[
             'text-base sm:text-lg text-center',

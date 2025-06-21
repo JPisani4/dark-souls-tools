@@ -2,7 +2,7 @@
 
 ## 📊 Executive Summary
 
-This audit evaluates the current state of component usage across the Dark Souls Tools codebase, identifying areas of improvement and providing recommendations for better modularity and consistency.
+This audit evaluates the current state of component usage across the Soulsborne Tools codebase, identifying areas of improvement and providing recommendations for better modularity and consistency.
 
 **Overall Score: 8.5/10** ✅
 
@@ -331,7 +331,7 @@ Standardize theme usage across all components.
 
 ## 🎉 **Conclusion**
 
-The Dark Souls Tools codebase has made **excellent progress** in component modularity and reusability. The implementation of the shared component library and theme system is **outstanding** and provides a solid foundation for future development.
+The Soulsborne Tools codebase has made **excellent progress** in component modularity and reusability. The implementation of the shared component library and theme system is **outstanding** and provides a solid foundation for future development.
 
 **Key Achievements:**
 

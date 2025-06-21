@@ -5,7 +5,11 @@ import Home from "~/components/Home.vue";
 
 <template>
   <!-- Use the standard tool layout for consistent structure -->
-  <ToolLayout>
+  <ToolLayout
+    title="Gold Phantom - Soulsborne Tools & Calculators"
+    description="Essential Soulsborne tools and calculators for your playthrough. Calculate soul levels, weapon upgrades, and more for Dark Souls, Dark Souls 2, Dark Souls 3, Bloodborne, and Elden Ring."
+    icon-path="/favicon.png"
+  >
     <!-- Empty hero slot - hero content is handled by the Home component -->
     <template #hero />
     <!-- Empty sidebar slots - no sidebars needed for homepage -->

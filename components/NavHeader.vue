@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 
 const colorMode = useColorMode();
 
@@ -28,6 +28,8 @@ const expandedItems = ref<Set<string>>(new Set());
 
 // Desktop dropdown state
 const isDesktopDropdownOpen = ref(false);
+const dropdownButtonRef = ref<HTMLButtonElement>();
+const dropdownMenuRef = ref<HTMLDivElement>();
 
 // Close mobile menu when clicking outside
 const closeMobileMenu = () => {
@@ -43,6 +45,25 @@ const closeDesktopDropdown = () => {
 // Handle dropdown navigation click
 const handleDropdownNavClick = () => {
   closeDesktopDropdown();
+};
+
+// Keyboard navigation for desktop dropdown
+const handleDropdownKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    closeDesktopDropdown();
+    dropdownButtonRef.value?.focus();
+  }
+};
+
+// Toggle dropdown with keyboard
+const toggleDropdown = () => {
+  isDesktopDropdownOpen.value = !isDesktopDropdownOpen.value;
+  if (isDesktopDropdownOpen.value) {
+    nextTick(() => {
+      const firstLink = dropdownMenuRef.value?.querySelector("a");
+      firstLink?.focus();
+    });
+  }
 };
 
 // Toggle mobile submenu
@@ -62,13 +83,87 @@ watch(
     expandedItems.value.clear();
   }
 );
+
+// Focus trap for mobile menu
+const mobileMenuRef = ref<HTMLDivElement>();
+const mobileMenuButtonRef = ref<HTMLButtonElement>();
+
+// Handle mobile menu keyboard events
+const handleMobileMenuKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    closeMobileMenu();
+    mobileMenuButtonRef.value?.focus();
+  }
+};
+
+// Focus trap for mobile menu
+let focusTrapCleanup: (() => void) | null = null;
+
+watch(isMobileMenuOpen, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      const cleanup = handleMobileMenuFocus();
+      if (cleanup) {
+        focusTrapCleanup = cleanup;
+      }
+    });
+  } else {
+    if (focusTrapCleanup) {
+      focusTrapCleanup();
+      focusTrapCleanup = null;
+    }
+  }
+});
+
+const handleMobileMenuFocus = () => {
+  if (!mobileMenuRef.value) return;
+
+  const focusableElements = mobileMenuRef.value.querySelectorAll(
+    'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+  );
+
+  if (focusableElements.length === 0) return;
+
+  const firstElement = focusableElements[0] as HTMLElement;
+  const lastElement = focusableElements[
+    focusableElements.length - 1
+  ] as HTMLElement;
+
+  const handleTabKey = (event: KeyboardEvent) => {
+    if (event.key === "Tab") {
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleTabKey);
+
+  // Cleanup
+  return () => {
+    document.removeEventListener("keydown", handleTabKey);
+  };
+};
 </script>
 
 <template>
   <header
+    role="banner"
     class="sticky top-0 z-30 w-full bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-md mb-6"
   >
-    <nav class="w-full flex items-center justify-between px-4 py-3">
+    <nav
+      class="w-full flex items-center justify-between px-4 py-3"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <!-- Logo -->
       <div class="flex items-center gap-3 flex-shrink-0">
         <img
@@ -92,28 +187,33 @@ watch(
           @mouseleave="isDesktopDropdownOpen = false"
         >
           <button
-            class="mx-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-primary transition-colors flex items-center gap-1 focus:outline-none"
+            ref="dropdownButtonRef"
+            class="mx-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-primary transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
             aria-haspopup="menu"
             :aria-expanded="isDesktopDropdownOpen"
+            @click="toggleDropdown"
+            @keydown="handleDropdownKeydown"
+            @keydown.enter="toggleDropdown"
+            @keydown.space.prevent="toggleDropdown"
           >
             Dark Souls Remastered
             <UIcon name="i-heroicons-chevron-down" class="w-4 h-4" />
           </button>
           <div
-            class="absolute left-0 top-full pt-1 w-48 transition-opacity duration-200 z-50"
-            :class="
-              isDesktopDropdownOpen
-                ? 'opacity-100 pointer-events-auto'
-                : 'opacity-0 pointer-events-none'
-            "
-            tabindex="-1"
+            v-show="isDesktopDropdownOpen"
+            ref="dropdownMenuRef"
+            class="absolute left-0 top-full pt-1 w-48 z-50"
+            role="menu"
+            aria-label="Dark Souls Remastered tools"
+            @keydown="handleDropdownKeydown"
           >
             <div
               class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
             >
               <NuxtLink
                 to="/tools?game=ds1"
-                class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                role="menuitem"
                 @click="handleDropdownNavClick"
               >
                 Tools
@@ -154,9 +254,11 @@ watch(
       </div>
       <!-- Mobile Hamburger Button -->
       <button
+        ref="mobileMenuButtonRef"
         @click="isMobileMenuOpen = !isMobileMenuOpen"
-        class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         aria-label="Toggle mobile menu"
+        :aria-expanded="isMobileMenuOpen"
       >
         <UIcon
           :name="isMobileMenuOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'"
@@ -170,8 +272,10 @@ watch(
   <Teleport to="body">
     <div
       v-if="isMobileMenuOpen"
+      ref="mobileMenuRef"
       class="fixed inset-0 z-[9999] md:hidden"
       @click="closeMobileMenu"
+      @keydown="handleMobileMenuKeydown"
     >
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/50"></div>
@@ -189,7 +293,7 @@ watch(
             </h3>
             <button
               @click="closeMobileMenu"
-              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               aria-label="Close mobile menu"
             >
               <UIcon
@@ -204,7 +308,8 @@ watch(
             <!-- Dark Souls Remastered button -->
             <button
               @click="toggleMobileSubmenu('Dark Souls Remastered')"
-              class="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium text-left"
+              class="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+              :aria-expanded="expandedItems.has('Dark Souls Remastered')"
             >
               <span>Dark Souls Remastered</span>
               <UIcon
@@ -221,7 +326,7 @@ watch(
             <NuxtLink
               v-if="expandedItems.has('Dark Souls Remastered')"
               to="/tools?game=ds1"
-              class="block px-4 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
+              class="block px-4 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
               @click="closeMobileMenu"
             >
               Tools
@@ -229,7 +334,7 @@ watch(
 
             <NuxtLink
               to="/tools"
-              class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
+              class="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
               @click="closeMobileMenu"
             >
               All Tools

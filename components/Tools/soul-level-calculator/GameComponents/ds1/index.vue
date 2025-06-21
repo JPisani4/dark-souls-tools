@@ -41,7 +41,7 @@ const { selectedTheme } = useToolLayout({
   description:
     props.toolConfig?.description ||
     "Calculate the souls required to level up your character",
-  iconPath: props.toolConfig?.icon || "public/soul_of_an_old_hero.png",
+  iconPath: props.toolConfig?.icon || "public/soul-level-calculator-icon.png",
   enablePerformanceMonitoring: true,
 });
 
@@ -97,7 +97,7 @@ const formattedTableData = computed(() =>
       toolConfig?.description ||
       'Calculate the souls required to level up your character'
     "
-    :icon-path="toolConfig?.icon || 'public/soul_of_an_old_hero.png'"
+    :icon-path="toolConfig?.icon || 'public/soul-level-calculator-icon.png'"
     :theme="safeTheme"
     :game-data="gameData"
   />
@@ -106,9 +106,9 @@ const formattedTableData = computed(() =>
   <UCard>
     <template #header>
       <div class="flex items-center justify-center">
-        <h2 class="text-lg font-semibold">
+        <h3 class="text-lg font-semibold">
           {{ terminology.level || "Level" }} Calculator
-        </h2>
+        </h3>
       </div>
     </template>
 

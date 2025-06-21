@@ -1,8 +1,11 @@
 import { ref, computed, onMounted } from "vue";
-import { useSeoMeta } from "#imports";
+import { useSeoMeta, useHead } from "#imports";
 import { getRandomTheme } from "~/utils/constants";
 import { getPerformanceMetrics } from "~/utils/performance";
+import { useToolStructuredData } from "~/composables/useToolStructuredData";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import type { Tool } from "~/types/tools/tool";
+import type { GameId, GameData } from "~/types/game";
 
 export interface ToolLayoutOptions {
   title: string;
@@ -10,6 +13,10 @@ export interface ToolLayoutOptions {
   iconPath?: string;
   iconName?: string;
   enablePerformanceMonitoring?: boolean;
+  // New options for structured data
+  tool?: Tool | null;
+  gameId?: GameId | null;
+  gameData?: GameData | null;
 }
 
 export function useToolLayout(options: ToolLayoutOptions) {
@@ -25,6 +32,25 @@ export function useToolLayout(options: ToolLayoutOptions) {
     ogDescription: options.description,
     twitterDescription: options.description,
   });
+
+  // Structured data setup
+  const { structuredData } = useToolStructuredData({
+    tool: options.tool || null,
+    gameId: options.gameId || null,
+    gameData: options.gameData || null,
+  });
+
+  // Add structured data to head if available
+  if (structuredData.value) {
+    useHead({
+      script: [
+        {
+          type: "application/ld+json",
+          innerHTML: JSON.stringify(structuredData.value),
+        },
+      ],
+    });
+  }
 
   // Performance monitoring (optional)
   const showMetrics = computed(
@@ -61,6 +87,9 @@ export function useToolLayout(options: ToolLayoutOptions) {
     description: options.description,
     iconPath: options.iconPath,
     iconName: options.iconName,
+
+    // Structured Data
+    structuredData,
 
     // Performance
     showMetrics,

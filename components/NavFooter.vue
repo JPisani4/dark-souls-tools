@@ -19,6 +19,8 @@ const items = ref<NavigationMenuItem[]>([
 
 <template>
   <footer
+    role="contentinfo"
+    aria-label="Site footer"
     class="w-full bg-white/80 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-md mt-8"
   >
     <div class="max-w-3xl mx-auto flex flex-col items-center py-6 px-4">

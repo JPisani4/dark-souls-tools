@@ -43,7 +43,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ToolLayout>
+  <ToolLayout
+    :title="tool?.title || 'Tool'"
+    :description="tool?.description || 'Soulsborne tool'"
+    :icon-path="tool?.icon"
+    :tool="tool"
+    :game-id="gameId"
+    :game-data="gameData"
+  >
     <template #sidebar />
     <template #right-sidebar />
 

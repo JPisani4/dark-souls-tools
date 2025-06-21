@@ -126,6 +126,47 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 import { useMobileSidebar } from "~/composables/useMobileSidebar";
+import { useToolLayout } from "~/composables/useToolLayout";
+import type { Tool } from "~/types/tools/tool";
+import type { GameId, GameData } from "~/types/game";
+
+// SEO props
+interface Props {
+  title?: string;
+  description?: string;
+  iconPath?: string;
+  iconName?: string;
+  enablePerformanceMonitoring?: boolean;
+  // New props for structured data
+  tool?: Tool | null;
+  gameId?: GameId | null;
+  gameData?: GameData | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: "",
+  description: "",
+  iconPath: "",
+  iconName: "",
+  enablePerformanceMonitoring: false,
+  tool: null,
+  gameId: null,
+  gameData: null,
+});
+
+// SEO setup - only if title and description are provided
+if (props.title && props.description) {
+  useToolLayout({
+    title: props.title,
+    description: props.description,
+    iconPath: props.iconPath,
+    iconName: props.iconName,
+    enablePerformanceMonitoring: props.enablePerformanceMonitoring,
+    tool: props.tool,
+    gameId: props.gameId,
+    gameData: props.gameData,
+  });
+}
 
 // Mobile sidebar state management for both sides
 const {

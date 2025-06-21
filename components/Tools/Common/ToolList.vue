@@ -330,7 +330,7 @@ const closeGameSelection = () => {
 
   <!-- Filter Modal for all <xl screens -->
   <FilterModal
-    v-if="showFilterModal"
+    :is-open="showFilterModal"
     :filters="filters"
     :available-games="availableGames"
     :available-categories="availableCategories"

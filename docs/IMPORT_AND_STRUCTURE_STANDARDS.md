@@ -1,6 +1,6 @@
-# Import Patterns and Tool Structure Standards
+# Import and Structure Standards
 
-This document outlines the standardized patterns for imports and tool structure that have been implemented across the Dark Souls Tools codebase.
+This document outlines the standardized patterns for imports and tool structure that have been implemented across the Soulsborne Tools codebase.
 
 ## 📦 Import Patterns
 

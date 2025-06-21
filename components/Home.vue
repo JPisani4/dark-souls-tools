@@ -74,6 +74,8 @@ const getGameDisplayName = (gameCategory: string): string => {
       <div class="absolute inset-0 z-0 pointer-events-none">
         <div
           class="w-full h-full bg-cover bg-center absolute"
+          role="img"
+          aria-label="Soulsborne tools hero background with dark fantasy aesthetic"
           style="
             background-image:
               linear-gradient(
@@ -81,7 +83,7 @@ const getGameDisplayName = (gameCategory: string): string => {
                 rgba(30, 41, 59, 0.3),
                 rgba(0, 0, 0, 0.2)
               ),
-              url(&quot;/homepage_hero_background.png&quot;);
+              url(&quot;/soulsborne-tools-hero.png&quot;);
           "
         ></div>
         <div
@@ -108,7 +110,11 @@ const getGameDisplayName = (gameCategory: string): string => {
           <div
             :class="`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br ${updatesTheme.iconBg}`"
           >
-            <UIcon name="i-heroicons-calendar" class="text-white text-xl" />
+            <UIcon
+              name="i-heroicons-calendar"
+              class="text-white text-xl"
+              aria-label="Recent updates"
+            />
           </div>
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
             Recent Tools
@@ -142,7 +148,11 @@ const getGameDisplayName = (gameCategory: string): string => {
                   :class="`inline-flex items-center justify-center px-2.5 py-2 rounded-md ${updatesTheme.iconBg} text-white hover:opacity-80 transition shadow-sm w-9 h-9`"
                   aria-label="Search for tool"
                 >
-                  <UIcon name="i-heroicons-arrow-right" class="w-5 h-5" />
+                  <UIcon
+                    name="i-heroicons-arrow-right"
+                    class="w-5 h-5"
+                    aria-label="Go to tool"
+                  />
                 </NuxtLink>
               </div>
             </li>
@@ -163,7 +173,11 @@ const getGameDisplayName = (gameCategory: string): string => {
           <div
             :class="`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br ${linksTheme.iconBg}`"
           >
-            <UIcon name="i-heroicons-link" class="text-white text-xl" />
+            <UIcon
+              name="i-heroicons-link"
+              class="text-white text-xl"
+              aria-label="Useful links"
+            />
           </div>
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
             Useful Links

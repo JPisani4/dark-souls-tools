@@ -1,6 +1,6 @@
-# Component Usage Examples
+# Usage Examples
 
-This document provides practical examples of how to use the shared components in your Dark Souls Tools.
+This document provides practical examples of how to use the shared components in your Soulsborne Tools.
 
 ## 🎨 **Theme System Examples**
 

@@ -192,7 +192,7 @@ async function validateTool(toolDir: string): Promise<ValidationResult> {
     let hasValidConfig = false;
 
     for (const entry of games) {
-      if (entry.isDirectory()) {
+      if (entry.isDirectory() && entry.name !== "Common") {
         const configPath = path.join(
           gameComponentsDir,
           entry.name,

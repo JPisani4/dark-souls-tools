@@ -1,6 +1,12 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-[9999] xl:hidden" @click="$emit('close')">
+    <div
+      v-if="isOpen"
+      ref="modalRef"
+      class="fixed inset-0 z-[9999] xl:hidden"
+      @click="$emit('close')"
+      @keydown="handleKeydown"
+    >
       <!-- Backdrop -->
       <div class="absolute inset-0 bg-black/50"></div>
 
@@ -18,8 +24,9 @@
               Filter Tools
             </h3>
             <button
+              ref="closeButtonRef"
               @click="$emit('close')"
-              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               aria-label="Close filter modal"
             >
               <UIcon
@@ -47,10 +54,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, nextTick, onUnmounted } from "vue";
 import ToolFilterSidebar from "./ToolFilterSidebar.vue";
 import type { FilterState } from "~/composables/useToolFilters";
 
 interface Props {
+  isOpen: boolean;
   filters: FilterState;
   availableGames: Array<{ id: string; name: string }>;
   availableCategories: Array<{ id: string; name: string }>;
@@ -62,6 +71,91 @@ interface Emits {
   (e: "clear"): void;
 }
 
-defineProps<Props>();
-defineEmits<Emits>();
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+// Focus management
+const modalRef = ref<HTMLDivElement>();
+const closeButtonRef = ref<HTMLButtonElement>();
+
+// Focus trap
+let focusTrapCleanup: (() => void) | null = null;
+
+// Focus trap implementation
+const setupFocusTrap = () => {
+  if (!modalRef.value) return;
+
+  const focusableElements = modalRef.value.querySelectorAll(
+    'button, a, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+  );
+
+  if (focusableElements.length === 0) return;
+
+  const firstElement = focusableElements[0] as HTMLElement;
+  const lastElement = focusableElements[
+    focusableElements.length - 1
+  ] as HTMLElement;
+
+  const handleTabKey = (event: KeyboardEvent) => {
+    if (event.key === "Tab") {
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleTabKey);
+
+  return () => {
+    document.removeEventListener("keydown", handleTabKey);
+  };
+};
+
+// Keyboard navigation
+const handleKeydown = (e: KeyboardEvent) => {
+  if (!props.isOpen) return;
+
+  if (e.key === "Escape") {
+    emit("close");
+  }
+};
+
+// Watch for modal open/close to manage focus
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => {
+        // Focus the close button when modal opens
+        closeButtonRef.value?.focus();
+
+        // Setup focus trap
+        const cleanup = setupFocusTrap();
+        if (cleanup) {
+          focusTrapCleanup = cleanup;
+        }
+      });
+    } else {
+      // Cleanup focus trap
+      if (focusTrapCleanup) {
+        focusTrapCleanup();
+        focusTrapCleanup = null;
+      }
+    }
+  }
+);
+
+onUnmounted(() => {
+  if (focusTrapCleanup) {
+    focusTrapCleanup();
+  }
+});
 </script>
