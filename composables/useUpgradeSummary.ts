@@ -1,8 +1,7 @@
-import type { Ref } from "vue";
-import { computed } from "vue";
-import { merchants } from "~/utils/upgradeCosts";
-import { calculateTotalPotentialSavings } from "~/utils/merchantAnalysis";
-import type { Merchant, Step, GroupedStep } from "~/types/upgradeSummary";
+import { reactive, computed, ref } from "vue";
+import { merchants } from "~/utils/game-data/upgradeCosts";
+import { calculateTotalPotentialSavings } from "~/utils/game-data/merchantAnalysis";
+import type { Merchant, Step, GroupedStep } from "~/types/game/upgradeSummary";
 
 export function useUpgradeSummary({
   materials,

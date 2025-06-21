@@ -12,7 +12,7 @@ const items = ref<NavigationMenuItem[]>([
   {
     label: "Contact",
     icon: "i-heroicons-envelope",
-    to: "mailto:x@y.com",
+    to: "mailto:contact@goldphantom.com",
   },
 ]);
 </script>

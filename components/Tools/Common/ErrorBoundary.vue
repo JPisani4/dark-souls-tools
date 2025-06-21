@@ -52,66 +52,52 @@
   <slot v-else />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { ref, onErrorCaptured } from "vue";
 import type { AppError } from "~/types/common";
-import { PropType } from "vue";
 
-export default defineComponent({
-  name: "ErrorBoundary",
-  props: {
-    onRetry: {
-      type: Function as PropType<(() => void) | undefined>,
-      default: undefined,
-    },
-    onReset: {
-      type: Function as PropType<(() => void) | undefined>,
-      default: undefined,
-    },
-  },
-  emits: ["error"],
-  setup(props, { emit }) {
-    const error = ref<AppError | null>(null);
+interface Props {
+  onRetry?: () => void;
+  onReset?: () => void;
+}
 
-    onErrorCaptured((err: unknown, instance, info) => {
-      const appError: AppError = {
-        message: err instanceof Error ? err.message : String(err),
-        code: "COMPONENT_ERROR",
-        context: info,
-        timestamp: Date.now(),
-      };
-
-      error.value = appError;
-      emit("error", appError);
-
-      // Log error in development
-      if (process.env.NODE_ENV === "development") {
-        console.error("ErrorBoundary caught error:", err);
-        console.error("Error context:", info);
-      }
-
-      return false; // Prevent error from propagating
-    });
-
-    const retry = () => {
-      error.value = null;
-      if (props.onRetry) {
-        props.onRetry();
-      }
-    };
-
-    const reset = () => {
-      error.value = null;
-      if (props.onReset) {
-        props.onReset();
-      }
-    };
-
-    return {
-      error,
-      retry,
-      reset,
-    };
-  },
+const props = withDefaults(defineProps<Props>(), {
+  onRetry: undefined,
+  onReset: undefined,
 });
+
+const emit = defineEmits<{
+  error: [error: Error];
+}>();
+
+const error = ref<Error | null>(null);
+
+onErrorCaptured((err: unknown, instance, info) => {
+  const appError: Error = err instanceof Error ? err : new Error(String(err));
+
+  error.value = appError;
+  emit("error", appError);
+
+  // Log error in development
+  if (process.env.NODE_ENV === "development") {
+    console.error("ErrorBoundary caught error:", err);
+    console.error("Error context:", info);
+  }
+
+  return false; // Prevent error from propagating
+});
+
+const retry = () => {
+  error.value = null;
+  if (props.onRetry) {
+    props.onRetry();
+  }
+};
+
+const reset = () => {
+  error.value = null;
+  if (props.onReset) {
+    props.onReset();
+  }
+};
 </script>

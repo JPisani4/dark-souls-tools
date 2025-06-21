@@ -1,11 +1,15 @@
-import { ref } from "vue";
-import { upgradePathsManifest } from "~/utils/upgradePaths";
-import { merchants } from "~/utils/upgradeCosts";
+import { upgradePathsManifest } from "~/utils/game-data/upgradePaths";
+import { merchants } from "~/utils/game-data/upgradeCosts";
+import { reactive, computed, ref, watch } from "vue";
+import { useUpgradeSummary } from "./useUpgradeSummary";
+import { useMaterialAnalysis } from "./useMaterialAnalysis";
 import type {
   UpgradePath,
+  Material,
+  Merchant,
   UpgradePathWithAscend,
   AscendStep,
-} from "@/types/upgrade";
+} from "~/types/game/upgrade";
 
 function mergeMaterials(
   base: Record<string, number>,
@@ -35,16 +39,16 @@ function buildUpgradeJourney({
   pathId,
   fromLevel,
   toLevel,
-  includeAscension,
   currentWeaponPathId,
   currentLevel,
+  skipBasePath = false,
 }: {
   pathId: string;
   fromLevel: number;
   toLevel: number;
-  includeAscension: boolean;
   currentWeaponPathId?: string;
   currentLevel: number;
+  skipBasePath?: boolean;
 }): { steps: any[]; materials: Record<string, number>; souls: number } {
   const path = findUpgradePath(pathId);
   if (!path) return { steps: [], materials: {}, souls: 0 };
@@ -52,24 +56,23 @@ function buildUpgradeJourney({
   let materials: Record<string, number> = {};
   let souls = 0;
 
-  // If ascension is included and this path has a base path (ascendStep), handle recursively
+  // If this path has a base path (ascendStep), handle recursively (unless skipBasePath is true)
   let ascendStep: AscendStep | undefined;
   let basePathId: string | undefined;
   let baseRequiredLevel: number | undefined;
   if (
-    includeAscension &&
+    !skipBasePath &&
     "ascendSteps" in path &&
     path.ascendSteps &&
     path.ascendSteps.length > 0
   ) {
     if (path.ascendSteps.length > 1) {
-      if (pathId === "chaos") {
-        ascendStep = path.ascendSteps.find(
-          (step) => step.basePath?.pathId === "fire"
-        );
-      } else {
-        ascendStep = path.ascendSteps[0];
-      }
+      // For multi-step ascensions, always prefer the intermediate path over direct ascension from Regular
+      // The intermediate path represents a more complete progression
+      ascendStep =
+        path.ascendSteps.find(
+          (step) => step.basePath && step.basePath.pathId !== "regular"
+        ) || path.ascendSteps[0];
     } else {
       ascendStep = path.ascendSteps[0];
     }
@@ -86,9 +89,9 @@ function buildUpgradeJourney({
       pathId: basePathId,
       fromLevel,
       toLevel: baseRequiredLevel,
-      includeAscension,
       currentWeaponPathId,
       currentLevel,
+      skipBasePath: true, // Prevent further recursion
     });
     steps = steps.concat(baseResult.steps);
     mergeMaterials(materials, baseResult.materials);
@@ -143,104 +146,347 @@ export function useUpgradeCalculator() {
     steps: any[];
   }>(null);
 
+  // Helper function to find the complete ascension chain
+  function findAscensionChain(
+    fromPathId: string,
+    toPathId: string,
+    visited: Set<string> = new Set()
+  ): string[] | null {
+    if (fromPathId === toPathId) return [fromPathId];
+    if (visited.has(fromPathId)) return null; // Prevent cycles
+
+    visited.add(fromPathId);
+
+    // Check if the target path has an ascension step from the current path
+    const toPath = findUpgradePath(toPathId);
+    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
+      const directAscendStep = toPath.ascendSteps.find(
+        (step) => step.basePath && step.basePath.pathId === fromPathId
+      );
+      if (directAscendStep) {
+        // Check if there's a longer path available (prefer intermediate steps)
+        let longestChain: string[] | null = null;
+
+        for (const ascendStep of toPath.ascendSteps) {
+          if (
+            ascendStep.basePath &&
+            ascendStep.basePath.pathId !== fromPathId
+          ) {
+            const intermediatePathId = ascendStep.basePath.pathId;
+            const chain = findAscensionChain(
+              fromPathId,
+              intermediatePathId,
+              new Set(visited)
+            );
+            if (chain && chain.length > 1) {
+              // Only consider chains with intermediate steps
+              const fullChain = [...chain, toPathId];
+              if (!longestChain || fullChain.length > longestChain.length) {
+                longestChain = fullChain;
+              }
+            }
+          }
+        }
+
+        // Return the longest chain if found, otherwise return direct path
+        return longestChain || [fromPathId, toPathId];
+      }
+    }
+
+    // Check for indirect ascension through other paths
+    // Look at all paths that can ascend to the target path
+    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
+      let longestChain: string[] | null = null;
+
+      for (const ascendStep of toPath.ascendSteps) {
+        if (ascendStep.basePath) {
+          const intermediatePathId = ascendStep.basePath.pathId;
+          const chain = findAscensionChain(
+            fromPathId,
+            intermediatePathId,
+            new Set(visited)
+          );
+          if (chain) {
+            const fullChain = [...chain, toPathId];
+            if (!longestChain || fullChain.length > longestChain.length) {
+              longestChain = fullChain;
+            }
+          }
+        }
+      }
+
+      return longestChain;
+    }
+
+    return null;
+  }
+
   function calculate({
     currentLevel,
     desiredLevel,
     selectedPathId,
     selectedMerchantId,
-    includeAscension,
     currentWeaponPathId,
   }: {
     currentLevel: number;
     desiredLevel: number;
     selectedPathId: string;
     selectedMerchantId: string;
-    includeAscension: boolean;
     currentWeaponPathId: string;
   }) {
     const merchant = merchants.find((v) => v.id === selectedMerchantId);
     // merchant can be undefined if not selected
 
-    let steps = [];
-    let materials = {};
+    let steps: any[] = [];
+    let materials: Record<string, number> = {};
     let souls = 0;
 
-    if (currentWeaponPathId === selectedPathId || !includeAscension) {
+    if (currentWeaponPathId === selectedPathId) {
       // Only reinforce steps for the current path (no ascension)
       const journey = buildUpgradeJourney({
         pathId: currentWeaponPathId,
         fromLevel: currentLevel,
         toLevel: desiredLevel,
-        includeAscension: false,
+        currentWeaponPathId,
         currentLevel,
       });
       steps = journey.steps;
       materials = journey.materials;
       souls = journey.souls;
     } else {
-      // Only include ascension if includeAscension is true
-      // Robust: Only include steps from current path/level to ascension, then ascension, then desired path
-      // 1. Find the ascension step from currentWeaponPathId to selectedPathId
-      const currentPath = findUpgradePath(currentWeaponPathId);
-      const desiredPath = findUpgradePath(selectedPathId);
+      // Special handling for multi-step ascensions
+      const selectedPath = findUpgradePath(selectedPathId);
+      const isMultiStepAscension =
+        selectedPath &&
+        "ascendSteps" in selectedPath &&
+        selectedPath.ascendSteps &&
+        selectedPath.ascendSteps.length > 1;
+
       if (
-        !currentPath ||
-        !desiredPath ||
-        !("ascendSteps" in desiredPath) ||
-        !desiredPath.ascendSteps
+        isMultiStepAscension &&
+        selectedPath &&
+        "ascendSteps" in selectedPath &&
+        selectedPath.ascendSteps
       ) {
-        result.value = null;
-        return;
-      }
-      const ascendStep = desiredPath.ascendSteps.find(
-        (step) => step.basePath && step.basePath.pathId === currentWeaponPathId
-      );
-      if (!ascendStep) {
-        result.value = null;
-        return;
-      }
-      // 2. Build journey on current path from currentLevel to ascension requiredLevel
-      const toAscendLevel = ascendStep.basePath.requiredLevel;
-      const baseJourney = buildUpgradeJourney({
-        pathId: currentWeaponPathId,
-        fromLevel: currentLevel,
-        toLevel: toAscendLevel,
-        includeAscension: false,
-        currentLevel,
-      });
-      // 3. Add the ascension step
-      const basePath = findUpgradePath(currentWeaponPathId);
-      const ascendStepObj = {
-        type: "ascend",
-        fromPathName: basePath?.name || "Regular",
-        toPathName: desiredPath.name,
-        from: ascendStep.from,
-        to: ascendStep.to,
-        souls: ascendStep.souls,
-        materials: ascendStep.materials,
-      };
-      // 4. Build journey on desired path from 0 to desiredLevel
-      const desiredJourney = buildUpgradeJourney({
-        pathId: selectedPathId,
-        fromLevel: 0,
-        toLevel: desiredLevel,
-        includeAscension: false,
-        currentLevel: 0,
-      });
-      // Combine all steps/materials/souls
-      steps = [...baseJourney.steps, ascendStepObj, ...desiredJourney.steps];
-      materials = {};
-      souls = 0;
-      for (const step of steps) {
-        souls += step.souls;
-        mergeMaterials(materials, step.materials);
+        // For multi-step ascensions, find the longest/most complete chain
+        // This means finding the ascend step that requires the highest level
+        const intermediateStep = selectedPath.ascendSteps.reduce(
+          (best, current) => {
+            if (!best) return current;
+            if (!current.basePath || !best.basePath) return best;
+
+            // Prefer the step that requires a higher level (more complete path)
+            if (current.basePath.requiredLevel > best.basePath.requiredLevel) {
+              return current;
+            }
+
+            // If levels are equal, prefer non-starting base paths
+            if (
+              current.basePath.requiredLevel === best.basePath.requiredLevel
+            ) {
+              // Check if current is a more advanced path than best
+              const currentPath = findUpgradePath(current.basePath.pathId);
+              const bestPath = findUpgradePath(best.basePath.pathId);
+
+              // Prefer paths that have their own ascend steps (more advanced)
+              const currentHasAscendSteps =
+                currentPath &&
+                "ascendSteps" in currentPath &&
+                currentPath.ascendSteps &&
+                currentPath.ascendSteps.length > 0;
+              const bestHasAscendSteps =
+                bestPath &&
+                "ascendSteps" in bestPath &&
+                bestPath.ascendSteps &&
+                bestPath.ascendSteps.length > 0;
+
+              if (currentHasAscendSteps && !bestHasAscendSteps) {
+                return current;
+              }
+            }
+
+            return best;
+          },
+          undefined as AscendStep | undefined
+        );
+
+        if (intermediateStep && intermediateStep.basePath) {
+          const intermediatePathId = intermediateStep.basePath.pathId;
+          const requiredLevel = intermediateStep.basePath.requiredLevel;
+
+          // Find the direct ascension step from current path to intermediate path
+          const directToIntermediate = selectedPath.ascendSteps.find(
+            (step) =>
+              step.basePath && step.basePath.pathId === currentWeaponPathId
+          );
+
+          if (directToIntermediate) {
+            // 1. Upgrade current path to required level for intermediate ascension
+            const currentJourney = buildUpgradeJourney({
+              pathId: currentWeaponPathId,
+              fromLevel: currentLevel,
+              toLevel: requiredLevel,
+              currentWeaponPathId,
+              currentLevel,
+              skipBasePath: true,
+            });
+            steps = steps.concat(currentJourney.steps);
+            mergeMaterials(materials, currentJourney.materials);
+            souls += currentJourney.souls;
+
+            // 2. Ascend current path to intermediate path
+            const intermediatePath = findUpgradePath(intermediatePathId);
+            const currentPath = findUpgradePath(currentWeaponPathId);
+            steps.push({
+              type: "ascend",
+              fromPathName: currentPath?.name || currentWeaponPathId,
+              toPathName: intermediatePath?.name || intermediatePathId,
+              from: directToIntermediate.from,
+              to: directToIntermediate.to,
+              souls: directToIntermediate.souls,
+              materials: directToIntermediate.materials,
+            });
+            souls += directToIntermediate.souls;
+            mergeMaterials(materials, directToIntermediate.materials);
+
+            // 3. Upgrade intermediate path to required level for final ascension
+            const intermediateJourney = buildUpgradeJourney({
+              pathId: intermediatePathId,
+              fromLevel: 0,
+              toLevel: requiredLevel,
+              currentWeaponPathId,
+              currentLevel: 0,
+              skipBasePath: true,
+            });
+            steps = steps.concat(intermediateJourney.steps);
+            mergeMaterials(materials, intermediateJourney.materials);
+            souls += intermediateJourney.souls;
+
+            // 4. Ascend intermediate path to final path
+            steps.push({
+              type: "ascend",
+              fromPathName: intermediatePath?.name || intermediatePathId,
+              toPathName: selectedPath.name,
+              from: intermediateStep.from,
+              to: intermediateStep.to,
+              souls: intermediateStep.souls,
+              materials: intermediateStep.materials,
+            });
+            souls += intermediateStep.souls;
+            mergeMaterials(materials, intermediateStep.materials);
+
+            // 5. Upgrade final path to desired level
+            const finalJourney = buildUpgradeJourney({
+              pathId: selectedPathId,
+              fromLevel: 0,
+              toLevel: desiredLevel,
+              currentWeaponPathId,
+              currentLevel: 0,
+              skipBasePath: true,
+            });
+            steps = steps.concat(finalJourney.steps);
+            mergeMaterials(materials, finalJourney.materials);
+            souls += finalJourney.souls;
+          }
+        }
+      } else {
+        // Use the existing ascension chain logic for other cases
+        const ascensionChain = findAscensionChain(
+          currentWeaponPathId,
+          selectedPathId
+        );
+
+        if (!ascensionChain) {
+          result.value = null;
+          return;
+        }
+
+        // Build the complete journey through the ascension chain
+        let currentPathId = ascensionChain[0];
+        let currentLevelInChain = currentLevel;
+
+        for (let i = 0; i < ascensionChain.length - 1; i++) {
+          const fromPathId = ascensionChain[i];
+          const toPathId = ascensionChain[i + 1];
+
+          // Find the ascension step between these two paths
+          const fromPath = findUpgradePath(fromPathId);
+          const toPath = findUpgradePath(toPathId);
+
+          if (
+            !fromPath ||
+            !toPath ||
+            !("ascendSteps" in toPath) ||
+            !toPath.ascendSteps
+          ) {
+            result.value = null;
+            return;
+          }
+
+          const ascendStep = toPath.ascendSteps.find(
+            (step) => step.basePath && step.basePath.pathId === fromPathId
+          );
+
+          if (!ascendStep || !ascendStep.basePath) {
+            result.value = null;
+            return;
+          }
+
+          // 1. Upgrade current path to required level for ascension
+          const toAscendLevel = ascendStep.basePath.requiredLevel;
+          const baseJourney = buildUpgradeJourney({
+            pathId: fromPathId,
+            fromLevel: currentLevelInChain,
+            toLevel: toAscendLevel,
+            currentWeaponPathId,
+            currentLevel: currentLevelInChain,
+            skipBasePath: true, // Prevent recursive base path building
+          });
+
+          steps = steps.concat(baseJourney.steps);
+          mergeMaterials(materials, baseJourney.materials);
+          souls += baseJourney.souls;
+
+          // 2. Add the ascension step
+          const ascendStepObj = {
+            type: "ascend",
+            fromPathName: fromPath.name,
+            toPathName: toPath.name,
+            from: ascendStep.from,
+            to: ascendStep.to,
+            souls: ascendStep.souls,
+            materials: ascendStep.materials,
+          };
+
+          steps.push(ascendStepObj);
+          souls += ascendStep.souls;
+          mergeMaterials(materials, ascendStep.materials);
+
+          // 3. Prepare for next iteration
+          currentPathId = toPathId;
+          currentLevelInChain = 0; // Ascension resets level to 0
+        }
+
+        // 4. Upgrade the final path to desired level
+        const finalJourney = buildUpgradeJourney({
+          pathId: selectedPathId,
+          fromLevel: 0,
+          toLevel: desiredLevel,
+          currentWeaponPathId,
+          currentLevel: 0,
+          skipBasePath: true, // Prevent recursive base path building
+        });
+
+        steps = steps.concat(finalJourney.steps);
+        mergeMaterials(materials, finalJourney.materials);
+        souls += finalJourney.souls;
       }
     }
 
     let purchaseCost = 0;
     for (const [material, qty] of Object.entries(materials)) {
       const price = merchant ? (merchant.materialPrices[material] ?? 0) : 0;
-      purchaseCost += price * qty;
+      purchaseCost += price * (qty as number);
     }
 
     result.value = {

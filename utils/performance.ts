@@ -102,7 +102,22 @@ export const endPerformanceMeasure = (name: string) => {
  * Get performance metrics
  */
 export const getPerformanceMetrics = () => {
-  return performanceMetrics;
+  const metrics: Record<
+    string,
+    { avg: number; min: number; max: number; count: number }
+  > = {};
+
+  for (const [name, measurements] of Object.entries(performanceMetrics)) {
+    if (measurements.length > 0) {
+      const avg = measurements.reduce((a, b) => a + b, 0) / measurements.length;
+      const min = Math.min(...measurements);
+      const max = Math.max(...measurements);
+
+      metrics[name] = { avg, min, max, count: measurements.length };
+    }
+  }
+
+  return metrics;
 };
 
 /**
@@ -157,6 +172,60 @@ export const isMobileDevice = (): boolean => {
 export const prefersReducedMotion = (): boolean => {
   if (!process.client) return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
+/**
+ * Check if user prefers reduced data
+ */
+export const prefersReducedData = (): boolean => {
+  if (!process.client) return false;
+  return window.matchMedia("(prefers-reduced-data: reduce)").matches;
+};
+
+/**
+ * Lazy load component with loading state
+ */
+export const lazyLoadComponent = <T>(
+  importFn: () => Promise<T>,
+  fallback?: T
+): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Component load timeout"));
+    }, 10000); // 10 second timeout
+
+    importFn()
+      .then((component) => {
+        clearTimeout(timeout);
+        resolve(component);
+      })
+      .catch((error) => {
+        clearTimeout(timeout);
+        if (fallback) {
+          resolve(fallback);
+        } else {
+          reject(error);
+        }
+      });
+  });
+};
+
+/**
+ * Intersection Observer for lazy loading
+ */
+export const createIntersectionObserver = (
+  callback: IntersectionObserverCallback,
+  options: IntersectionObserverInit = {}
+): IntersectionObserver | null => {
+  if (!process.client || !window.IntersectionObserver) {
+    return null;
+  }
+
+  return new IntersectionObserver(callback, {
+    rootMargin: "50px",
+    threshold: 0.1,
+    ...options,
+  });
 };
 
 // Clean up cache periodically

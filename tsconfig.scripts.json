@@ -7,7 +7,12 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"]
+    }
   },
-  "include": ["scripts/**/*.ts"]
+  "include": ["scripts/**/*.ts", "types/**/*.ts", "utils/**/*.ts"]
 }

@@ -1,25 +1,41 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
+  // Auto-import components with specific exclusions for game-specific components
   components: [
     { path: "~/components", extensions: ["vue"] },
-    { path: "~/components/Tools", extensions: ["vue"] },
-    { path: "~/components/Tools/SoulLevelCalculator", extensions: ["vue"] },
-    { path: "~/components/Tools/WeaponUpgradeCalculator", extensions: ["vue"] },
+    {
+      path: "~/components/Tools",
+      extensions: ["vue"],
+      ignore: ["**/GameComponents/**"], // Exclude game-specific components from auto-import
+    },
+    {
+      path: "~/components/Tools/soul-level-calculator",
+      extensions: ["vue"],
+      ignore: ["**/GameComponents/**"],
+    },
+    {
+      path: "~/components/Tools/weapon-upgrade-calculator",
+      extensions: ["vue"],
+      ignore: ["**/GameComponents/**"],
+    },
+    { path: "~/components/Tools/Common", extensions: ["vue"] },
   ],
+  // Core modules: UI framework, tool generation, and theme support
   modules: ["@nuxt/ui", "./modules/generate-tools.ts", "@nuxtjs/color-mode"],
   css: ["~/assets/css/main.css"],
   ui: {
-    colorMode: false,
+    colorMode: false, // Disabled in favor of custom theme system
   },
+  // App configuration with SEO and performance optimizations
   app: {
     head: {
-      title: "Dark Souls Tools",
+      title: "Gold Phantom",
       htmlAttrs: {
         lang: "en",
       },
       link: [
-        { rel: "icon", type: "image/x-icon", href: "/favicon.jpg" },
+        { rel: "icon", type: "image/x-icon", href: "/favicon.png" },
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
@@ -28,17 +44,45 @@ export default defineNuxtConfig({
       ],
     },
   },
+  // Theme configuration with system preference support
   colorMode: {
-    classSuffix: "", // Optional: removes `-dark`/`-light` suffix on `html` class
-    preference: "system", // default value of the preference
-    fallback: "light", // fallback value if system preference is not available
+    classSuffix: "", // Removes `-dark`/`-light` suffix on `html` class
+    preference: "system", // Default to system preference
+    fallback: "light", // Fallback if system preference unavailable
   },
-  // Performance optimizations
+  // Server-side optimizations for production
   nitro: {
     compressPublicAssets: true,
     minify: true,
+    experimental: {
+      wasm: true,
+    },
   },
+  // Build optimizations for better code splitting and performance
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Separate vendor chunks for better caching
+            vendor: ["vue", "vue-router"],
+            ui: ["@nuxt/ui"],
+          },
+        },
+      },
+    },
+    optimizeDeps: {
+      include: ["vue", "vue-router"],
+    },
+  },
+  // Experimental features for modern build optimizations
   experimental: {
     payloadExtraction: false,
+    treeshakeClientOnly: true,
+    componentIslands: false,
+  },
+  // Bundle analysis for performance monitoring
+  build: {
+    analyze: process.env.ANALYZE === "true",
   },
 });

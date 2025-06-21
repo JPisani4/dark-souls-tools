@@ -1,2 +1,6 @@
+# robots.txt for dark-souls-tools
+# Current policy: Allow all crawlers to index all content.
+# If you add private/admin sections or sensitive files, update this file accordingly.
+# For staging/dev, use 'Disallow: /' to block all crawling.
 User-Agent: *
 Disallow:

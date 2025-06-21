@@ -4,13 +4,9 @@ import NavFooter from "~/components/NavFooter.vue";
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div>
     <NavHeader />
-
-    <main class="flex-1 container mx-auto">
-      <NuxtPage />
-    </main>
-
+    <NuxtPage />
     <NavFooter />
   </div>
 </template>

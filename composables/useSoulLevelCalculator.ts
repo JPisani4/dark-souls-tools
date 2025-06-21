@@ -7,8 +7,15 @@ import {
   onUnmounted,
   shallowRef,
 } from "vue";
-import { soulCostCumulative, soulCosts } from "~/utils/soulCosts";
-import { parseLevel } from "~/utils/inputSanitizers";
+import { useBaseTool } from "./useBaseTool";
+import type {
+  SoulLevelCalculatorState,
+  SoulLevelCalculatorResult,
+} from "~/types/soulLevelCalculator";
+
+// Import utilities
+import { soulCostCumulative, soulCosts } from "~/utils/game-data/soulCosts";
+import { parseLevel } from "~/utils/validation/inputSanitizers";
 import {
   safeErrorLog,
   startPerformanceMeasure,
@@ -16,13 +23,14 @@ import {
   debounce,
 } from "~/utils/performance";
 import {
+  ICONS,
+  getRandomTheme,
   SOUL_LEVEL_MIN,
   SOUL_LEVEL_MAX,
   SOUL_LEVEL_PAGE_SIZE,
   SOUL_LEVEL_MOBILE_PAGE_SIZE,
   SOUL_LEVEL_TABLET_PAGE_SIZE,
   SOUL_LEVEL_ULTRA_MOBILE_PAGE_SIZE,
-  getRandomTheme,
 } from "~/utils/constants";
 import type { ColorTheme, ValidationResult } from "~/types/common";
 
