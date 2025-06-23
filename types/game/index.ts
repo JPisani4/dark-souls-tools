@@ -52,6 +52,20 @@ export interface GameData {
   upgradeCosts: UpgradeCosts;
   upgradePaths: UpgradePaths;
   merchants: Merchants;
+  coopLevelRanges?: {
+    MULTIPLAYER_ITEMS: ReadonlyArray<{
+      value: string;
+      label: string;
+      description: string;
+      passwordBypass: boolean;
+      showAsterisk?: boolean;
+    }>;
+    getLevelRange: (item: string, charLevel: number) => [number, number];
+    getWeaponMatchLevel: (upgradePath: string, level: number) => number | null;
+    getWeaponLevelRange: (weaponLevel: number) => [number, number] | null;
+    isPasswordBypass: (item: string, usePassword: boolean) => boolean;
+    getUpgradePathConfig: (path: string) => any;
+  };
   [key: string]: any;
 }
 

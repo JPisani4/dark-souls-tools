@@ -1,9 +1,4 @@
 import type { GameData } from "~/types/game";
-import { soulCosts } from "./soulCosts";
-import { upgradeCosts } from "./upgradeCosts";
-import { upgradePaths } from "./upgradePaths";
-import { merchants } from "./merchants";
-import * as stats from "./stats";
 import {
   MULTIPLAYER_ITEMS,
   getLevelRange,
@@ -13,29 +8,28 @@ import {
   getUpgradePathConfig,
 } from "./coopLevelRanges";
 
-const ds1GameData: GameData = {
+const erGameData: GameData = {
   metadata: {
-    id: "ds1",
-    name: "Dark Souls",
-    fullName: "Dark Souls: Remastered",
-    shortName: "DS1",
-    releaseYear: 2018,
-    description:
-      "The original Dark Souls experience, remastered for modern platforms",
-    icon: "i-game-icons-sword-wound",
-    color: "from-orange-500 to-red-600",
+    id: "er",
+    name: "Elden Ring",
+    fullName: "Elden Ring",
+    shortName: "ER",
+    releaseYear: 2022,
+    description: "The latest FromSoftware action RPG",
+    icon: "i-game-icons-ring",
+    color: "from-yellow-500 to-orange-600",
     isActive: true,
   },
   config: {
     terminology: {
-      souls: "Souls",
+      souls: "Runes",
       level: "Level",
       weapon: "Weapon",
       upgrade: "Upgrade",
       material: "Material",
       currentLevel: "Current Level",
       desiredLevel: "Desired Level",
-      totalCost: "Total Souls Required",
+      totalCost: "Total Runes Required",
       reinforcementCost: "Reinforcement Cost",
       materialCost: "Material Cost",
       purchaseable: "Purchaseable",
@@ -59,21 +53,22 @@ const ds1GameData: GameData = {
     mechanics: {
       maxLevel: 713,
       levelCap: 713,
-      respecAvailable: false,
-      infusionSystem: "titanite",
+      respecAvailable: true,
+      infusionSystem: "ash-of-war",
     },
     ui: {
       levelRange: { min: 1, max: 713 },
-      showRespecOption: false,
+      showRespecOption: true,
       showInfusionPaths: true,
       showRightSidebar: false,
       customFields: [],
     },
   },
-  soulCosts,
-  upgradeCosts,
-  upgradePaths,
-  merchants,
+  // Note: These would be populated with actual ER data
+  soulCosts: {},
+  upgradeCosts: {},
+  upgradePaths: {},
+  merchants: {},
   coopLevelRanges: {
     MULTIPLAYER_ITEMS,
     getLevelRange,
@@ -84,28 +79,16 @@ const ds1GameData: GameData = {
   },
   tools: [
     {
-      id: "soul-level-calculator",
-      name: "Soul Level Calculator",
-      description: "Calculate the souls required to level up your character",
-      category: "calculators",
-      icon: "i-heroicons-calculator",
-      isActive: true,
-      gameId: "ds1",
-    },
-    {
-      id: "weapon-upgrade-calculator",
-      name: "Weapon Upgrade Calculator",
+      id: "coop-level-range-calculator",
+      name: "Co-op Level Range Calculator",
       description:
-        "Calculate the souls and materials required to upgrade your weapon",
+        "Calculate valid co-op and invasion level ranges for all multiplayer items, including weapon level matchmaking, in Elden Ring.",
       category: "calculators",
-      icon: "i-heroicons-wrench-screwdriver",
+      icon: "i-heroicons-users",
       isActive: true,
-      gameId: "ds1",
+      gameId: "er",
     },
   ],
 };
 
-export default ds1GameData;
-
-// Export stats utilities
-export { stats };
+export default erGameData;
