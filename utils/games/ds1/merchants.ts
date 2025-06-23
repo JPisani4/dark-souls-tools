@@ -1,13 +1,19 @@
 import type {
-  GameMerchantData,
   Merchant,
   BetterPrice,
   MaterialSavings,
-} from "~/types/game";
+} from "~/types/game/upgradeSummary";
 import { merchants as originalMerchants } from "./upgradeCosts";
 
-// Export merchants in the new GameMerchantData format
-export const merchants: GameMerchantData = {
+// Export merchants in the new format
+export const merchants: Record<
+  string,
+  {
+    name: string;
+    location: string;
+    materials: Record<string, { price: number }>;
+  }
+> = {
   crestfallen_merchant: {
     name: "Crestfallen Merchant",
     location: "Undead Burg",
@@ -112,9 +118,16 @@ export const getMaterialSavings = (
 
   if (betterMerchants.length === 0) return null;
 
-  const totalSavings =
-    betterMerchants.reduce((sum, item) => sum + item.savings, 0) * qty;
-  return { totalSavings, betterMerchants, currentPrice };
+  // Only consider the best (cheapest) price, not sum of all cheaper prices
+  const bestPrice = betterMerchants[0].price;
+  const savingsPerUnit = currentPrice - bestPrice;
+  const totalSavings = savingsPerUnit * qty;
+
+  return {
+    totalSavings,
+    betterMerchants,
+    currentPrice,
+  };
 };
 
 export const calculateTotalPotentialSavings = (

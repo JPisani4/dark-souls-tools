@@ -11,7 +11,19 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-21T16:23:01.198Z'),
+    createdAt: new Date('2025-06-23T01:03:03.411Z'),
+    gameCategories: ["ds1"],
+  },
+  {
+    title: "Starting Class Optimizer",
+    description: "Find the optimal starting class for your desired character stats and equipment in Dark Souls",
+    slug: "starting-class-optimizer",
+    icon: "i-heroicons-user-group",
+    category: "planner",
+    tags: ["starting-class-optimizer","character-planner","ds1","planner"],
+    order: 1,
+    loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-06-23T01:03:03.411Z'),
     gameCategories: ["ds1"],
   },
   {
@@ -23,7 +35,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-21T16:23:01.198Z'),
+    createdAt: new Date('2025-06-23T01:03:03.411Z'),
     gameCategories: ["ds1"],
   }
 ]

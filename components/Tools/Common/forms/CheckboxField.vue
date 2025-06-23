@@ -46,5 +46,22 @@ const safeTheme = useSafeTheme(props.theme, props.variant);
 
 const inputClasses = computed(() => [
   props.error ? FORM_STYLES.inputError : FORM_STYLES.input,
+  props.disabled
+    ? "!opacity-60 !bg-gray-100 dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600 !text-gray-500 dark:!text-gray-400 !cursor-not-allowed pointer-events-none disabled-checkbox"
+    : "",
 ]);
 </script>
+
+<style scoped>
+.disabled-checkbox {
+  cursor: not-allowed !important;
+}
+
+.disabled-checkbox:hover {
+  cursor: not-allowed !important;
+}
+
+.disabled-checkbox * {
+  cursor: not-allowed !important;
+}
+</style>

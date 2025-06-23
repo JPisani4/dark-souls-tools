@@ -98,3 +98,15 @@ export interface Merchants {
 // Re-export upgrade types for easy importing
 export * from "./upgrade";
 export * from "./upgradeSummary";
+
+// Re-export weapon types for easy importing
+export * from "./ds1/weapons";
+
+// Re-export miracle types for easy importing
+export * from "./ds1/miracles";
+
+// Re-export sorcery types for easy importing
+export * from "./ds1/sorceries";
+
+// Re-export shield types for easy importing
+export * from "./ds1/shields";

@@ -37,5 +37,8 @@ const props = withDefaults(defineProps<Props>(), {
   size: "md",
 });
 
-const labelClasses = computed(() => FORM_STYLES.label);
+const labelClasses = computed(() => [
+  FORM_STYLES.label,
+  props.disabled ? "text-gray-400 dark:text-gray-500" : "",
+]);
 </script>

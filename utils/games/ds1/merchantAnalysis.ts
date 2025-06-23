@@ -1,4 +1,4 @@
-import { merchants } from "~/utils/game-data/upgradeCosts";
+import { merchants } from "~/utils/games/ds1/upgradeCosts";
 import type {
   Merchant,
   BetterPrice,
@@ -64,9 +64,16 @@ export const getMaterialSavings = (
 
   if (betterMerchants.length === 0) return null;
 
-  const totalSavings =
-    betterMerchants.reduce((sum, item) => sum + item.savings, 0) * qty;
-  return { totalSavings, betterMerchants, currentPrice };
+  // Only consider the best (cheapest) price, not sum of all cheaper prices
+  const bestPrice = betterMerchants[0].price;
+  const savingsPerUnit = currentPrice - bestPrice;
+  const totalSavings = savingsPerUnit * qty;
+
+  return {
+    totalSavings,
+    betterMerchants,
+    currentPrice,
+  };
 };
 
 export const calculateTotalPotentialSavings = (

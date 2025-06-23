@@ -118,6 +118,5 @@ export function getAllAvailableGameData(): GameData[] {
   const availableGames = getAvailableGames();
   return availableGames.map((game) => getGameData(game));
 }
-
 // Dark Souls: Remastered game data
 export * from "./ds1";

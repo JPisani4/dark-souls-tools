@@ -1,6 +1,6 @@
 import { reactive, computed, watch } from "vue";
-import { upgradePathsManifest } from "~/utils/game-data/upgradePaths";
-import { merchants } from "~/utils/game-data/upgradeCosts";
+import { upgradePathsManifest } from "~/utils/games/ds1/upgradePaths";
+import { merchants } from "~/utils/games/ds1/upgradeCosts";
 import { useUpgradeCalculator } from "~/composables/useUpgradeCalculator";
 
 export interface WeaponUpgradeFormState {
@@ -27,7 +27,7 @@ export function useWeaponUpgradeForm() {
   });
 
   // Calculator integration
-  const { result, calculate } = useUpgradeCalculator();
+  const { result, calculate, setState } = useUpgradeCalculator();
   const unwrappedResult = computed(() => result.value);
 
   // Computed properties
@@ -98,6 +98,7 @@ export function useWeaponUpgradeForm() {
   );
 
   const currentWeaponPathItems = computed<SelectOption[]>(() => {
+    // If no desired path is selected, show all available paths
     if (!state.selectedPathId) {
       return upgradePathsManifest.map((path) => ({
         label: path.name,
@@ -194,22 +195,50 @@ export function useWeaponUpgradeForm() {
         desiredLevel === "" ||
         !currentWeaponPathId
       ) {
-        result.value = null;
+        // Don't set result.value directly - let the base tool handle it
         return;
       }
       const current = parseInt(state.currentLevel, 10);
       const desired = parseInt(state.desiredLevel, 10);
       if (isNaN(current) || isNaN(desired)) {
-        result.value = null;
+        // Don't set result.value directly - let the base tool handle it
         return;
       }
-      calculate({
+
+      // Set the state in the calculator first, then call calculate
+      setState({
         currentLevel: current,
         desiredLevel: desired,
         selectedPathId: state.selectedPathId ?? "",
         selectedMerchantId: merchantId,
         currentWeaponPathId: state.currentWeaponPathId ?? "",
       });
+
+      // Now call calculate without parameters
+      calculate();
+    },
+    { immediate: true }
+  );
+
+  // Set default values when form initializes
+  watch(
+    () => upgradePathItems.value,
+    (items) => {
+      // Set default desired path if none is selected and items are available
+      if (!state.selectedPathId && items.length > 0) {
+        state.selectedPathId = items[0].value;
+      }
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => currentWeaponPathItems.value,
+    (items) => {
+      // Set default current weapon path if none is selected and items are available
+      if (!state.currentWeaponPathId && items.length > 0) {
+        state.currentWeaponPathId = items[0].value;
+      }
     },
     { immediate: true }
   );

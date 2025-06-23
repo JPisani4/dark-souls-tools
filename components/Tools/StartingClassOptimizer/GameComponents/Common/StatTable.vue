@@ -1,0 +1,263 @@
+<template>
+  <div class="space-y-4">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+            >
+              Stat
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+            >
+              Current Value
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+            >
+              Soft Cap
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+        >
+          <tr
+            v-for="(stat, statKey) in displayStats"
+            :key="statKey"
+            class="hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ formatStatName(statKey) }}
+                </span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <NumericInput
+                  :model-value="stat === 1 ? '' : stat.toString()"
+                  placeholder="10"
+                  :min="minimumRequirements[statKey as keyof CharacterStats]"
+                  :max="99"
+                  class="w-20"
+                  @update:model-value="
+                    (value) =>
+                      updateStat(statKey as keyof CharacterStats, value)
+                  "
+                />
+                <div
+                  v-if="
+                    !statValidation[statKey as keyof CharacterStats].isValid
+                  "
+                  class="ml-2 text-red-600 text-xs"
+                >
+                  {{ statValidation[statKey as keyof CharacterStats].error }}
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <!-- Attunement Slot Button (only for attunement stat) -->
+                <UButton
+                  v-if="statKey === 'attunement'"
+                  size="xs"
+                  variant="outline"
+                  :color="themeColor"
+                  :disabled="!canIncreaseAttunementSlots"
+                  :title="attunementSlotButtonTitle"
+                  @click="increaseAttunementSlots"
+                >
+                  <UIcon :name="attunementSlotButtonIcon" class="w-3 h-3" />
+                </UButton>
+
+                <!-- Soft Cap Button (for all stats except attunement) -->
+                <UButton
+                  v-if="statKey !== 'attunement'"
+                  size="xs"
+                  variant="outline"
+                  :color="themeColor"
+                  :disabled="
+                    !canIncreaseSoftCap(statKey as keyof CharacterStats)
+                  "
+                  :title="
+                    getSoftCapButtonTitle(statKey as keyof CharacterStats)
+                  "
+                  @click="increaseToSoftCap(statKey as keyof CharacterStats)"
+                >
+                  <UIcon
+                    :name="
+                      getSoftCapButtonIcon(statKey as keyof CharacterStats)
+                    "
+                    class="w-3 h-3"
+                  />
+                </UButton>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { CharacterStats } from "~/types/game/ds1/characters";
+import NumericInput from "../../../Common/NumericInput.vue";
+import { computed } from "vue";
+import {
+  getNextAttunementSlotLevel,
+  getAttunementSlots,
+} from "~/utils/games/ds1/stats/attunementSlots";
+import {
+  getNextSoftCap,
+  isAtMaxSoftCap,
+  isAtSoftCap,
+} from "~/utils/games/ds1/stats/softCaps";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
+
+interface Props {
+  stats: CharacterStats;
+  minimumRequirements: CharacterStats;
+  statValidation: Record<
+    keyof CharacterStats,
+    { isValid: boolean; error?: string }
+  >;
+  isTwoHanded: boolean;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  "update:stat": [stat: keyof CharacterStats, value: number];
+}>();
+
+// Generate random theme color for this component
+const themeColor = computed(() => {
+  const theme = getRandomTheme();
+  // Map theme colors to button colors - same logic as main component
+  if (theme.icon.includes("blue")) return "info";
+  if (theme.icon.includes("green")) return "success";
+  if (theme.icon.includes("orange")) return "warning";
+  if (theme.icon.includes("red")) return "error";
+  return "primary";
+});
+
+// Filter out the level field from displayed stats
+const displayStats = computed(() => {
+  const { level, ...otherStats } = props.stats;
+  return otherStats;
+});
+
+const updateStat = (stat: keyof CharacterStats, value: string) => {
+  const numValue = parseInt(value, 10);
+  if (!isNaN(numValue)) {
+    emit("update:stat", stat, numValue);
+  }
+};
+
+const formatStatName = (statKey: string) => {
+  const statNames: Record<string, string> = {
+    vitality: "Vitality",
+    attunement: "Attunement",
+    endurance: "Endurance",
+    strength: "Strength",
+    dexterity: "Dexterity",
+    resistance: "Resistance",
+    intelligence: "Intelligence",
+    faith: "Faith",
+  };
+  return statNames[statKey] || statKey;
+};
+
+// Attunement slot button logic
+const canIncreaseAttunementSlots = computed(() => {
+  const currentAttunement = props.stats.attunement;
+  const nextLevel = getNextAttunementSlotLevel(currentAttunement);
+  return nextLevel !== null && nextLevel <= 99;
+});
+
+const attunementSlotButtonTitle = computed(() => {
+  const currentAttunement = props.stats.attunement;
+  const currentSlots = getAttunementSlots(currentAttunement);
+  const nextLevel = getNextAttunementSlotLevel(currentAttunement);
+
+  if (nextLevel === null) {
+    return `Maximum attunement slots (${currentSlots}) reached`;
+  }
+
+  return `Increase to ${nextLevel} ATT for ${currentSlots + 1} attunement slots`;
+});
+
+const attunementSlotButtonIcon = computed(() => {
+  const currentAttunement = props.stats.attunement;
+  const currentSlots = getAttunementSlots(currentAttunement);
+  const nextLevel = getNextAttunementSlotLevel(currentAttunement);
+
+  if (nextLevel === null) {
+    return "i-heroicons-check";
+  }
+
+  return "i-heroicons-arrow-up";
+});
+
+const increaseAttunementSlots = () => {
+  const nextLevel = getNextAttunementSlotLevel(props.stats.attunement);
+  if (nextLevel !== null) {
+    emit("update:stat", "attunement", nextLevel);
+  }
+};
+
+// Soft cap button logic
+const canIncreaseSoftCap = (stat: keyof CharacterStats) => {
+  return getNextSoftCap(stat, props.stats[stat], props.isTwoHanded) !== null;
+};
+
+const getSoftCapButtonTitle = (stat: keyof CharacterStats) => {
+  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  if (nextCap === null) {
+    // Special handling for Strength stat to clarify two-handed vs one-handed
+    if (stat === "strength") {
+      if (props.isTwoHanded) {
+        return "Strength is at the two-handed soft cap (27). For one-handed soft cap, increase to 40.";
+      } else {
+        return "Strength is at the one-handed soft cap (40). For two-handed soft cap, enable two-handed mode and increase to 27.";
+      }
+    }
+    return `${stat.charAt(0).toUpperCase() + stat.slice(1)} is at max soft cap`;
+  }
+
+  // Special handling for Strength stat to clarify which soft cap is being targeted
+  if (stat === "strength") {
+    if (props.isTwoHanded) {
+      return `Increase Strength to ${nextCap} (two-handed soft cap)`;
+    } else {
+      return `Increase Strength to ${nextCap} (one-handed soft cap)`;
+    }
+  }
+
+  return `Increase ${stat} to ${nextCap} (next soft cap)`;
+};
+
+const getSoftCapButtonColor = (stat: keyof CharacterStats) => {
+  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  if (nextCap === null) return "green";
+  return themeColor.value;
+};
+
+const getSoftCapButtonIcon = (stat: keyof CharacterStats) => {
+  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  if (nextCap === null) return "i-heroicons-check-circle";
+  return "i-heroicons-arrow-up";
+};
+
+const increaseToSoftCap = (stat: keyof CharacterStats) => {
+  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  if (nextCap !== null) {
+    emit("update:stat", stat, nextCap);
+  }
+};
+</script>

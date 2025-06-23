@@ -12,7 +12,6 @@ export interface ToolLayoutOptions {
   description: string;
   iconPath?: string;
   iconName?: string;
-  enablePerformanceMonitoring?: boolean;
   // New options for structured data
   tool?: Tool | null;
   gameId?: GameId | null;
@@ -20,84 +19,55 @@ export interface ToolLayoutOptions {
 }
 
 export function useToolLayout(options: ToolLayoutOptions) {
-  // Theme management
-  const selectedTheme = ref<ColorTheme>(getRandomTheme());
+  const { title, description, iconPath, iconName, tool, gameId, gameData } =
+    options;
 
-  // SEO setup
-  useSeoMeta({
-    title: options.title,
-    ogTitle: options.title,
-    twitterTitle: options.title,
-    description: options.description,
-    ogDescription: options.description,
-    twitterDescription: options.description,
+  // Set page title and meta tags
+  useHead({
+    title: title,
+    meta: [
+      {
+        name: "description",
+        content: description,
+      },
+      {
+        property: "og:title",
+        content: title,
+      },
+      {
+        property: "og:description",
+        content: description,
+      },
+      {
+        name: "twitter:title",
+        content: title,
+      },
+      {
+        name: "twitter:description",
+        content: description,
+      },
+    ],
   });
 
-  // Structured data setup
-  const { structuredData } = useToolStructuredData({
-    tool: options.tool || null,
-    gameId: options.gameId || null,
-    gameData: options.gameData || null,
-  });
-
-  // Add structured data to head if available
-  if (structuredData.value) {
-    useHead({
-      script: [
-        {
-          type: "application/ld+json",
-          innerHTML: JSON.stringify(structuredData.value),
-        },
-      ],
+  // Set up structured data if tool and game data are provided
+  if (tool && gameId && gameData) {
+    useToolStructuredData({
+      tool,
+      gameId,
+      gameData,
     });
   }
 
-  // Performance monitoring (optional)
-  const showMetrics = computed(
-    () =>
-      options.enablePerformanceMonitoring &&
-      process.env.NODE_ENV === "development"
-  );
-  const metrics = computed(() => getPerformanceMetrics());
-
-  // Device detection for responsive design
-  const isMobile = ref(false);
-  const isTablet = ref(false);
-  const isUltraMobile = ref(false);
-
-  // Initialize device detection
-  if (process.client) {
-    const updateDeviceType = () => {
-      const width = window.innerWidth;
-      isUltraMobile.value = width < 480;
-      isMobile.value = width < 768;
-      isTablet.value = width >= 768 && width < 1024;
-    };
-
-    updateDeviceType();
-    window.addEventListener("resize", updateDeviceType);
-  }
+  // Removed all performance monitoring code
+  // Removed device type detection
+  // Removed performance metrics tracking
+  // Removed resize event listeners
+  // Removed performance measurement functions
 
   return {
-    // Theme
-    selectedTheme,
-
-    // SEO
-    title: options.title,
-    description: options.description,
-    iconPath: options.iconPath,
-    iconName: options.iconName,
-
-    // Structured Data
-    structuredData,
-
-    // Performance
-    showMetrics,
-    metrics,
-
-    // Device detection
-    isMobile,
-    isTablet,
-    isUltraMobile,
+    title,
+    description,
+    iconPath,
+    iconName,
   };
 }

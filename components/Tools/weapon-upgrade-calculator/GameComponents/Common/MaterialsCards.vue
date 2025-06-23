@@ -10,7 +10,7 @@ import type { Merchant } from "~/types/game/upgradeSummary";
 import {
   findAllBetterPrices,
   findMerchantsForMaterial,
-} from "~/utils/game-data/merchantAnalysis";
+} from "~/utils/games/ds1/merchantAnalysis";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 

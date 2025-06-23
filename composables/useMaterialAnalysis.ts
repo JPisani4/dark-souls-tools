@@ -1,9 +1,11 @@
 import { computed, ref } from "vue";
-import { merchants } from "~/utils/game-data/upgradeCosts";
+import { merchants } from "~/utils/games/ds1/upgradeCosts";
 import {
   findAllBetterPrices,
+  findMerchantsForMaterial,
+  getMaterialSavings,
   calculateTotalPotentialSavings,
-} from "~/utils/game-data/merchantAnalysis";
+} from "~/utils/games/ds1/merchantAnalysis";
 import type { Merchant } from "~/types/game/upgradeSummary";
 
 interface MaterialAnalysisCache {

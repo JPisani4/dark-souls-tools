@@ -19,6 +19,7 @@ import NumberField from "../../../Common/forms/NumberField.vue";
 import ResultsTable from "../../../Common/display/ResultsTable.vue";
 import SummaryCard from "../../../Common/display/SummaryCard.vue";
 import CustomPagination from "../../../Common/CustomPagination.vue";
+import HowToUse from "../../../Common/HowToUse.vue";
 
 // 5. Props and types
 interface Props {
@@ -36,13 +37,12 @@ const props = withDefaults(defineProps<Props>(), {
 const safeTheme = useSafeTheme(props.theme, props.variant);
 
 // 7. Tool layout
-const { selectedTheme } = useToolLayout({
+useToolLayout({
   title: props.toolConfig?.title || "Soul Level Calculator",
   description:
     props.toolConfig?.description ||
     "Calculate the souls required to level up your character",
   iconPath: props.toolConfig?.icon || "public/soul-level-calculator-icon.png",
-  enablePerformanceMonitoring: true,
 });
 
 // 8. Game terminology
@@ -58,13 +58,16 @@ const {
   totalSoulsCost,
   resetForm,
   formatNumber,
-  LEVEL_MIN,
-  LEVEL_MAX,
-  page,
+  currentPage,
   totalPages,
   pageSize,
   setPage,
+  paginatedData,
 } = useSoulLevelCalculator();
+
+// Constants for level validation
+const LEVEL_MIN = SOUL_LEVEL_MIN;
+const LEVEL_MAX = SOUL_LEVEL_MAX;
 
 // 10. Computed properties
 const tableColumns = computed(() => [
@@ -81,11 +84,36 @@ const tableColumns = computed(() => [
 ]);
 
 const formattedTableData = computed(() =>
-  tableRows.value.map((row) => ({
+  paginatedData.value.map((row) => ({
     level: row.level,
     souls: row.souls,
   }))
 );
+
+// How to Use steps for soul level calculator
+const howToUseSteps = [
+  {
+    type: "step" as const,
+    title: "Enter Current Level",
+    description: "Input your character's current level in the first field.",
+  },
+  {
+    type: "step" as const,
+    title: "Enter Desired Level",
+    description: "Input the level you want to reach in the second field.",
+  },
+  {
+    type: "step" as const,
+    title: "View Results",
+    description:
+      "See the total souls required and breakdown of costs for each level.",
+  },
+  {
+    type: "tip" as const,
+    title: "Clear Fields",
+    description: "Use the Clear button to reset both fields and start over.",
+  },
+];
 </script>
 
 <template>
@@ -125,7 +153,7 @@ const formattedTableData = computed(() =>
           :model-value="
             state.currentLevel ? parseInt(state.currentLevel) : undefined
           "
-          placeholder=""
+          placeholder="15"
           :min="LEVEL_MIN"
           :max="LEVEL_MAX"
           :theme="safeTheme"
@@ -141,7 +169,7 @@ const formattedTableData = computed(() =>
           :model-value="
             state.desiredLevel ? parseInt(state.desiredLevel) : undefined
           "
-          placeholder=""
+          placeholder="25"
           :min="LEVEL_MIN"
           :max="LEVEL_MAX"
           :theme="safeTheme"
@@ -182,17 +210,21 @@ const formattedTableData = computed(() =>
     :data="formattedTableData"
     :theme="safeTheme"
     :terminology="terminology"
+    class="mt-8"
   />
 
   <!-- Pagination -->
   <div class="flex justify-center mt-4">
     <CustomPagination
       v-if="filteredLevelsCount > pageSize"
-      :current-page="page"
+      :current-page="currentPage"
       :total-pages="totalPages"
       :total-items="filteredLevelsCount"
       :page-size="pageSize"
       @update:currentPage="setPage"
     />
   </div>
+
+  <!-- How to Use -->
+  <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-8" />
 </template>

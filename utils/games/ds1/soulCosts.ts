@@ -373,3 +373,42 @@ for (let i = 1; i <= 713; i++) {
   soulCostCumulative[i] =
     (soulCostCumulative[i - 1] ?? 0) + (soulCosts[i] ?? 0);
 }
+
+/**
+ * Get soul costs for Dark Souls 1
+ * @returns Record of level to soul cost mapping
+ */
+export const getSoulCosts = (): Record<number, number> => {
+  return soulCosts;
+};
+
+/**
+ * Get cumulative soul costs for Dark Souls 1
+ * @returns Array of cumulative soul costs by level
+ */
+export const getSoulCostCumulative = (): number[] => {
+  return soulCostCumulative;
+};
+
+/**
+ * Calculate souls needed to reach a specific level
+ * @param currentLevel - Current character level
+ * @param targetLevel - Target character level
+ * @returns Souls needed to reach target level, or null if invalid
+ */
+export const calculateSoulsNeeded = (
+  currentLevel: number,
+  targetLevel: number
+): number | null => {
+  if (
+    currentLevel < 1 ||
+    targetLevel < 1 ||
+    currentLevel > 713 ||
+    targetLevel > 713 ||
+    currentLevel >= targetLevel
+  ) {
+    return null;
+  }
+
+  return soulCostCumulative[targetLevel] - soulCostCumulative[currentLevel];
+};

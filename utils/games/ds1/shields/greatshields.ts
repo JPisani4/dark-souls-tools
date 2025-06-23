@@ -1,0 +1,246 @@
+import type { Shield } from "~/types/game/ds1/shields";
+
+export const greatshields: Shield[] = [
+  {
+    icon: "/shields/greatshields/tower-shield.png",
+    name: "Tower Shield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 30,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 13.0,
+    defense: {
+      physical: 100,
+      magic: 40,
+      fire: 75,
+      lightning: 50,
+      stability: 72,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/stone-greatshield.png",
+    name: "Stone Greatshield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 38,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 20.0,
+    defense: {
+      physical: 100,
+      magic: 80,
+      fire: 75,
+      lightning: 65,
+      stability: 80,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/havel-greatshield.png",
+    name: "Havel's Greatshield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 50,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 26.0,
+    defense: {
+      physical: 100,
+      magic: 90,
+      fire: 80,
+      lightning: 80,
+      stability: 84,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath: "special",
+  },
+  {
+    icon: "/shields/greatshields/black-iron-greatshield.png",
+    name: "Black Iron Greatshield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 34,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 16.0,
+    defense: {
+      physical: 100,
+      magic: 40,
+      fire: 90,
+      lightning: 50,
+      stability: 71,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/giant-shield.png",
+    name: "Giant Shield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 36,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 18.0,
+    defense: {
+      physical: 100,
+      magic: 60,
+      fire: 75,
+      lightning: 75,
+      stability: 68,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/eagle-shield.png",
+    name: "Eagle Shield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 16,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 6.0,
+    defense: {
+      physical: 95,
+      magic: 55,
+      fire: 45,
+      lightning: 75,
+      stability: 70,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/greatshield-of-artorias.png",
+    name: "Greatshield of Artorias",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 34,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 16.0,
+    defense: {
+      physical: 100,
+      magic: 50,
+      fire: 80,
+      lightning: 40,
+      stability: 88,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/bonewheel-shield.png",
+    name: "Bonewheel Shield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 30,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 12.0,
+    defense: {
+      physical: 90,
+      magic: 30,
+      fire: 30,
+      lightning: 51,
+      stability: 66,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+  {
+    icon: "/shields/greatshields/cleansing-greatshield.png",
+    name: "Cleansing Greatshield",
+    shieldType: "greatshield",
+    requirements: {
+      strength: 31,
+      dexterity: 0,
+      intelligence: 0,
+      faith: 0,
+    },
+    weight: 14.5,
+    defense: {
+      physical: 80,
+      magic: 80,
+      fire: 80,
+      lightning: 70,
+      stability: 77,
+    },
+    effect: {
+      parry: false,
+      bash: true,
+      special: "",
+      weightReduction: 0,
+    },
+    upgradePath:
+      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+  },
+];

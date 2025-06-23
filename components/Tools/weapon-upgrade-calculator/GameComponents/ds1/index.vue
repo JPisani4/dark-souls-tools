@@ -10,6 +10,7 @@ import UpgradeSummary from "~/components/Tools/weapon-upgrade-calculator/GameCom
 import NumberField from "../../../Common/forms/NumberField.vue";
 import SelectField from "../../../Common/forms/SelectField.vue";
 import FormSection from "../../../Common/forms/FormSection.vue";
+import HowToUse from "../../../Common/HowToUse.vue";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
@@ -31,14 +32,13 @@ const safeTheme = useSafeTheme(props.theme, props.variant);
 const terminology = computed(() => props.gameData?.config?.terminology || {});
 
 // Tool layout setup
-const { selectedTheme } = useToolLayout({
+useToolLayout({
   title: props.toolConfig?.title || "Weapon Upgrade Calculator",
   description:
     props.toolConfig?.description ||
     "Calculate the souls and materials needed to upgrade weapons",
   iconPath:
     props.toolConfig?.icon || "public/weapon-upgrade-calculator-icon.png",
-  enablePerformanceMonitoring: true,
 });
 
 // Form logic
@@ -55,6 +55,46 @@ const {
   currentWeaponPathSelectModel,
   clearForm,
 } = useWeaponUpgradeForm();
+
+// Check if both level fields have been entered
+const hasBothLevels = computed(() => {
+  return (
+    state.currentLevel &&
+    state.currentLevel.trim() !== "" &&
+    state.desiredLevel &&
+    state.desiredLevel.trim() !== ""
+  );
+});
+
+// How to Use steps for weapon upgrade calculator
+const howToUseSteps = [
+  {
+    type: "step" as const,
+    title: "Enter Current Level",
+    description: "Input your weapon's current upgrade level (0-14).",
+  },
+  {
+    type: "step" as const,
+    title: "Enter Desired Level",
+    description: "Input the upgrade level you want to reach (1-15).",
+  },
+  {
+    type: "step" as const,
+    title: "Select Upgrade Path",
+    description: "Choose your current weapon path and desired upgrade path.",
+  },
+  {
+    type: "step" as const,
+    title: "View Results",
+    description: "See the total souls and materials needed for the upgrade.",
+  },
+  {
+    type: "tip" as const,
+    title: "Merchant Selection",
+    description:
+      "Select a merchant to see potential savings on material costs.",
+  },
+];
 </script>
 
 <template>
@@ -169,7 +209,7 @@ const {
 
     <!-- Summary Card for Total Cost -->
     <SummaryCard
-      v-if="unwrappedResult && unwrappedResult.souls > 0"
+      v-if="unwrappedResult && unwrappedResult.souls > 0 && hasBothLevels"
       :label="`Total ${terminology.souls || 'Souls'} Required`"
       :value="unwrappedResult.souls"
       :unit="terminology.souls || 'Souls'"
@@ -182,7 +222,7 @@ const {
 
     <!-- Upgrade Summary -->
     <UpgradeSummary
-      v-if="unwrappedResult"
+      v-if="unwrappedResult && hasBothLevels"
       :souls="unwrappedResult.souls"
       :materials="unwrappedResult.materials"
       :steps="unwrappedResult.steps"
@@ -194,4 +234,7 @@ const {
       :terminology="terminology"
     />
   </ErrorBoundary>
+
+  <!-- How to Use -->
+  <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-8" />
 </template>

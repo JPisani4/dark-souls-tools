@@ -1,8 +1,9 @@
-import { upgradePathsManifest } from "~/utils/game-data/upgradePaths";
-import { merchants } from "~/utils/game-data/upgradeCosts";
+import { upgradePathsManifest } from "~/utils/games/ds1/upgradePaths";
+import { merchants } from "~/utils/games/ds1/upgradeCosts";
 import { reactive, computed, ref, watch } from "vue";
 import { useUpgradeSummary } from "./useUpgradeSummary";
 import { useMaterialAnalysis } from "./useMaterialAnalysis";
+import { useBaseTool } from "./useBaseTool";
 import type {
   UpgradePath,
   Material,
@@ -10,6 +11,27 @@ import type {
   UpgradePathWithAscend,
   AscendStep,
 } from "~/types/game/upgrade";
+import {
+  AUTO_SAVE_KEYS,
+  DEBOUNCE_DELAYS,
+  VALIDATION_MESSAGES,
+} from "~/utils/constants";
+
+export interface UpgradeCalculatorState {
+  currentLevel: number;
+  desiredLevel: number;
+  selectedPathId: string;
+  selectedMerchantId: string;
+  currentWeaponPathId: string;
+}
+
+export interface UpgradeCalculatorResult {
+  souls: number;
+  materials: Record<string, number>;
+  steps: any[];
+  purchaseCost: number;
+  timestamp: Date;
+}
 
 function mergeMaterials(
   base: Record<string, number>,
@@ -139,103 +161,62 @@ function buildUpgradeJourney({
 }
 
 export function useUpgradeCalculator() {
-  const result = ref<null | {
-    souls: number;
-    purchaseCost?: number;
-    materials: Record<string, number>;
-    steps: any[];
-  }>(null);
+  // Initialize state
+  const initialState: UpgradeCalculatorState = {
+    currentLevel: 0,
+    desiredLevel: 0,
+    selectedPathId: "",
+    selectedMerchantId: "",
+    currentWeaponPathId: "",
+  };
 
-  // Helper function to find the complete ascension chain
-  function findAscensionChain(
-    fromPathId: string,
-    toPathId: string,
-    visited: Set<string> = new Set()
-  ): string[] | null {
-    if (fromPathId === toPathId) return [fromPathId];
-    if (visited.has(fromPathId)) return null; // Prevent cycles
-
-    visited.add(fromPathId);
-
-    // Check if the target path has an ascension step from the current path
-    const toPath = findUpgradePath(toPathId);
-    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
-      const directAscendStep = toPath.ascendSteps.find(
-        (step) => step.basePath && step.basePath.pathId === fromPathId
-      );
-      if (directAscendStep) {
-        // Check if there's a longer path available (prefer intermediate steps)
-        let longestChain: string[] | null = null;
-
-        for (const ascendStep of toPath.ascendSteps) {
-          if (
-            ascendStep.basePath &&
-            ascendStep.basePath.pathId !== fromPathId
-          ) {
-            const intermediatePathId = ascendStep.basePath.pathId;
-            const chain = findAscensionChain(
-              fromPathId,
-              intermediatePathId,
-              new Set(visited)
-            );
-            if (chain && chain.length > 1) {
-              // Only consider chains with intermediate steps
-              const fullChain = [...chain, toPathId];
-              if (!longestChain || fullChain.length > longestChain.length) {
-                longestChain = fullChain;
-              }
-            }
-          }
-        }
-
-        // Return the longest chain if found, otherwise return direct path
-        return longestChain || [fromPathId, toPathId];
+  // Validation rules
+  const validationRules = {
+    currentLevel: (value: number) => {
+      if (value < 0 || value > 15) {
+        return "Current level must be between 0 and 15";
       }
-    }
-
-    // Check for indirect ascension through other paths
-    // Look at all paths that can ascend to the target path
-    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
-      let longestChain: string[] | null = null;
-
-      for (const ascendStep of toPath.ascendSteps) {
-        if (ascendStep.basePath) {
-          const intermediatePathId = ascendStep.basePath.pathId;
-          const chain = findAscensionChain(
-            fromPathId,
-            intermediatePathId,
-            new Set(visited)
-          );
-          if (chain) {
-            const fullChain = [...chain, toPathId];
-            if (!longestChain || fullChain.length > longestChain.length) {
-              longestChain = fullChain;
-            }
-          }
-        }
+      return null;
+    },
+    desiredLevel: (value: number) => {
+      if (value < 0 || value > 15) {
+        return "Desired level must be between 0 and 15";
       }
+      return null;
+    },
+    selectedPathId: (value: string) => {
+      if (!value) {
+        return "Please select an upgrade path";
+      }
+      return null;
+    },
+    selectedMerchantId: (value: string) => {
+      // Allow empty merchant selection (optional)
+      return null;
+    },
+    currentWeaponPathId: (value: string) => {
+      if (!value) {
+        return "Please select a current weapon path";
+      }
+      return null;
+    },
+  };
 
-      return longestChain;
-    }
+  // Calculation function
+  const calculateUpgrade = async (
+    state: UpgradeCalculatorState
+  ): Promise<UpgradeCalculatorResult> => {
+    const {
+      currentLevel,
+      desiredLevel,
+      selectedPathId,
+      selectedMerchantId,
+      currentWeaponPathId,
+    } = state;
 
-    return null;
-  }
-
-  function calculate({
-    currentLevel,
-    desiredLevel,
-    selectedPathId,
-    selectedMerchantId,
-    currentWeaponPathId,
-  }: {
-    currentLevel: number;
-    desiredLevel: number;
-    selectedPathId: string;
-    selectedMerchantId: string;
-    currentWeaponPathId: string;
-  }) {
-    const merchant = merchants.find((v) => v.id === selectedMerchantId);
-    // merchant can be undefined if not selected
+    const merchant = selectedMerchantId
+      ? merchants.find((v) => v.id === selectedMerchantId)
+      : null;
 
     let steps: any[] = [];
     let materials: Record<string, number> = {};
@@ -397,8 +378,7 @@ export function useUpgradeCalculator() {
         );
 
         if (!ascensionChain) {
-          result.value = null;
-          return;
+          throw new Error("No valid ascension path found");
         }
 
         // Build the complete journey through the ascension chain
@@ -419,8 +399,7 @@ export function useUpgradeCalculator() {
             !("ascendSteps" in toPath) ||
             !toPath.ascendSteps
           ) {
-            result.value = null;
-            return;
+            throw new Error("Invalid ascension path configuration");
           }
 
           const ascendStep = toPath.ascendSteps.find(
@@ -428,8 +407,7 @@ export function useUpgradeCalculator() {
           );
 
           if (!ascendStep || !ascendStep.basePath) {
-            result.value = null;
-            return;
+            throw new Error("Ascension step not found");
           }
 
           // 1. Upgrade current path to required level for ascension
@@ -489,16 +467,124 @@ export function useUpgradeCalculator() {
       purchaseCost += price * (qty as number);
     }
 
-    result.value = {
+    return {
       souls,
       materials: { ...materials },
       steps: [...steps],
       purchaseCost,
+      timestamp: new Date(),
     };
+  };
+
+  // Use base tool composable
+  const baseTool = useBaseTool(
+    {
+      initialState,
+      validationRules,
+      autoSave: true,
+      autoSaveKey: AUTO_SAVE_KEYS.WEAPON_UPGRADE_CALCULATOR,
+      debounceMs: DEBOUNCE_DELAYS.AUTO_SAVE,
+      enableAnalytics: true,
+      enableErrorBoundary: true,
+    },
+    calculateUpgrade
+  );
+
+  // Helper function to find the complete ascension chain
+  function findAscensionChain(
+    fromPathId: string,
+    toPathId: string,
+    visited: Set<string> = new Set()
+  ): string[] | null {
+    if (fromPathId === toPathId) return [fromPathId];
+    if (visited.has(fromPathId)) return null; // Prevent cycles
+
+    visited.add(fromPathId);
+
+    // Check if the target path has an ascension step from the current path
+    const toPath = findUpgradePath(toPathId);
+    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
+      const directAscendStep = toPath.ascendSteps.find(
+        (step) => step.basePath && step.basePath.pathId === fromPathId
+      );
+      if (directAscendStep) {
+        // Check if there's a longer path available (prefer intermediate steps)
+        let longestChain: string[] | null = null;
+
+        for (const ascendStep of toPath.ascendSteps) {
+          if (
+            ascendStep.basePath &&
+            ascendStep.basePath.pathId !== fromPathId
+          ) {
+            const intermediatePathId = ascendStep.basePath.pathId;
+            const chain = findAscensionChain(
+              fromPathId,
+              intermediatePathId,
+              new Set(visited)
+            );
+            if (chain && chain.length > 1) {
+              // Only consider chains with intermediate steps
+              const fullChain = [...chain, toPathId];
+              if (!longestChain || fullChain.length > longestChain.length) {
+                longestChain = fullChain;
+              }
+            }
+          }
+        }
+
+        // Return the longest chain if found, otherwise return direct path
+        return longestChain || [fromPathId, toPathId];
+      }
+    }
+
+    // Check for indirect ascension through other paths
+    // Look at all paths that can ascend to the target path
+    if (toPath && "ascendSteps" in toPath && toPath.ascendSteps) {
+      let longestChain: string[] | null = null;
+
+      for (const ascendStep of toPath.ascendSteps) {
+        if (ascendStep.basePath) {
+          const intermediatePathId = ascendStep.basePath.pathId;
+          const chain = findAscensionChain(
+            fromPathId,
+            intermediatePathId,
+            new Set(visited)
+          );
+          if (chain) {
+            const fullChain = [...chain, toPathId];
+            if (!longestChain || fullChain.length > longestChain.length) {
+              longestChain = fullChain;
+            }
+          }
+        }
+      }
+
+      return longestChain;
+    }
+
+    return null;
   }
 
   return {
-    result,
-    calculate,
+    // State from base tool
+    state: baseTool.state,
+    result: baseTool.result,
+    loading: baseTool.loading,
+    error: baseTool.error,
+
+    // Computed properties
+    isValid: baseTool.isValid,
+    hasChanges: baseTool.hasChanges,
+    isDirty: baseTool.isDirty,
+
+    // Actions from base tool
+    calculate: baseTool.calculate,
+    reset: baseTool.reset,
+    setState: baseTool.setState,
+    setError: baseTool.setError,
+    clearError: baseTool.clearError,
+    saveToStorage: baseTool.saveToStorage,
+    loadFromStorage: baseTool.loadFromStorage,
+    clearStorage: baseTool.clearStorage,
   };
 }

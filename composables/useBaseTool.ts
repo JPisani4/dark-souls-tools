@@ -37,10 +37,10 @@ export interface BaseToolReturn<
   TResult extends BaseToolResult,
 > {
   // State
-  state: TState;
-  result: TResult | null;
-  loading: boolean;
-  error: Error | null;
+  state: TState | import("vue").Reactive<TState>;
+  result: import("vue").ComputedRef<TResult | null>;
+  loading: import("vue").ComputedRef<boolean>;
+  error: import("vue").ComputedRef<Error | null>;
 
   // Computed
   isValid: boolean;
@@ -289,10 +289,10 @@ export function useBaseTool<
 
   return {
     // State
-    state: { ...state } as TState,
-    result: result.value,
-    loading: loading.value,
-    error: error.value,
+    state,
+    result: computed(() => result.value),
+    loading: computed(() => loading.value),
+    error: computed(() => error.value),
 
     // Computed
     isValid: isValid.value,

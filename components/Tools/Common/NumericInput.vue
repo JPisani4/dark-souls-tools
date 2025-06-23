@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import {
   onlyAllowNumbers,
   sanitizeOnPaste,
@@ -12,12 +12,15 @@ interface Props {
   min?: string | number;
   max?: string | number;
   step?: string | number;
+  disabled?: boolean;
   "aria-label"?: string;
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  placeholder: "",
+  disabled: false,
   "aria-invalid": false,
 });
 
@@ -40,6 +43,7 @@ watch(
 // Optimized validation - only run when value changes
 watch(internalValue, (val) => {
   if (val === "" || val === null || typeof val === "undefined") {
+    // Allow empty values instead of converting to minimum
     emit("update:modelValue", "");
     return;
   }
@@ -88,6 +92,12 @@ const onKeyDown = (e: KeyboardEvent) => {
 const onPaste = (e: ClipboardEvent) => {
   sanitizeOnPaste(e);
 };
+
+const inputClasses = computed(() => [
+  props.disabled
+    ? "!opacity-60 !bg-gray-100 dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600 !text-gray-500 dark:!text-gray-400 !cursor-not-allowed pointer-events-none disabled-input"
+    : "",
+]);
 </script>
 
 <template>
@@ -100,6 +110,7 @@ const onPaste = (e: ClipboardEvent) => {
     :min="min"
     :max="max"
     :step="step"
+    :disabled="disabled"
     :aria-label="props['aria-label']"
     :aria-describedby="props['aria-describedby']"
     :aria-invalid="props['aria-invalid']"
@@ -107,9 +118,24 @@ const onPaste = (e: ClipboardEvent) => {
     :aria-valuemax="max"
     :aria-valuenow="internalValue"
     role="spinbutton"
+    :class="inputClasses"
     @keydown="onKeyDown"
     @paste="onPaste"
     @input="() => {}"
     size="xl"
   />
 </template>
+
+<style scoped>
+.disabled-input {
+  cursor: not-allowed !important;
+}
+
+.disabled-input:hover {
+  cursor: not-allowed !important;
+}
+
+.disabled-input * {
+  cursor: not-allowed !important;
+}
+</style>

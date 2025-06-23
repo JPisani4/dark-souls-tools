@@ -3,6 +3,7 @@ import { soulCosts } from "./soulCosts";
 import { upgradeCosts } from "./upgradeCosts";
 import { upgradePaths } from "./upgradePaths";
 import { merchants } from "./merchants";
+import * as stats from "./stats";
 
 const ds1GameData: GameData = {
   metadata: {
@@ -78,3 +79,6 @@ const ds1GameData: GameData = {
 };
 
 export default ds1GameData;
+
+// Export stats utilities
+export { stats };
