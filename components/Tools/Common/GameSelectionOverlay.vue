@@ -103,9 +103,10 @@
             :class="`shadow ${iconBg} ${hoverBg} text-white`"
             variant="solid"
             size="sm"
-            icon="i-heroicons-arrow-left"
             :aria-label="'Back'"
-          />
+          >
+            <Icon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          </UButton>
         </div>
       </div>
     </div>

@@ -215,17 +215,17 @@ const closeGameSelection = () => {
             color="error"
             variant="outline"
             size="sm"
-            icon="i-heroicons-x-mark"
           >
+            <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
             Clear
           </UButton>
           <UButton
             @click="showFilterModal = true"
             color="primary"
             variant="outline"
-            icon="i-heroicons-funnel"
             :class="activeFilterCount > 0 ? 'ring-2 ring-primary-500' : ''"
           >
+            <Icon name="i-heroicons-funnel" class="w-4 h-4" />
             Filter
             <span v-if="activeFilterCount > 0" class="ml-1 text-xs">
               ({{ activeFilterCount }})
@@ -304,9 +304,10 @@ const closeGameSelection = () => {
               :class="`shadow-lg hover:shadow-xl transition-shadow ${toolColors[i].iconBg} ${toolColors[i].hoverBg} text-white`"
               variant="solid"
               size="sm"
-              icon="i-heroicons-arrow-right"
               :aria-label="`Open ${tool.title}`"
-            />
+            >
+              <Icon name="i-heroicons-arrow-right" class="w-4 h-4" />
+            </UButton>
           </div>
 
           <!-- Game Selection Overlay (per card) -->

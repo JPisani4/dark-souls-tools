@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import type { FilterState } from "~/composables/useToolFilters";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   filters: FilterState;
@@ -124,9 +125,12 @@ const activeCount = computed(() => {
           id="search"
           v-model="searchText"
           placeholder="Search tools..."
-          icon="i-heroicons-magnifying-glass"
           class="w-full"
-        />
+        >
+          <template #leading>
+            <Icon name="i-heroicons-magnifying-glass" class="w-4 h-4" />
+          </template>
+        </UInput>
       </div>
 
       <!-- Game Filter -->
@@ -191,9 +195,9 @@ const activeCount = computed(() => {
             color="error"
             variant="outline"
             size="sm"
-            icon="i-heroicons-x-mark"
             class="font-medium"
           >
+            <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
             Clear All
           </UButton>
         </div>
