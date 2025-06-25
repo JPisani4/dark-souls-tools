@@ -72,20 +72,19 @@ const getGameDisplayName = (gameCategory: string): string => {
     >
       <!-- Hero background overlay with gradient and image -->
       <div class="absolute inset-0 z-0 pointer-events-none">
-        <div
-          class="w-full h-full bg-cover bg-center absolute"
-          role="img"
-          aria-label="Soulsborne tools hero background with dark fantasy aesthetic"
-          style="
-            background-image:
-              linear-gradient(
-                to bottom right,
-                rgba(30, 41, 59, 0.3),
-                rgba(0, 0, 0, 0.2)
-              ),
-              url(&quot;/soulsborne-tools-hero.png&quot;);
-          "
-        ></div>
+        <picture>
+          <source srcset="/soulsborne-tools-hero.webp" type="image/webp" />
+          <img
+            src="/soulsborne-tools-hero.png"
+            alt="Soulsborne tools hero background with dark fantasy aesthetic"
+            class="w-full h-full object-cover object-center absolute"
+            loading="eager"
+            decoding="async"
+            width="1200"
+            height="400"
+            style="z-index: 0; inset: 0; position: absolute"
+          />
+        </picture>
         <div
           :class="`w-full h-full bg-gradient-to-br ${fromClass} ${toClass} to-transparent opacity-5 dark:opacity-10 absolute`"
         ></div>

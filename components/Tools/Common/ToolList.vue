@@ -246,12 +246,30 @@ const closeGameSelection = () => {
               <div
                 :class="`w-10 h-10 flex items-center justify-center rounded-full shadow overflow-hidden ${toolColors[i].iconBg}`"
               >
-                <img
-                  v-if="tool.icon && /\.(png|jpe?g|gif|svg)$/i.test(tool.icon)"
-                  :src="tool.icon.replace(/^public\//, '/')"
-                  alt="icon"
-                  class="w-full h-full object-contain rounded-full scale-125"
-                />
+                <picture
+                  v-if="
+                    tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)
+                  "
+                >
+                  <source
+                    v-if="tool.icon.endsWith('.png')"
+                    :srcset="
+                      tool.icon
+                        .replace('.png', '.webp')
+                        .replace(/^public\//, '/')
+                    "
+                    type="image/webp"
+                  />
+                  <img
+                    :src="tool.icon.replace(/^public\//, '/')"
+                    alt="icon"
+                    class="w-full h-full object-contain rounded-full scale-125"
+                    loading="lazy"
+                    decoding="async"
+                    width="40"
+                    height="40"
+                  />
+                </picture>
                 <UIcon
                   v-else
                   :name="tool.icon || 'i-heroicons-cube'"

@@ -115,13 +115,29 @@ async function parseToolConfig(
                     // Handle nested objects
                     config[key] = {};
                     for (const nestedProp of prop.value.properties) {
-                      if (
-                        nestedProp.type === "ObjectProperty" &&
-                        nestedProp.key.type === "Identifier" &&
-                        nestedProp.value.type === "StringLiteral"
-                      ) {
-                        config[key][nestedProp.key.name] =
-                          nestedProp.value.value;
+                      if (nestedProp.type === "ObjectProperty") {
+                        const nestedKey =
+                          nestedProp.key.type === "Identifier"
+                            ? nestedProp.key.name
+                            : nestedProp.key.type === "StringLiteral"
+                              ? nestedProp.key.value
+                              : null;
+
+                        if (nestedKey) {
+                          if (nestedProp.value.type === "StringLiteral") {
+                            config[key][nestedKey] = nestedProp.value.value;
+                          } else if (
+                            nestedProp.value.type === "NumericLiteral"
+                          ) {
+                            config[key][nestedKey] = nestedProp.value.value;
+                          } else if (
+                            nestedProp.value.type === "ArrayExpression"
+                          ) {
+                            config[key][nestedKey] = nestedProp.value.elements
+                              .filter((el) => el?.type === "StringLiteral")
+                              .map((el) => (el as any).value);
+                          }
+                        }
                       }
                     }
                   }
@@ -248,6 +264,7 @@ async function generateManifest() {
         tags: defaultConfig.tags || [],
         order: defaultConfig.order || 999,
         gameCategories: games,
+        config: defaultConfig, // Include the full config object with SEO metadata
       };
     }
   );
@@ -273,6 +290,7 @@ ${toolEntries
     loadComponent: () => import('${t.importPath}'),
     createdAt: new Date('${new Date().toISOString()}'),
     gameCategories: ${JSON.stringify(t.gameCategories)},
+    config: ${JSON.stringify(t.config, null, 2).replace(/\n/g, "\n    ")},
   }`
   )
   .join(",\n")}

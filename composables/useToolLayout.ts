@@ -31,8 +31,37 @@ export function useToolLayout(options: ToolLayoutOptions) {
     return `https://www.goldphantom.com${route.path}`;
   });
 
-  // Process image path for social media
-  const socialImage = computed(() => {
+  // Use enhanced SEO metadata from tool config if available
+  const seoTitle = computed(() => {
+    return tool?.config?.seo?.title || title;
+  });
+
+  const seoDescription = computed(() => {
+    return tool?.config?.seo?.description || description;
+  });
+
+  const seoKeywords = computed(() => {
+    return (
+      tool?.config?.seo?.keywords ||
+      tool?.tags?.join(", ") ||
+      "soulsborne, calculator, dark souls, gaming tools"
+    );
+  });
+
+  const seoImage = computed(() => {
+    const ogImage = tool?.config?.seo?.ogImage;
+    if (ogImage) {
+      // Convert relative paths to absolute URLs
+      if (ogImage.startsWith("/")) {
+        return `https://www.goldphantom.com${ogImage}`;
+      }
+      if (ogImage.startsWith("public/")) {
+        return `https://www.goldphantom.com/${ogImage.replace("public/", "")}`;
+      }
+      return ogImage;
+    }
+
+    // Fallback to icon path
     if (iconPath) {
       // Convert relative paths to absolute URLs
       if (iconPath.startsWith("/")) {
@@ -49,18 +78,16 @@ export function useToolLayout(options: ToolLayoutOptions) {
 
   // Enhanced SEO metadata for social media embeds
   useHead({
-    title: title,
+    title: seoTitle.value,
     meta: [
       // Basic meta tags
       {
         name: "description",
-        content: description,
+        content: seoDescription.value,
       },
       {
         name: "keywords",
-        content:
-          tool?.tags?.join(", ") ||
-          "soulsborne, calculator, dark souls, gaming tools",
+        content: seoKeywords.value,
       },
       {
         name: "author",
@@ -74,11 +101,11 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         property: "og:title",
-        content: title,
+        content: seoTitle.value,
       },
       {
         property: "og:description",
-        content: description,
+        content: seoDescription.value,
       },
       {
         property: "og:url",
@@ -90,7 +117,7 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         property: "og:image",
-        content: socialImage.value,
+        content: seoImage.value,
       },
       {
         property: "og:image:width",
@@ -102,7 +129,7 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         property: "og:image:alt",
-        content: `${title} - Gold Phantom`,
+        content: `${seoTitle.value} - Gold Phantom`,
       },
       {
         property: "og:locale",
@@ -128,19 +155,19 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         name: "twitter:title",
-        content: title,
+        content: seoTitle.value,
       },
       {
         name: "twitter:description",
-        content: description,
+        content: seoDescription.value,
       },
       {
         name: "twitter:image",
-        content: socialImage.value,
+        content: seoImage.value,
       },
       {
         name: "twitter:image:alt",
-        content: `${title} - Gold Phantom`,
+        content: `${seoTitle.value} - Gold Phantom`,
       },
 
       // Additional social media tags
@@ -178,7 +205,7 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         property: "article:tag",
-        content: tool?.tags?.join(", ") || "soulsborne, calculator, dark souls",
+        content: seoKeywords.value,
       },
     ],
     link: [

@@ -5,23 +5,21 @@
     <div class="max-w-md w-full mx-auto text-center px-4">
       <!-- 404 Icon -->
       <div class="mb-8">
-        <div
-          class="mx-auto w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center"
-        >
-          <svg
-            class="w-12 h-12 text-red-600 dark:text-red-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33"
-            />
-          </svg>
-        </div>
+        <picture>
+          <source
+            srcset="/warrior-of-sunlight-covenant-dks.webp"
+            type="image/webp"
+          />
+          <img
+            src="/warrior-of-sunlight-covenant-dks.png"
+            alt="404 Icon"
+            class="mx-auto w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center object-contain"
+            loading="lazy"
+            decoding="async"
+            width="96"
+            height="96"
+          />
+        </picture>
       </div>
 
       <!-- Error Message -->

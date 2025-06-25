@@ -6,12 +6,26 @@
         :class="safeTheme.bg"
       >
         <UIcon v-if="iconName" :name="iconName" class="w-6 h-6 text-white" />
-        <img
-          v-else-if="iconPath && /\.(png|jpe?g|gif|svg)$/i.test(iconPath)"
-          :src="iconPath.replace(/^public\//, '/')"
-          :alt="`${title} icon`"
-          class="w-full h-full object-contain rounded-full scale-125"
-        />
+        <picture
+          v-else-if="iconPath && /\.(png|jpe?g|gif|svg|webp)$/i.test(iconPath)"
+        >
+          <source
+            v-if="iconPath.endsWith('.png')"
+            :srcset="
+              iconPath.replace('.png', '.webp').replace(/^public\//, '/')
+            "
+            type="image/webp"
+          />
+          <img
+            :src="iconPath.replace(/^public\//, '/')"
+            :alt="`${title} icon`"
+            class="w-full h-full object-contain rounded-full scale-125"
+            loading="lazy"
+            decoding="async"
+            width="48"
+            height="48"
+          />
+        </picture>
         <svg
           v-else
           class="w-6 h-6 text-white"

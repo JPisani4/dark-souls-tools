@@ -53,12 +53,28 @@
               <div
                 class="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 rounded-lg flex items-center justify-center overflow-hidden"
               >
-                <img
-                  v-if="getGameIcon(game)"
-                  :src="getGameIcon(game)"
-                  :alt="`${getGameDisplayName(game)} icon`"
-                  class="w-full h-full object-cover rounded-lg"
-                />
+                <template v-if="getGameIcon(game)">
+                  <picture
+                    v-if="
+                      /\.(png|jpe?g|gif|svg|webp)$/i.test(getGameIconSafe(game))
+                    "
+                  >
+                    <source
+                      v-if="getGameIconSafe(game).endsWith('.png')"
+                      :srcset="getGameIconSafe(game).replace('.png', '.webp')"
+                      type="image/webp"
+                    />
+                    <img
+                      :src="getGameIconSafe(game)"
+                      :alt="`${getGameDisplayName(game)} icon`"
+                      class="w-full h-full object-cover rounded-lg"
+                      loading="lazy"
+                      decoding="async"
+                      width="48"
+                      height="48"
+                    />
+                  </picture>
+                </template>
                 <UIcon
                   v-else
                   name="i-heroicons-gamepad-20-solid"
@@ -97,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from "vue";
+import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
 
 interface Props {
   isOpen: boolean;
@@ -149,6 +165,12 @@ const getGameIcon = (game: string): string | undefined => {
     // er: "/Elden_Ring_Icon.png",
   };
   return gameIcons[game] || undefined;
+};
+
+// Add a computed to get the icon for each game
+const getGameIconSafe = (game: string) => {
+  const icon = getGameIcon(game);
+  return icon || "";
 };
 
 const selectGame = (game: string) => {
