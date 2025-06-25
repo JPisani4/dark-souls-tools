@@ -35,7 +35,7 @@
           @click="closeLeftSidebar"
           class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
         </UButton>
       </div>
 
@@ -63,7 +63,7 @@
           @click="closeRightSidebar"
           class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
         </UButton>
       </div>
 
@@ -143,6 +143,7 @@ import { useMobileSidebar } from "~/composables/useMobileSidebar";
 import { useToolLayout } from "~/composables/useToolLayout";
 import type { Tool } from "~/types/tools/tool";
 import type { GameId, GameData } from "~/types/game";
+import Icon from "~/components/Common/Icon.vue";
 
 // SEO props
 interface Props {

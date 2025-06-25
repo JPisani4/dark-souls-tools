@@ -11,7 +11,7 @@
       @click="toggleSidebar"
       class="flex items-center gap-2"
     >
-      <UIcon
+      <Icon
         :name="
           isMobileSidebarOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'
         "
@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
 import { computed, withDefaults } from "vue";
 import { useMobileSidebar } from "~/composables/useMobileSidebar";
 

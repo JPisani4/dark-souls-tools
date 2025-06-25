@@ -5,7 +5,7 @@
         class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
         :class="safeTheme.bg"
       >
-        <UIcon v-if="iconName" :name="iconName" class="w-6 h-6 text-white" />
+        <Icon v-if="iconName" :name="iconName" class="w-2 h-2 text-white" />
         <picture
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg|webp)$/i.test(iconPath)"
         >
@@ -19,11 +19,11 @@
           <img
             :src="iconPath.replace(/^public\//, '/')"
             :alt="`${title} icon`"
-            class="w-full h-full object-contain rounded-full scale-125"
+            class="w-8 h-8 object-contain rounded-full scale-125"
             loading="lazy"
             decoding="async"
-            width="48"
-            height="48"
+            width="32"
+            height="32"
           />
         </picture>
         <svg
@@ -79,6 +79,7 @@
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import type { GameData } from "~/types/game";
 import { useSafeTheme } from "~/composables/useSafeTheme";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   title: string;

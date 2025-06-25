@@ -35,9 +35,9 @@
 
     <!-- Empty state -->
     <div v-if="data.length === 0" class="text-center py-8">
-      <UIcon
+      <Icon
         name="i-heroicons-table-cells"
-        class="w-12 h-12 text-gray-400 mx-auto mb-4"
+        class="w-6 h-6 text-gray-400 mx-auto mb-4"
       />
       <p class="text-gray-500 dark:text-gray-400">{{ emptyMessage }}</p>
     </div>
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 

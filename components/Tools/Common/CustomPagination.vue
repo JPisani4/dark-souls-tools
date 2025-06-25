@@ -11,7 +11,7 @@
           @click="goToPage(currentPage - 1)"
           class="flex items-center gap-1"
         >
-          <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
+          <Icon name="i-heroicons-chevron-left" class="w-4 h-4" />
           Previous
         </UButton>
       </div>
@@ -42,7 +42,7 @@
           class="flex items-center gap-1"
         >
           Next
-          <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
+          <Icon name="i-heroicons-chevron-right" class="w-4 h-4" />
         </UButton>
       </div>
     </div>
@@ -56,6 +56,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   currentPage: number;

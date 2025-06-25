@@ -20,6 +20,7 @@ import type { CharacterStats } from "~/types/game/ds1/characters";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
 import { calculateRequiredAttunementSlots } from "~/utils/games/ds1/stats/startingClassOptimizer";
 import { getAttunementLevelForSlots } from "~/utils/games/ds1/stats/attunementSlots";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   gameData: GameData;
@@ -341,7 +342,7 @@ const howToUseSteps = [
             @click="resetForm"
             class="font-medium shadow-sm hover:shadow-md transition-shadow"
           >
-            <UIcon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+            <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
             Clear All
           </UButton>
         </div>
@@ -477,7 +478,7 @@ const howToUseSteps = [
               @click="handleReset"
               class="font-medium shadow-sm hover:shadow-md transition-shadow"
             >
-              <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
+              <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
               Reset
             </UButton>
           </div>

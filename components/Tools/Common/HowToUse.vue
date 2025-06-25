@@ -25,7 +25,7 @@
           >
             {{ index + 1 }}
           </span>
-          <UIcon
+          <Icon
             v-else-if="step.type === 'tip'"
             :name="step.icon || 'i-heroicons-light-bulb'"
             class="w-3 h-3 text-amber-600 dark:text-amber-400"
@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Step {
   type: "step" | "tip";

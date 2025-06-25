@@ -58,12 +58,12 @@
           class="w-full"
           :loading="isRetrying"
         >
-          <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2" />
+          <Icon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2" />
           Try Again
         </UButton>
 
         <UButton to="/tools" variant="outline" size="lg" class="w-full">
-          <UIcon name="i-heroicons-home" class="w-5 h-5 mr-2" />
+          <Icon name="i-heroicons-home" class="w-5 h-5 mr-2" />
           Browse Other Tools
         </UButton>
       </div>
@@ -80,7 +80,7 @@
           size="sm"
           class="text-primary-600 dark:text-primary-400"
         >
-          <UIcon name="i-simple-icons-github" class="w-4 h-4 mr-2" />
+          <Icon name="i-heroicons-code-bracket" class="w-4 h-4 mr-2" />
           Report Issue
         </UButton>
       </div>
@@ -89,6 +89,8 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
+
 interface Props {
   toolTitle: string;
   errorMessage?: string;

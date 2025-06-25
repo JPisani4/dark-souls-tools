@@ -6,7 +6,7 @@
     :id="id"
   >
     <div class="flex items-center gap-2">
-      <UIcon
+      <Icon
         v-if="icon"
         :name="icon"
         class="w-5 h-5 text-gray-400 flex-shrink-0"
@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
 import { FORM_STYLES } from "~/utils/themes/colorSystem";
 
 interface Props {

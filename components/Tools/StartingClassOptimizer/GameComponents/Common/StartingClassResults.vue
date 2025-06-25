@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div v-if="results.length === 0" class="text-center py-8">
-      <UIcon
+      <Icon
         name="i-heroicons-user-group"
         class="w-12 h-12 text-gray-400 mx-auto mb-4"
       />
@@ -42,7 +42,7 @@
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ result.character.name }}
                 </span>
-                <UIcon
+                <Icon
                   v-if="index === 0"
                   name="i-heroicons-star"
                   :class="`w-4 h-4 ml-2 ${starColorClass}`"
@@ -65,6 +65,7 @@
 import type { StartingClassResult } from "~/composables/useStartingClassOptimizer";
 import { computed } from "vue";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   results: StartingClassResult[];

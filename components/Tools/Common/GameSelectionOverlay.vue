@@ -75,9 +75,9 @@
                     />
                   </picture>
                 </template>
-                <UIcon
+                <Icon
                   v-else
-                  name="i-heroicons-gamepad-20-solid"
+                  name="i-heroicons-device-phone-mobile"
                   class="w-6 h-6 text-gray-600 dark:text-gray-300"
                 />
               </div>
@@ -114,6 +114,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   isOpen: boolean;

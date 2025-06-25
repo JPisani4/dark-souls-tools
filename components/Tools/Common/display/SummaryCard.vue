@@ -15,11 +15,11 @@
         <div
           v-if="icon || safeTheme.iconBg"
           :class="[
-            'w-10 h-10 flex items-center justify-center rounded-full',
+            'w-14 h-14 flex items-center justify-center rounded-full',
             safeTheme.iconBg || 'bg-gray-500',
           ]"
         >
-          <UIcon v-if="icon" :name="icon" class="text-white text-xl" />
+          <Icon v-if="icon" :name="icon" class="w-3 h-3 text-white" />
           <svg
             v-else-if="safeTheme.iconBg"
             class="w-5 h-5 text-white"
@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 

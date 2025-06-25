@@ -9,6 +9,7 @@ import GameSelectionOverlay from "./GameSelectionOverlay.vue";
 import FilterModal from "./FilterModal.vue";
 import ToolChips from "../../Common/ToolChips.vue";
 import { THEME_COLORS, getThemeByIndex } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 // Use the filtering composable
 const {
@@ -244,7 +245,7 @@ const closeGameSelection = () => {
               class="flex items-center gap-3 justify-center mb-2 mt-2 relative z-10"
             >
               <div
-                :class="`w-10 h-10 flex items-center justify-center rounded-full shadow overflow-hidden ${toolColors[i].iconBg}`"
+                :class="`w-12 h-12 flex items-center justify-center rounded-full shadow overflow-hidden ${toolColors[i].iconBg}`"
               >
                 <picture
                   v-if="
@@ -263,17 +264,17 @@ const closeGameSelection = () => {
                   <img
                     :src="tool.icon.replace(/^public\//, '/')"
                     alt="icon"
-                    class="w-full h-full object-contain rounded-full scale-125"
+                    class="w-8 h-8 object-contain rounded-full scale-125"
                     loading="lazy"
                     decoding="async"
-                    width="40"
-                    height="40"
+                    width="32"
+                    height="32"
                   />
                 </picture>
-                <UIcon
+                <Icon
                   v-else
                   :name="tool.icon || 'i-heroicons-cube'"
-                  class="text-white text-xl"
+                  class="w-3 h-3 text-white"
                 />
               </div>
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -329,9 +330,9 @@ const closeGameSelection = () => {
         v-if="filteredTools.length === 0"
         class="w-full max-w-2xl mx-auto text-center py-12"
       >
-        <UIcon
+        <Icon
           name="i-heroicons-magnifying-glass"
-          class="w-16 h-16 text-gray-400 mx-auto mb-4"
+          class="w-24 h-24 text-gray-400 mx-auto mb-4"
         />
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
           No tools found

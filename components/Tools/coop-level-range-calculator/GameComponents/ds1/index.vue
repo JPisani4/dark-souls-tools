@@ -15,6 +15,7 @@ import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { getAllWeapons } from "~/utils/games/ds1/weapons";
 import { getAllShields } from "~/utils/games/ds1/shields";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   gameData: GameData;
@@ -250,7 +251,7 @@ useToolLayout({
     <template #header>
       <div class="flex items-center justify-end">
         <UButton color="primary" variant="outline" @click.prevent="resetForm">
-          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
           Clear
         </UButton>
       </div>

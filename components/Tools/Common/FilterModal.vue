@@ -29,7 +29,7 @@
               class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               aria-label="Close filter modal"
             >
-              <UIcon
+              <Icon
                 name="i-heroicons-x-mark"
                 class="w-5 h-5 text-gray-700 dark:text-gray-300"
               />
@@ -57,6 +57,7 @@
 import { ref, nextTick, onUnmounted } from "vue";
 import ToolFilterSidebar from "./ToolFilterSidebar.vue";
 import type { FilterState } from "~/composables/useToolFilters";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   isOpen: boolean;

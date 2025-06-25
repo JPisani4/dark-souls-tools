@@ -71,7 +71,7 @@
                   :title="attunementSlotButtonTitle"
                   @click="increaseAttunementSlots"
                 >
-                  <UIcon :name="attunementSlotButtonIcon" class="w-3 h-3" />
+                  <Icon :name="attunementSlotButtonIcon" class="w-4 h-4" />
                 </UButton>
 
                 <!-- Soft Cap Button (for all stats except attunement) -->
@@ -88,11 +88,11 @@
                   "
                   @click="increaseToSoftCap(statKey as keyof CharacterStats)"
                 >
-                  <UIcon
+                  <Icon
                     :name="
                       getSoftCapButtonIcon(statKey as keyof CharacterStats)
                     "
-                    class="w-3 h-3"
+                    class="w-4 h-4"
                   />
                 </UButton>
               </div>
@@ -118,6 +118,7 @@ import {
   isAtSoftCap,
 } from "~/utils/games/ds1/stats/softCaps";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   stats: CharacterStats;
@@ -250,7 +251,7 @@ const getSoftCapButtonColor = (stat: keyof CharacterStats) => {
 
 const getSoftCapButtonIcon = (stat: keyof CharacterStats) => {
   const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
-  if (nextCap === null) return "i-heroicons-check-circle";
+  // Always use up arrow for soft cap button
   return "i-heroicons-arrow-up";
 };
 

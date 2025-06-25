@@ -65,7 +65,7 @@
           @click="$emit('remove', index)"
           class="text-red-600 hover:text-red-700 ml-2 flex-shrink-0"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
         </UButton>
       </div>
     </div>
@@ -76,7 +76,7 @@
       class="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
     >
       <div class="flex items-start gap-2">
-        <UIcon
+        <Icon
           name="i-heroicons-exclamation-triangle"
           class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
         />
@@ -97,7 +97,7 @@
             @click="handleIncreaseAttunement"
             class="text-white"
           >
-            <UIcon name="i-heroicons-arrow-up" class="w-3 h-3 mr-1" />
+            <Icon name="i-heroicons-arrow-up" class="w-3 h-3 mr-1" />
             Increase Attunement to {{ requiredAttunementLevel }}
           </UButton>
         </div>
@@ -117,6 +117,7 @@ import {
   getAttunementSlots,
   getAttunementLevelForSlots,
 } from "~/utils/games/ds1/stats/attunementSlots";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   id: string;

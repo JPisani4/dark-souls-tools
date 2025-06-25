@@ -3,6 +3,7 @@ import HeroSection from "./Tools/Common/HeroSection.vue";
 import { tools } from "~/tools";
 import { ref, computed } from "vue";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 // Generate random theme for the hero section
 const selectedTheme = getRandomTheme();
@@ -107,11 +108,11 @@ const getGameDisplayName = (gameCategory: string): string => {
       >
         <div class="flex flex-row items-center gap-4 px-6 pt-6 pb-2">
           <div
-            :class="`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br ${updatesTheme.iconBg}`"
+            :class="`w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br ${updatesTheme.iconBg}`"
           >
-            <UIcon
+            <Icon
               name="i-heroicons-calendar"
-              class="text-white text-xl"
+              class="w-2 h-2 text-white"
               aria-label="Recent updates"
             />
           </div>
@@ -147,9 +148,9 @@ const getGameDisplayName = (gameCategory: string): string => {
                   :class="`inline-flex items-center justify-center px-2.5 py-2 rounded-md ${updatesTheme.iconBg} text-white hover:opacity-80 transition shadow-sm w-9 h-9`"
                   aria-label="Search for tool"
                 >
-                  <UIcon
+                  <Icon
                     name="i-heroicons-arrow-right"
-                    class="w-5 h-5"
+                    class="w-3 h-3"
                     aria-label="Go to tool"
                   />
                 </NuxtLink>
@@ -170,11 +171,11 @@ const getGameDisplayName = (gameCategory: string): string => {
       >
         <div class="flex flex-row items-center gap-4 px-6 pt-6 pb-2">
           <div
-            :class="`w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br ${linksTheme.iconBg}`"
+            :class="`w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br ${linksTheme.iconBg}`"
           >
-            <UIcon
+            <Icon
               name="i-heroicons-link"
-              class="text-white text-xl"
+              class="w-2 h-2 text-white"
               aria-label="Useful links"
             />
           </div>
@@ -191,9 +192,9 @@ const getGameDisplayName = (gameCategory: string): string => {
                 class="flex items-center gap-2 text-base font-medium text-blue-700 dark:text-blue-300 hover:underline hover:text-blue-900 transition"
               >
                 WikiDot
-                <UIcon
+                <Icon
                   name="i-heroicons-arrow-top-right-on-square"
-                  class="w-4 h-4"
+                  class="w-3 h-3"
                 />
               </NuxtLink>
               <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">
@@ -207,9 +208,9 @@ const getGameDisplayName = (gameCategory: string): string => {
                 class="flex items-center gap-2 text-base font-medium text-blue-700 dark:text-blue-300 hover:underline hover:text-blue-900 transition"
               >
                 FextraLife
-                <UIcon
+                <Icon
                   name="i-heroicons-arrow-top-right-on-square"
-                  class="w-4 h-4"
+                  class="w-3 h-3"
                 />
               </NuxtLink>
               <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">

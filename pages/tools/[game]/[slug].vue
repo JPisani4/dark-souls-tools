@@ -5,6 +5,7 @@ import { useGameToolLoader } from "~/composables/useGameToolLoader";
 import ToolLayout from "~/components/Tools/Common/ToolLayout.vue";
 import { getRandomTheme } from "~/utils/constants";
 import type { GameId } from "~/types/game";
+import Icon from "~/components/Common/Icon.vue";
 
 // Extract route parameters for game and tool identification
 const route = useRoute();
@@ -116,7 +117,7 @@ onUnmounted(() => {
           Something unexpected happened. Please try refreshing the page.
         </p>
         <UButton @click="retry" color="primary" size="lg">
-          <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2" />
+          <Icon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2" />
           Retry
         </UButton>
       </div>

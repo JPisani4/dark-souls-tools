@@ -6,6 +6,7 @@ import StepItem from "./StepItem.vue";
 import type { GroupedStep, Step } from "~/types/game/upgradeSummary";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { useSafeTheme } from "~/composables/useSafeTheme";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   groupedSteps: GroupedStep[];
@@ -69,7 +70,7 @@ const showDetailedSteps = ref(false);
         class="w-full justify-start"
         @click="showDetailedSteps = !showDetailedSteps"
       >
-        <UIcon
+        <Icon
           :name="
             showDetailedSteps
               ? 'i-heroicons-chevron-up'

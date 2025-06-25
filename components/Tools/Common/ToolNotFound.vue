@@ -42,12 +42,12 @@
       <!-- Action Buttons -->
       <div class="space-y-4">
         <UButton to="/tools" color="primary" size="lg" class="w-full">
-          <UIcon name="i-heroicons-home" class="w-5 h-5 mr-2" />
+          <Icon name="i-heroicons-home" class="w-5 h-5 mr-2" />
           Browse All Tools
         </UButton>
 
         <UButton to="/" variant="outline" size="lg" class="w-full">
-          <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 mr-2" />
+          <Icon name="i-heroicons-arrow-left" class="w-5 h-5 mr-2" />
           Go Home
         </UButton>
       </div>
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "~/components/Common/Icon.vue";
 import { tools } from "~/tools";
 import type { GameId } from "~/types/game";
 import { GAMES } from "~/utils/games";

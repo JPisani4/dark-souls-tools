@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // 1. Vue imports
 import { computed } from "vue";
+import Icon from "~/components/Common/Icon.vue";
 
 // 2. Composable imports
 import { useSafeTheme } from "~/composables/useSafeTheme";
@@ -203,7 +204,7 @@ const howToUseSteps = [
       <!-- Clear Button -->
       <div class="flex justify-end">
         <UButton color="primary" variant="outline" @click.prevent="resetForm">
-          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
           Clear
         </UButton>
       </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { ref, onMounted, watch, nextTick } from "vue";
+import Icon from "~/components/Common/Icon.vue";
 
 const colorMode = useColorMode();
 
@@ -197,7 +198,7 @@ const handleMobileMenuFocus = () => {
             @keydown.space.prevent="toggleDropdown"
           >
             Dark Souls Remastered
-            <UIcon name="i-heroicons-chevron-down" class="w-4 h-4" />
+            <Icon name="i-heroicons-chevron-down" class="w-4 h-4" />
           </button>
           <div
             v-show="isDesktopDropdownOpen"
@@ -260,7 +261,7 @@ const handleMobileMenuFocus = () => {
         aria-label="Toggle mobile menu"
         :aria-expanded="isMobileMenuOpen"
       >
-        <UIcon
+        <Icon
           :name="isMobileMenuOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'"
           class="w-6 h-6 text-gray-700 dark:text-gray-300"
         />
@@ -296,7 +297,7 @@ const handleMobileMenuFocus = () => {
               class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               aria-label="Close mobile menu"
             >
-              <UIcon
+              <Icon
                 name="i-heroicons-x-mark"
                 class="w-5 h-5 text-gray-700 dark:text-gray-300"
               />
@@ -312,7 +313,7 @@ const handleMobileMenuFocus = () => {
               :aria-expanded="expandedItems.has('Dark Souls Remastered')"
             >
               <span>Dark Souls Remastered</span>
-              <UIcon
+              <Icon
                 :name="
                   expandedItems.has('Dark Souls Remastered')
                     ? 'i-heroicons-chevron-up'

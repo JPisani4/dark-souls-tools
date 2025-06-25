@@ -13,6 +13,7 @@ import {
 } from "~/utils/games/ds1/merchantAnalysis";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import { useSafeTheme } from "~/composables/useSafeTheme";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   purchaseableMaterials: Record<string, number>;
@@ -93,7 +94,7 @@ const getMerchantsForMaterial = (material: string) => {
                   size="sm"
                   class="text-sm px-2 py-1"
                 >
-                  <UIcon
+                  <Icon
                     name="i-heroicons-currency-dollar"
                     class="text-sm mr-1 align-middle"
                   />

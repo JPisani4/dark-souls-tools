@@ -14,6 +14,7 @@ import HowToUse from "../../../Common/HowToUse.vue";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
   gameData: GameData;
@@ -206,7 +207,7 @@ const howToUseSteps = [
         <!-- Clear Button -->
         <div class="flex justify-end">
           <UButton color="primary" variant="outline" @click.prevent="clearForm">
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+            <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
             Clear
           </UButton>
         </div>
