@@ -2,7 +2,7 @@
   <div class="flex justify-center mb-8 px-4">
     <div class="flex flex-col items-center gap-3 text-center">
       <div
-        class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br rounded-full flex-shrink-0"
+        class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
         :class="safeTheme.bg"
       >
         <UIcon v-if="iconName" :name="iconName" class="w-6 h-6 text-white" />
@@ -10,7 +10,7 @@
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg)$/i.test(iconPath)"
           :src="iconPath.replace(/^public\//, '/')"
           :alt="`${title} icon`"
-          class="w-10 h-10 object-contain"
+          class="w-full h-full object-contain rounded-full scale-125"
         />
         <svg
           v-else

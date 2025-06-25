@@ -2,8 +2,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 
 export const config: ToolConfig = {
   title: "Soul Level Calculator",
-  description:
-    "Calculate the souls required to level up your character in Dark Souls",
+  description: "Calculate the souls required to level up your character",
   icon: "public/soul-level-calculator-icon.png",
   category: "calculator",
   order: 1,
@@ -13,10 +12,23 @@ export const config: ToolConfig = {
   lastUpdated: "2025-01-20",
   gameCategory: "ds1",
   seo: {
-    title: "Soul Level Calculator - Gold Phantom",
+    title: "Soul Level Calculator - Dark Souls Remastered | Gold Phantom",
     description:
-      "Calculate the exact number of souls needed to level up your character in Dark Souls",
-    keywords: ["soul level", "calculator", "dark souls", "leveling", "souls"],
+      "Calculate exactly how many souls you need to level up in Dark Souls Remastered. Find the total souls required to reach any level from your current level. Perfect for planning your character progression and build optimization.",
+    keywords: [
+      "soul level",
+      "calculator",
+      "dark souls",
+      "leveling",
+      "souls",
+      "character progression",
+      "soul cost",
+      "level up",
+      "dark souls remastered",
+      "souls calculator",
+      "character building",
+      "rpg calculator",
+    ],
     ogImage: "public/soul-level-calculator-icon.png",
   },
 };

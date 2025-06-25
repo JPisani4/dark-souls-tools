@@ -33,12 +33,18 @@ const terminology = computed(() => props.gameData?.config?.terminology || {});
 
 // Tool layout setup
 useToolLayout({
-  title: props.toolConfig?.title || "Weapon Upgrade Calculator",
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "Weapon Upgrade Calculator",
   description:
+    props.toolConfig?.config?.seo?.description ||
     props.toolConfig?.description ||
     "Calculate the souls and materials needed to upgrade weapons",
-  iconPath:
-    props.toolConfig?.icon || "public/weapon-upgrade-calculator-icon.png",
+  iconPath: props.toolConfig?.icon || "i-heroicons-cube",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
 });
 
 // Form logic

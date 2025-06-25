@@ -81,9 +81,9 @@
         $slots.sidebar && $slots['right-sidebar']
           ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
           : $slots.sidebar
-            ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)]'
+            ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
             : $slots['right-sidebar']
-              ? 'grid-cols-1 xl:grid-cols-[minmax(0,1fr)_18rem]'
+              ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
               : 'grid-cols-1',
       ]"
     >
@@ -100,6 +100,13 @@
       >
         <slot name="sidebar" />
       </aside>
+
+      <!-- Invisible Left Sidebar Placeholder - When only right sidebar exists -->
+      <aside
+        v-else-if="$slots['right-sidebar']"
+        class="hidden xl:block w-72"
+        aria-hidden="true"
+      ></aside>
 
       <!-- Main Content - Centered and constrained for optimal reading -->
       <main class="w-full max-w-4xl mx-auto px-4">
@@ -119,6 +126,13 @@
       >
         <slot name="right-sidebar" />
       </aside>
+
+      <!-- Invisible Right Sidebar Placeholder - When only left sidebar exists -->
+      <aside
+        v-else-if="$slots.sidebar"
+        class="hidden xl:block w-72"
+        aria-hidden="true"
+      ></aside>
     </div>
   </div>
 </template>
@@ -136,7 +150,6 @@ interface Props {
   description?: string;
   iconPath?: string;
   iconName?: string;
-  enablePerformanceMonitoring?: boolean;
   // New props for structured data
   tool?: Tool | null;
   gameId?: GameId | null;
@@ -148,7 +161,6 @@ const props = withDefaults(defineProps<Props>(), {
   description: "",
   iconPath: "",
   iconName: "",
-  enablePerformanceMonitoring: false,
   tool: null,
   gameId: null,
   gameData: null,
@@ -161,7 +173,6 @@ if (props.title && props.description) {
     description: props.description,
     iconPath: props.iconPath,
     iconName: props.iconName,
-    enablePerformanceMonitoring: props.enablePerformanceMonitoring,
     tool: props.tool,
     gameId: props.gameId,
     gameData: props.gameData,

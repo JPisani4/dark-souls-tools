@@ -57,7 +57,7 @@
                   v-if="getGameIcon(game)"
                   :src="getGameIcon(game)"
                   :alt="`${getGameDisplayName(game)} icon`"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover rounded-lg"
                 />
                 <UIcon
                   v-else

@@ -3,8 +3,8 @@ import type { ToolConfig } from "~/types/tools/tool";
 export const config: ToolConfig = {
   title: "Co-op Level Range Calculator",
   description:
-    "Calculate valid co-op and invasion level ranges for all multiplayer items, including weapon level matchmaking, in Dark Souls Remastered.",
-  icon: "public/soul-level-calculator-icon.png",
+    "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
+  icon: "public/warrior-of-sunlight-covenant-dks.png",
   category: "calculator",
   order: 1,
   tags: [
@@ -21,9 +21,10 @@ export const config: ToolConfig = {
   lastUpdated: "2025-06-23",
   gameCategory: "ds1",
   seo: {
-    title: "Co-op Level Range Calculator - Gold Phantom",
+    title:
+      "Co-op Level Range Calculator - Dark Souls Remastered | Gold Phantom",
     description:
-      "Calculate valid co-op and invasion level ranges for all multiplayer items, including weapon level matchmaking, in Dark Souls Remastered.",
+      "Calculate co-op and invasion soul level ranges for Dark Souls Remastered. Find valid matchmaking ranges for all multiplayer items including White Sign Soapstone, Red Eye Orb, and covenant items. Includes weapon level matchmaking calculations.",
     keywords: [
       "co-op",
       "level range",
@@ -32,7 +33,15 @@ export const config: ToolConfig = {
       "calculator",
       "dark souls",
       "remastered",
+      "matchmaking",
+      "invasion",
+      "summon",
+      "white sign soapstone",
+      "red eye orb",
+      "covenant",
+      "multiplayer calculator",
+      "soul level range",
     ],
-    ogImage: "public/soul-level-calculator-icon.png",
+    ogImage: "public/warrior-of-sunlight-covenant-dks.png",
   },
 };

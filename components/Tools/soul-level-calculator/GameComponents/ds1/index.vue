@@ -38,11 +38,18 @@ const safeTheme = useSafeTheme(props.theme, props.variant);
 
 // 7. Tool layout
 useToolLayout({
-  title: props.toolConfig?.title || "Soul Level Calculator",
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "Soul Level Calculator",
   description:
+    props.toolConfig?.config?.seo?.description ||
     props.toolConfig?.description ||
     "Calculate the souls required to level up your character",
-  iconPath: props.toolConfig?.icon || "public/soul-level-calculator-icon.png",
+  iconPath: props.toolConfig?.icon || "i-heroicons-cube",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
 });
 
 // 8. Game terminology

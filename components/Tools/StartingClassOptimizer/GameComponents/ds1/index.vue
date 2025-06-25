@@ -41,11 +41,18 @@ const terminology = computed(() => props.gameData?.config?.terminology || {});
 
 // Tool layout setup
 useToolLayout({
-  title: props.toolConfig?.title || "Starting Class Optimizer",
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "Starting Class Optimizer",
   description:
+    props.toolConfig?.config?.seo?.description ||
     props.toolConfig?.description ||
-    "Find the optimal starting class for your desired character stats and equipment in Dark Souls",
+    "Find the optimal starting class for your desired character stats and equipment",
   iconPath: props.toolConfig?.icon || "i-heroicons-user-group",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
 });
 
 // Use the starting class optimizer composable
@@ -303,7 +310,7 @@ const howToUseSteps = [
     :title="toolConfig?.title || 'Starting Class Optimizer'"
     :description="
       toolConfig?.description ||
-      'Find the optimal starting class for your desired character stats and equipment in Dark Souls'
+      'Find the optimal starting class for your desired character stats and equipment'
     "
     :icon-path="toolConfig?.icon || 'i-heroicons-user-group'"
     :theme="safeTheme"

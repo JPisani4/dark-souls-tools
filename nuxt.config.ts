@@ -49,7 +49,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Essential Soulsborne tools and calculators for your playthrough. Calculate soul levels, weapon upgrades, and more for Dark Souls, Dark Souls 2, Dark Souls 3, Bloodborne, and Elden Ring.",
+            "Essential Soulsborne tools and calculators for your playthrough. Calculate soul levels, weapon upgrades, and more for Dark Souls, Dark Souls 2, Dark Souls 3, Bloodborne, and .",
         },
         { name: "author", content: "Gold Phantom" },
         { name: "robots", content: "index, follow" },
@@ -64,6 +64,9 @@ export default defineNuxtConfig({
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },
         { name: "format-detection", content: "telephone=no" },
+        { name: "mobile-web-app-capable", content: "yes" },
+        { name: "msapplication-TileColor", content: "#1e293b" },
+        { name: "msapplication-config", content: "/browserconfig.xml" },
 
         // Open Graph
         { property: "og:type", content: "website" },
@@ -108,6 +111,7 @@ export default defineNuxtConfig({
         { rel: "icon", type: "image/x-icon", href: "/favicon.png" },
         { rel: "apple-touch-icon", href: "/favicon.png" },
         { rel: "canonical", href: "https://www.goldphantom.com" },
+        { rel: "manifest", href: "/manifest.json" },
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
@@ -193,10 +197,27 @@ export default defineNuxtConfig({
     rules: {
       UserAgent: "*",
       Allow: "/",
+      Disallow: ["/admin", "/api", "/_nuxt", "/.well-known"],
       Sitemap: "https://www.goldphantom.com/sitemap.xml",
+      Host: "https://www.goldphantom.com",
     },
+    sitemap: "https://www.goldphantom.com/sitemap.xml",
   },
   sitemap: {
-    exclude: ["/404"],
+    exclude: ["/404", "/admin", "/api"],
+    urls: [
+      {
+        loc: "/",
+        lastmod: new Date().toISOString(),
+        changefreq: "daily",
+        priority: 1.0,
+      },
+      {
+        loc: "/tools",
+        lastmod: new Date().toISOString(),
+        changefreq: "daily",
+        priority: 0.9,
+      },
+    ],
   },
 });

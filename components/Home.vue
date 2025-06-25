@@ -92,7 +92,7 @@ const getGameDisplayName = (gameCategory: string): string => {
       </div>
       <HeroSection
         :title="'Gold Phantom'"
-        :description="'A library of helpful tools for your soulsborne playthrough'"
+        :description="'A library of helpful tools for your Dark Souls Remastered playthrough'"
         :icon-path="'/favicon.png'"
         :theme="selectedTheme"
         variant="homepage"

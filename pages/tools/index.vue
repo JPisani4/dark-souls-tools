@@ -18,19 +18,20 @@ const {
 <template>
   <ToolLayout
     title="Soulsborne Tools - Calculators & Tools"
-    description="Browse and use essential Soulsborne tools and calculators. Find soul level calculators, weapon upgrade tools, and more for Dark Souls, Bloodborne, and Elden Ring."
-    icon-name="i-game-icons:sword-wound"
+    description="Browse and use essential Soulsborne tools and calculators. Find soul level calculators, weapon upgrade tools, and more for Dark Souls Remastered."
+    icon-path="/dark-souls-remastered-icon.png"
   >
     <template #hero>
       <div class="flex justify-center mb-8 px-4">
         <div class="flex flex-col items-center gap-3 text-center">
           <div
-            class="from-purple-400 to-pink-500 inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br rounded-full flex-shrink-0"
+            class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex-shrink-0 overflow-hidden"
           >
-            <span
-              class="iconify i-game-icons:sword-wound w-6 h-6 text-white"
-              aria-hidden="true"
-            ></span>
+            <img
+              src="/dark-souls-remastered-icon.png"
+              alt="Dark Souls Remastered"
+              class="w-full h-full object-cover rounded-full"
+            />
           </div>
           <div class="flex flex-col items-center justify-center min-w-0">
             <h1

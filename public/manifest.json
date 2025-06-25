@@ -1,0 +1,62 @@
+{
+  "name": "Gold Phantom - Soulsborne Tools",
+  "short_name": "Gold Phantom",
+  "description": "Essential Soulsborne tools and calculators for your playthrough",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["games", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/soulsborne-tools-hero.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Gold Phantom Tools Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Soul Level Calculator",
+      "short_name": "Soul Calc",
+      "description": "Calculate soul levels for Dark Souls",
+      "url": "/tools/ds1/soul-level-calculator",
+      "icons": [
+        {
+          "src": "/soul-level-calculator-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Weapon Upgrade Calculator",
+      "short_name": "Weapon Calc",
+      "description": "Calculate weapon upgrade costs",
+      "url": "/tools/ds1/weapon-upgrade-calculator",
+      "icons": [
+        {
+          "src": "/weapon-upgrade-calculator-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

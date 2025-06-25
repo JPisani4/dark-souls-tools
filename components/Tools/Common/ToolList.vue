@@ -244,13 +244,13 @@ const closeGameSelection = () => {
               class="flex items-center gap-3 justify-center mb-2 mt-2 relative z-10"
             >
               <div
-                :class="`w-10 h-10 flex items-center justify-center rounded-full shadow ${toolColors[i].iconBg}`"
+                :class="`w-10 h-10 flex items-center justify-center rounded-full shadow overflow-hidden ${toolColors[i].iconBg}`"
               >
                 <img
                   v-if="tool.icon && /\.(png|jpe?g|gif|svg)$/i.test(tool.icon)"
                   :src="tool.icon.replace(/^public\//, '/')"
                   alt="icon"
-                  class="w-8 h-8 object-contain"
+                  class="w-full h-full object-contain rounded-full scale-125"
                 />
                 <UIcon
                   v-else

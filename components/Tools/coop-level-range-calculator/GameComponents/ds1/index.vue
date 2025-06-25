@@ -32,16 +32,6 @@ const safeTheme = useSafeTheme(props.theme, props.variant);
 // Get terminology from game config
 const terminology = computed(() => props.gameData?.config?.terminology || {});
 
-// Tool layout setup
-const { selectedTheme } = useToolLayout({
-  title: props.toolConfig?.title || "Co-op Level Range Calculator",
-  description:
-    props.toolConfig?.description ||
-    "Calculate valid co-op and invasion level ranges for all multiplayer items, including weapon level matchmaking, in Dark Souls Remastered.",
-  iconPath: props.toolConfig?.icon || "i-heroicons-cube",
-  enablePerformanceMonitoring: true,
-});
-
 // --- State ---
 const state = reactive({
   characterLevel: "",
@@ -216,6 +206,22 @@ const quickReference = getQuickReference();
 
 // --- Theme Colors for Results/Reference ---
 const sectionTheme = getRandomTheme();
+
+// Tool layout setup
+useToolLayout({
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "Co-op Level Range Calculator",
+  description:
+    props.toolConfig?.config?.seo?.description ||
+    props.toolConfig?.description ||
+    "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
+  iconPath: props.toolConfig?.icon || "i-heroicons-cube",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
+});
 </script>
 
 <template>
@@ -225,7 +231,7 @@ const sectionTheme = getRandomTheme();
     :title="toolConfig?.title || 'Co-op Level Range Calculator'"
     :description="
       toolConfig?.description ||
-      'Calculate valid co-op and invasion level ranges for all multiplayer items, including weapon level matchmaking, in Dark Souls Remastered.'
+      'Calculate co-op and invasion soul and weapon level ranges for all multiplayer items'
     "
     :icon-path="toolConfig?.icon || 'i-heroicons-cube'"
     :theme="sectionTheme"
@@ -279,9 +285,12 @@ const sectionTheme = getRandomTheme();
         <!-- Password Checkbox -->
         <UCheckbox
           id="usePassword"
-          :model-value="state.usePassword"
-          @update:model-value="(val) => (state.usePassword = val)"
-          :label="`${terminology.usePassword || 'Use Password'} (bypass level/weapon restrictions for some items)`"
+          :model-value="Boolean(state.usePassword)"
+          @update:model-value="(val) => (state.usePassword = Boolean(val))"
+          :label="
+            String(terminology.usePassword || 'Use Password') +
+            ' (bypass level/weapon restrictions for some items)'
+          "
         />
         <!-- Weapon-Related Inputs Grouped -->
         <div

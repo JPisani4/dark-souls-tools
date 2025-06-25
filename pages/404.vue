@@ -9,7 +9,7 @@ const popularTools = tools.slice(0, 3);
 <template>
   <ToolLayout
     title="Page Not Found - Gold Phantom"
-    description="The page you're looking for doesn't exist. Browse our Soulsborne tools and calculators for Dark Souls, Bloodborne, and Elden Ring."
+    description="The page you're looking for doesn't exist. Browse our Soulsborne tools and calculators for Dark Souls Remastered."
     icon-name="i-heroicons-exclamation-triangle"
   >
     <template #hero>
