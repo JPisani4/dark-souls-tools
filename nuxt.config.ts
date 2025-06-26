@@ -122,11 +122,6 @@ export default defineNuxtConfig({
       ],
       script: [
         {
-          src: "https://static.cloudflareinsights.com/beacon.min.js",
-          defer: true,
-          "data-cf-beacon": '{"token": "60f7e5142c1148a4a9c35c6791c8a44d"}',
-        },
-        {
           type: "application/ld+json",
           innerHTML: JSON.stringify({
             "@context": "https://schema.org",
