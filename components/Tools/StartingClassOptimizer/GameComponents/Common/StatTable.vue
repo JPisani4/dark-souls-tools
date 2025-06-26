@@ -70,18 +70,6 @@
                   >
                     <Icon :name="attunementSlotButtonIcon" class="w-4 h-4" />
                   </UButton>
-
-                  <!-- Reverse Attunement Button -->
-                  <UButton
-                    v-if="canDecreaseAttunementSlots"
-                    size="xs"
-                    variant="outline"
-                    :color="themeColor"
-                    :title="decreaseAttunementSlotButtonTitle"
-                    @click="decreaseAttunementSlots"
-                  >
-                    <Icon name="i-heroicons-arrow-down" class="w-4 h-4" />
-                  </UButton>
                 </template>
 
                 <!-- Soft Cap Buttons (for all stats except attunement) -->
@@ -122,7 +110,6 @@ import { computed } from "vue";
 import {
   getNextAttunementSlotLevel,
   getAttunementSlots,
-  getAttunementLevelForSlots,
 } from "~/utils/games/ds1/stats/attunementSlots";
 import {
   getNextSoftCap,
@@ -223,36 +210,6 @@ const increaseAttunementSlots = () => {
   const nextLevel = getNextAttunementSlotLevel(props.stats.attunement);
   if (nextLevel !== null) {
     emit("update:stat", "attunement", nextLevel);
-  }
-};
-
-// Reverse attunement slot button logic
-const canDecreaseAttunementSlots = computed(() => {
-  const currentAttunement = props.stats.attunement;
-  const currentSlots = getAttunementSlots(currentAttunement);
-  // Can decrease if we have more than 1 slot
-  return currentSlots > 1;
-});
-
-const decreaseAttunementSlotButtonTitle = computed(() => {
-  const currentAttunement = props.stats.attunement;
-  const currentSlots = getAttunementSlots(currentAttunement);
-  const previousLevel = getAttunementLevelForSlots(currentSlots - 1);
-
-  if (previousLevel === null) {
-    return "Cannot decrease attunement slots further";
-  }
-
-  return `Decrease to ${previousLevel} ATT for ${currentSlots - 1} attunement slots`;
-});
-
-const decreaseAttunementSlots = () => {
-  const currentAttunement = props.stats.attunement;
-  const currentSlots = getAttunementSlots(currentAttunement);
-  const previousLevel = getAttunementLevelForSlots(currentSlots - 1);
-
-  if (previousLevel !== null) {
-    emit("update:stat", "attunement", previousLevel);
   }
 };
 
