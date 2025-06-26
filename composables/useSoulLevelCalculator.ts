@@ -114,9 +114,9 @@ export const useSoulLevelCalculator = () => {
     let totalSouls = 0;
 
     for (let level = currentLevel!; level < desiredLevel!; level++) {
-      const cost = soulCosts[level];
+      const cost = soulCosts[level + 1]; // Cost to go from level to level+1
       if (cost === undefined) {
-        throw new Error(`Soul cost not found for level ${level}`);
+        throw new Error(`Soul cost not found for level ${level + 1}`);
       }
       totalSouls += cost;
     }
@@ -194,12 +194,12 @@ export const useSoulLevelCalculator = () => {
     const rows = [];
     let cumulativeSouls = 0;
 
-    for (let level = current.value; level < desired.value; level++) {
-      const cost = soulCosts[level];
+    for (let level = current.value + 1; level <= desired.value; level++) {
+      const cost = soulCosts[level]; // Cost to go from level-1 to level
       if (cost !== undefined) {
         cumulativeSouls += cost;
         rows.push({
-          level: level + 1, // Show the level being reached
+          level: level, // Show the level being reached
           souls: cumulativeSouls,
         });
       }
@@ -241,34 +241,49 @@ export const useSoulLevelCalculator = () => {
 
   // Pagination
   const totalPages = computed(() => {
-    const result = baseTool.result.value;
-    if (!result) return 0;
-    const totalLevels = result.level - SOUL_LEVEL_MIN;
+    if (current.value >= desired.value) return 0;
+    const totalLevels = desired.value - current.value;
     return Math.ceil(totalLevels / pageSize.value);
   });
 
   const paginatedData = computed(() => {
-    const result = baseTool.result.value;
-    if (!result) return [];
+    if (current.value >= desired.value) return [];
 
     const startLevel =
-      SOUL_LEVEL_MIN + (currentPage.value - 1) * pageSize.value;
-    const count = Math.min(pageSize.value, result.level - startLevel);
+      current.value + 1 + (currentPage.value - 1) * pageSize.value;
+    const endLevel = Math.min(desired.value, startLevel + pageSize.value - 1);
 
-    return generateLevelData(startLevel, count);
+    const results: SoulLevelResult[] = [];
+    let cumulativeSouls = 0;
+
+    // Calculate cumulative souls up to the start level
+    for (let level = current.value + 1; level < startLevel; level++) {
+      const cost = soulCosts[level];
+      if (cost !== undefined) {
+        cumulativeSouls += cost;
+      }
+    }
+
+    // Generate data for the current page
+    for (let level = startLevel; level <= endLevel; level++) {
+      const cost = soulCosts[level]; // Cost to go from level-1 to level
+      if (cost !== undefined) {
+        cumulativeSouls += cost;
+        results.push({
+          level,
+          souls: cumulativeSouls,
+          timestamp: new Date(),
+        });
+      }
+    }
+
+    return results;
   });
 
   // Watch for state changes and trigger calculation
   watch(
     [() => baseTool.state.currentLevel, () => baseTool.state.desiredLevel],
     ([currentLevel, desiredLevel]) => {
-      // Debug: log watcher firing and input values
-      if (typeof window !== "undefined") {
-        console.log("[SoulLevelCalculator] Watcher fired:", {
-          currentLevel,
-          desiredLevel,
-        });
-      }
       if (currentLevel && desiredLevel) {
         const currentNum = parseLevel(currentLevel);
         const desiredNum = parseLevel(desiredLevel);
@@ -278,27 +293,7 @@ export const useSoulLevelCalculator = () => {
           isValidLevel(desiredNum) &&
           currentNum! < desiredNum!
         ) {
-          if (typeof window !== "undefined") {
-            console.log("[SoulLevelCalculator] Triggering calculation", {
-              currentNum,
-              desiredNum,
-            });
-          }
-          baseTool.calculate().then(() => {
-            if (typeof window !== "undefined") {
-              console.log(
-                "[SoulLevelCalculator] Calculation result:",
-                baseTool.result.value
-              );
-            }
-          });
-        } else {
-          if (typeof window !== "undefined") {
-            console.log("[SoulLevelCalculator] Validation failed", {
-              currentNum,
-              desiredNum,
-            });
-          }
+          baseTool.calculate();
         }
       }
     },

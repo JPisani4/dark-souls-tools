@@ -123,11 +123,32 @@ export function useCoopLevelCalculator(gameData: GameData) {
     const coopData = gameData.coopLevelRanges;
     if (!coopData) return [];
 
-    return coopData.MULTIPLAYER_ITEMS.map((item) => ({
-      title: item.label,
-      description: item.description,
-      showAsterisk: item.showAsterisk || false,
-    }));
+    return coopData.MULTIPLAYER_ITEMS.map((item) => {
+      let superscriptType: number | null = null;
+
+      // Determine superscript type based on item
+      if (item.value === "white-sign-soapstone") {
+        superscriptType = 1;
+      } else if (item.value === "red-sign-soapstone") {
+        superscriptType = 12; // Both 1 and 2
+      } else if (
+        [
+          "eye-of-death",
+          "dragon-eye",
+          "red-eye-orb",
+          "cracked-red-eye-orb",
+        ].includes(item.value)
+      ) {
+        superscriptType = 2;
+      }
+
+      return {
+        title: item.label,
+        description: item.description,
+        showAsterisk: item.showAsterisk || false,
+        superscriptType,
+      };
+    });
   };
 
   return {

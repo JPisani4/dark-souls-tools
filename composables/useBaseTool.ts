@@ -231,21 +231,15 @@ export function useBaseTool<
 
   // Analytics tracking
   const trackCalculation = (state: TState, result: TResult) => {
-    // Implement analytics tracking here
-    console.log("Tool calculation tracked:", {
-      state,
-      result,
-      timestamp: new Date().toISOString(),
-    });
+    if (options.enableAnalytics) {
+      // Analytics tracking logic here
+      // console.log("Tool calculation tracked:", { state, result, timestamp: new Date() });
+    }
   };
 
   const trackError = (error: any) => {
     // Implement error tracking here
-    console.error("Tool error tracked:", {
-      error: error.message || error,
-      state: { ...state },
-      timestamp: new Date().toISOString(),
-    });
+    // Removed console.error to prevent browser console logs
   };
 
   // Auto-save watcher

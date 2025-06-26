@@ -2,10 +2,10 @@
   <div class="flex justify-center mb-8 px-4">
     <div class="flex flex-col items-center gap-3 text-center">
       <div
-        class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
+        class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
         :class="safeTheme.bg"
       >
-        <Icon v-if="iconName" :name="iconName" class="w-2 h-2 text-white" />
+        <Icon v-if="iconName" :name="iconName" class="w-3 h-3 text-white" />
         <picture
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg|webp)$/i.test(iconPath)"
         >
@@ -19,11 +19,11 @@
           <img
             :src="iconPath.replace(/^public\//, '/')"
             :alt="`${title} icon`"
-            class="w-8 h-8 object-contain rounded-full scale-125"
+            class="w-12 h-12 object-contain rounded-full scale-175"
             loading="lazy"
             decoding="async"
-            width="32"
-            height="32"
+            width="48"
+            height="48"
           />
         </picture>
         <svg

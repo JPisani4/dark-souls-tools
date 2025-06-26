@@ -12,7 +12,7 @@
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
             >
-              Current Value
+              Value
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
@@ -43,58 +43,69 @@
                   placeholder="10"
                   :min="minimumRequirements[statKey as keyof CharacterStats]"
                   :max="99"
-                  class="w-20"
+                  :class="[
+                    'w-20',
+                    !statValidation[statKey as keyof CharacterStats].isValid
+                      ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
+                      : '',
+                  ]"
                   @update:model-value="
                     (value) =>
                       updateStat(statKey as keyof CharacterStats, value)
                   "
                 />
-                <div
-                  v-if="
-                    !statValidation[statKey as keyof CharacterStats].isValid
-                  "
-                  class="ml-2 text-red-600 text-xs"
-                >
-                  {{ statValidation[statKey as keyof CharacterStats].error }}
-                </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-2">
-                <!-- Attunement Slot Button (only for attunement stat) -->
-                <UButton
-                  v-if="statKey === 'attunement'"
-                  size="xs"
-                  variant="outline"
-                  :color="themeColor"
-                  :disabled="!canIncreaseAttunementSlots"
-                  :title="attunementSlotButtonTitle"
-                  @click="increaseAttunementSlots"
-                >
-                  <Icon :name="attunementSlotButtonIcon" class="w-4 h-4" />
-                </UButton>
+                <!-- Attunement Slot Buttons (only for attunement stat) -->
+                <template v-if="statKey === 'attunement'">
+                  <UButton
+                    size="xs"
+                    variant="outline"
+                    :color="themeColor"
+                    :disabled="!canIncreaseAttunementSlots"
+                    :title="attunementSlotButtonTitle"
+                    @click="increaseAttunementSlots"
+                  >
+                    <Icon :name="attunementSlotButtonIcon" class="w-4 h-4" />
+                  </UButton>
 
-                <!-- Soft Cap Button (for all stats except attunement) -->
-                <UButton
-                  v-if="statKey !== 'attunement'"
-                  size="xs"
-                  variant="outline"
-                  :color="themeColor"
-                  :disabled="
-                    !canIncreaseSoftCap(statKey as keyof CharacterStats)
-                  "
-                  :title="
-                    getSoftCapButtonTitle(statKey as keyof CharacterStats)
-                  "
-                  @click="increaseToSoftCap(statKey as keyof CharacterStats)"
-                >
-                  <Icon
-                    :name="
-                      getSoftCapButtonIcon(statKey as keyof CharacterStats)
+                  <!-- Reverse Attunement Button -->
+                  <UButton
+                    v-if="canDecreaseAttunementSlots"
+                    size="xs"
+                    variant="outline"
+                    :color="themeColor"
+                    :title="decreaseAttunementSlotButtonTitle"
+                    @click="decreaseAttunementSlots"
+                  >
+                    <Icon name="i-heroicons-arrow-down" class="w-4 h-4" />
+                  </UButton>
+                </template>
+
+                <!-- Soft Cap Buttons (for all stats except attunement) -->
+                <template v-if="statKey !== 'attunement'">
+                  <UButton
+                    size="xs"
+                    variant="outline"
+                    :color="themeColor"
+                    :disabled="
+                      !canIncreaseSoftCap(statKey as keyof CharacterStats)
                     "
-                    class="w-4 h-4"
-                  />
-                </UButton>
+                    :title="
+                      getSoftCapButtonTitle(statKey as keyof CharacterStats)
+                    "
+                    @click="increaseToSoftCap(statKey as keyof CharacterStats)"
+                  >
+                    <Icon
+                      :name="
+                        getSoftCapButtonIcon(statKey as keyof CharacterStats)
+                      "
+                      class="w-4 h-4"
+                    />
+                  </UButton>
+                </template>
               </div>
             </td>
           </tr>
@@ -111,11 +122,14 @@ import { computed } from "vue";
 import {
   getNextAttunementSlotLevel,
   getAttunementSlots,
+  getAttunementLevelForSlots,
 } from "~/utils/games/ds1/stats/attunementSlots";
 import {
   getNextSoftCap,
   isAtMaxSoftCap,
   isAtSoftCap,
+  getCurrentSoftCapTier,
+  getSoftCaps,
 } from "~/utils/games/ds1/stats/softCaps";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
 import Icon from "~/components/Common/Icon.vue";
@@ -212,6 +226,36 @@ const increaseAttunementSlots = () => {
   }
 };
 
+// Reverse attunement slot button logic
+const canDecreaseAttunementSlots = computed(() => {
+  const currentAttunement = props.stats.attunement;
+  const currentSlots = getAttunementSlots(currentAttunement);
+  // Can decrease if we have more than 1 slot
+  return currentSlots > 1;
+});
+
+const decreaseAttunementSlotButtonTitle = computed(() => {
+  const currentAttunement = props.stats.attunement;
+  const currentSlots = getAttunementSlots(currentAttunement);
+  const previousLevel = getAttunementLevelForSlots(currentSlots - 1);
+
+  if (previousLevel === null) {
+    return "Cannot decrease attunement slots further";
+  }
+
+  return `Decrease to ${previousLevel} ATT for ${currentSlots - 1} attunement slots`;
+});
+
+const decreaseAttunementSlots = () => {
+  const currentAttunement = props.stats.attunement;
+  const currentSlots = getAttunementSlots(currentAttunement);
+  const previousLevel = getAttunementLevelForSlots(currentSlots - 1);
+
+  if (previousLevel !== null) {
+    emit("update:stat", "attunement", previousLevel);
+  }
+};
+
 // Soft cap button logic
 const canIncreaseSoftCap = (stat: keyof CharacterStats) => {
   return getNextSoftCap(stat, props.stats[stat], props.isTwoHanded) !== null;
@@ -251,7 +295,10 @@ const getSoftCapButtonColor = (stat: keyof CharacterStats) => {
 
 const getSoftCapButtonIcon = (stat: keyof CharacterStats) => {
   const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
-  // Always use up arrow for soft cap button
+  // Show checkmark when at soft cap, up arrow when can increase
+  if (nextCap === null) {
+    return "i-heroicons-check";
+  }
   return "i-heroicons-arrow-up";
 };
 

@@ -1,4 +1,4 @@
-import { reactive, computed, watch } from "vue";
+import { reactive, computed, watch, onMounted, ref } from "vue";
 import { upgradePathsManifest } from "~/utils/games/ds1/upgradePaths";
 import { merchants } from "~/utils/games/ds1/upgradeCosts";
 import { useUpgradeCalculator } from "~/composables/useUpgradeCalculator";
@@ -17,7 +17,17 @@ export interface SelectOption {
 }
 
 export function useWeaponUpgradeForm() {
-  // State
+  // Use the existing upgrade calculator which already has auto-save functionality
+  const {
+    state: calculatorState,
+    result,
+    calculate,
+    setState,
+    reset: resetCalculator,
+    loadFromStorage,
+  } = useUpgradeCalculator();
+
+  // Local state for form management
   const state = reactive<WeaponUpgradeFormState>({
     currentLevel: "",
     desiredLevel: "",
@@ -26,8 +36,33 @@ export function useWeaponUpgradeForm() {
     currentWeaponPathId: undefined,
   });
 
-  // Calculator integration
-  const { result, calculate, setState } = useUpgradeCalculator();
+  // Flag to prevent watcher interference during clearing
+  const isClearing = ref(false);
+
+  // Load saved state on initialization
+  onMounted(() => {
+    // Load the saved state from the calculator
+    loadFromStorage();
+
+    // Sync form state with loaded calculator state
+    if (calculatorState.currentLevel >= 0) {
+      state.currentLevel = calculatorState.currentLevel.toString();
+    }
+    if (calculatorState.desiredLevel > 0) {
+      state.desiredLevel = calculatorState.desiredLevel.toString();
+    }
+    if (calculatorState.selectedPathId) {
+      state.selectedPathId = calculatorState.selectedPathId;
+    }
+    if (calculatorState.selectedMerchantId) {
+      state.selectedMerchantId = calculatorState.selectedMerchantId;
+    }
+    if (calculatorState.currentWeaponPathId) {
+      state.currentWeaponPathId = calculatorState.currentWeaponPathId;
+    }
+  });
+
+  // Results
   const unwrappedResult = computed(() => result.value);
 
   // Computed properties
@@ -173,92 +208,7 @@ export function useWeaponUpgradeForm() {
     return level;
   };
 
-  // Watchers
-  watch(
-    [
-      () => state.currentLevel,
-      () => state.desiredLevel,
-      () => state.selectedPathId,
-      () => merchantIdString.value,
-      () => state.currentWeaponPathId,
-    ],
-    ([
-      currentLevel,
-      desiredLevel,
-      selectedPathId,
-      merchantId,
-      currentWeaponPathId,
-    ]) => {
-      if (
-        !selectedPathId ||
-        currentLevel === "" ||
-        desiredLevel === "" ||
-        !currentWeaponPathId
-      ) {
-        // Don't set result.value directly - let the base tool handle it
-        return;
-      }
-      const current = parseInt(state.currentLevel, 10);
-      const desired = parseInt(state.desiredLevel, 10);
-      if (isNaN(current) || isNaN(desired)) {
-        // Don't set result.value directly - let the base tool handle it
-        return;
-      }
-
-      // Set the state in the calculator first, then call calculate
-      setState({
-        currentLevel: current,
-        desiredLevel: desired,
-        selectedPathId: state.selectedPathId ?? "",
-        selectedMerchantId: merchantId,
-        currentWeaponPathId: state.currentWeaponPathId ?? "",
-      });
-
-      // Now call calculate without parameters
-      calculate();
-    },
-    { immediate: true }
-  );
-
-  // Set default values when form initializes
-  watch(
-    () => upgradePathItems.value,
-    (items) => {
-      // Set default desired path if none is selected and items are available
-      if (!state.selectedPathId && items.length > 0) {
-        state.selectedPathId = items[0].value;
-      }
-    },
-    { immediate: true }
-  );
-
-  watch(
-    () => currentWeaponPathItems.value,
-    (items) => {
-      // Set default current weapon path if none is selected and items are available
-      if (!state.currentWeaponPathId && items.length > 0) {
-        state.currentWeaponPathId = items[0].value;
-      }
-    },
-    { immediate: true }
-  );
-
-  // Reset selected path when current weapon path changes
-  watch(
-    () => state.currentWeaponPathId,
-    (newCurrentPathId) => {
-      if (newCurrentPathId && state.selectedPathId) {
-        // Check if the currently selected path is still valid
-        const validPaths = upgradePathItems.value.map((item) => item.value);
-        if (!validPaths.includes(state.selectedPathId)) {
-          // Reset to the current path if the selected path is no longer valid
-          state.selectedPathId = newCurrentPathId;
-        }
-      }
-    }
-  );
-
-  // Reset current weapon path when desired upgrade path changes
+  // Watchers for validation and auto-correction
   watch(
     () => state.selectedPathId,
     (newSelectedPathId) => {
@@ -295,6 +245,21 @@ export function useWeaponUpgradeForm() {
     }
   );
 
+  // Reset selected path when current weapon path changes
+  watch(
+    () => state.currentWeaponPathId,
+    (newCurrentPathId) => {
+      if (newCurrentPathId && state.selectedPathId) {
+        // Check if the currently selected path is still valid
+        const validPaths = upgradePathItems.value.map((item) => item.value);
+        if (!validPaths.includes(state.selectedPathId)) {
+          // Reset to the current path if the selected path is no longer valid
+          state.selectedPathId = newCurrentPathId;
+        }
+      }
+    }
+  );
+
   // Type conversion watchers
   watch(
     () => state.currentLevel,
@@ -314,13 +279,115 @@ export function useWeaponUpgradeForm() {
     }
   );
 
+  // Watcher to sync form state with calculator state and trigger calculations
+  watch(
+    [
+      () => state.currentLevel,
+      () => state.desiredLevel,
+      () => state.selectedPathId,
+      () => state.selectedMerchantId,
+      () => state.currentWeaponPathId,
+    ],
+    ([
+      currentLevel,
+      desiredLevel,
+      selectedPathId,
+      selectedMerchantId,
+      currentWeaponPathId,
+    ]) => {
+      if (
+        !selectedPathId ||
+        currentLevel === "" ||
+        desiredLevel === "" ||
+        !currentWeaponPathId
+      ) {
+        return;
+      }
+
+      const current = parseInt(currentLevel, 10);
+      const desired = parseInt(desiredLevel, 10);
+      if (isNaN(current) || isNaN(desired)) {
+        return;
+      }
+
+      // Update the calculator state
+      setState({
+        currentLevel: current,
+        desiredLevel: desired,
+        selectedPathId: selectedPathId,
+        selectedMerchantId: selectedMerchantId || "",
+        currentWeaponPathId: currentWeaponPathId,
+      });
+
+      // Trigger calculation
+      calculate();
+    },
+    { immediate: true }
+  );
+
+  // Watcher to sync calculator state back to form state (for loaded saved state)
+  watch(
+    [
+      () => calculatorState.currentLevel,
+      () => calculatorState.desiredLevel,
+      () => calculatorState.selectedPathId,
+      () => calculatorState.selectedMerchantId,
+      () => calculatorState.currentWeaponPathId,
+    ],
+    ([
+      currentLevel,
+      desiredLevel,
+      selectedPathId,
+      selectedMerchantId,
+      currentWeaponPathId,
+    ]) => {
+      // Skip if we're in the middle of clearing
+      if (isClearing.value) return;
+
+      // Only update form state if it's different and not empty
+      if (currentLevel >= 0 && state.currentLevel !== currentLevel.toString()) {
+        state.currentLevel = currentLevel.toString();
+      }
+      if (desiredLevel > 0 && state.desiredLevel !== desiredLevel.toString()) {
+        state.desiredLevel = desiredLevel.toString();
+      }
+      if (selectedPathId && state.selectedPathId !== selectedPathId) {
+        state.selectedPathId = selectedPathId;
+      }
+      if (
+        selectedMerchantId &&
+        state.selectedMerchantId !== selectedMerchantId
+      ) {
+        state.selectedMerchantId = selectedMerchantId;
+      }
+      if (
+        currentWeaponPathId &&
+        state.currentWeaponPathId !== currentWeaponPathId
+      ) {
+        state.currentWeaponPathId = currentWeaponPathId;
+      }
+    }
+  );
+
   // Actions
   const clearForm = () => {
+    // Set clearing flag to prevent watcher interference
+    isClearing.value = true;
+
+    // Reset the calculator state
+    resetCalculator();
+
+    // Reset the form state
     state.currentLevel = "";
     state.desiredLevel = "";
     state.selectedPathId = undefined;
     state.selectedMerchantId = undefined;
     state.currentWeaponPathId = undefined;
+
+    // Reset the clearing flag after a short delay to allow the reset to complete
+    setTimeout(() => {
+      isClearing.value = false;
+    }, 100);
   };
 
   return {

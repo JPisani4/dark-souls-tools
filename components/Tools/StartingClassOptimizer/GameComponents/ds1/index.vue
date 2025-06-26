@@ -223,12 +223,7 @@ const handleIncreaseAttunement = (level: number) => {
 
 // Handle reset
 const handleReset = () => {
-  console.log("Reset button clicked");
-  console.log("hasSelectedItems.value:", hasSelectedItems.value);
-  console.log("Current state:", state.characterStats);
-
   if (hasSelectedItems.value) {
-    console.log("Items selected, setting stats to minimum requirements");
     // If items are selected, set stats to minimum requirements (regardless of current values)
     const minReqs = minimumRequirements.value;
 
@@ -252,10 +247,8 @@ const handleReset = () => {
       intelligence: minReqs.intelligence,
       faith: minReqs.faith,
     };
-    console.log("Setting stats to minimum requirements:", resetStats);
     state.characterStats = resetStats;
   } else {
-    console.log("No items selected, clearing stats");
     // If no items are selected, clear all character stats (set to 1 which displays as empty)
     const clearedStats = {
       level: 6,
@@ -268,11 +261,8 @@ const handleReset = () => {
       intelligence: 1,
       faith: 1,
     };
-    console.log("Setting stats to:", clearedStats);
     state.characterStats = clearedStats;
   }
-
-  console.log("After reset, state is:", state.characterStats);
 };
 
 // How to Use steps for starting class optimizer
@@ -299,7 +289,7 @@ const howToUseSteps = [
     type: "tip" as const,
     title: "Two-Handed Mode",
     description:
-      "Enable to reduce strength requirements by 1.5x. Only works with one weapon OR one shield selected.",
+      "Enable to reduce strength requirements by ~33%. Only works with one weapon OR one shield selected.",
   },
 ];
 </script>
@@ -381,7 +371,7 @@ const howToUseSteps = [
                 Two-Handed
               </label>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Reduces strength requirements by 1.5x (rounded down)
+                Reduces Strength requirement by ~33%
               </p>
             </div>
           </button>

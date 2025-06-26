@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useWeaponUpgradeForm } from "~/composables/useWeaponUpgradeForm";
 import { useToolLayout } from "~/composables/useToolLayout";
 import { useSafeTheme } from "~/composables/useSafeTheme";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import SummaryCard from "../../../Common/display/SummaryCard.vue";
 import ErrorBoundary from "../../../Common/ErrorBoundary.vue";
 import HeroSection from "../../../Common/HeroSection.vue";
@@ -15,6 +16,7 @@ import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
 import Icon from "~/components/Common/Icon.vue";
+import { useUpgradeSummary } from "~/composables/useUpgradeSummary";
 
 interface Props {
   gameData: GameData;
@@ -28,6 +30,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const safeTheme = useSafeTheme(props.theme, props.variant);
+
+// Generate random theme for the calculator and summary sections
+const calculatorTheme = getRandomTheme();
+const summaryTheme = getRandomTheme();
 
 // Get terminology from game config
 const terminology = computed(() => props.gameData?.config?.terminology || {});
@@ -71,6 +77,28 @@ const hasBothLevels = computed(() => {
     state.desiredLevel &&
     state.desiredLevel.trim() !== ""
   );
+});
+
+// Calculate total cost including material costs when merchant is selected
+const totalCost = computed(() => {
+  if (!unwrappedResult.value || !unwrappedResult.value.souls) {
+    return 0;
+  }
+
+  const reinforcementCost = unwrappedResult.value.souls;
+
+  // If a merchant is selected, calculate material costs
+  if (merchantIdString.value) {
+    const { purchaseableCost } = useUpgradeSummary({
+      materials: computed(() => unwrappedResult.value?.materials || {}),
+      steps: computed(() => unwrappedResult.value?.steps || []),
+      selectedMerchantId: merchantIdString,
+    });
+
+    return reinforcementCost + purchaseableCost.value;
+  }
+
+  return reinforcementCost;
 });
 
 // How to Use steps for weapon upgrade calculator
@@ -123,20 +151,11 @@ const howToUseSteps = [
     :on-reset="clearForm"
     @error="(error) => console.error('Weapon Upgrade Calculator Error:', error)"
   >
-    <!-- Calculator Card -->
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-center gap-2">
-          <h3 class="text-lg font-semibold">
-            {{ terminology.weapon || "Weapon" }}
-            {{ terminology.upgrade || "Upgrade" }} Calculator
-          </h3>
-        </div>
-      </template>
-
+    <!-- Calculator Card with themed styling -->
+    <UCard :class="`shadow-md rounded-xl border-l-4 ${calculatorTheme.border}`">
       <div class="space-y-6">
         <!-- Input Fields -->
-        <FormSection title="" :theme="safeTheme">
+        <FormSection title="" :theme="calculatorTheme">
           <NumberField
             :label="`Current ${terminology.level || 'Level'}`"
             id="currentLevel"
@@ -146,7 +165,7 @@ const howToUseSteps = [
             placeholder="0"
             :min="0"
             :max="14"
-            :theme="safeTheme"
+            :theme="calculatorTheme"
             @update:model-value="
               (val) =>
                 (state.currentLevel =
@@ -162,7 +181,7 @@ const howToUseSteps = [
             placeholder="5"
             :min="1"
             :max="maxLevelForSelectedPath"
-            :theme="safeTheme"
+            :theme="calculatorTheme"
             @update:model-value="
               (val) =>
                 (state.desiredLevel =
@@ -172,13 +191,14 @@ const howToUseSteps = [
         </FormSection>
 
         <!-- Weapon Path Selection -->
-        <FormSection title="" :theme="safeTheme">
+        <FormSection title="" :theme="calculatorTheme">
           <SelectField
             :label="terminology.currentWeaponPath || 'Current Weapon Path'"
             id="currentWeaponPath"
             :model-value="currentWeaponPathSelectModel"
             :options="currentWeaponPathItems"
-            :theme="safeTheme"
+            :placeholder="`Select current ${terminology.weapon?.toLowerCase() || 'weapon'} path`"
+            :theme="calculatorTheme"
             @update:model-value="(val) => (currentWeaponPathSelectModel = val)"
           />
           <SelectField
@@ -186,27 +206,33 @@ const howToUseSteps = [
             id="upgradePath"
             :model-value="upgradePathSelectModel"
             :options="upgradePathItems"
-            :theme="safeTheme"
+            :placeholder="`Select desired ${terminology.upgrade?.toLowerCase() || 'upgrade'} path`"
+            :theme="calculatorTheme"
             @update:model-value="(val) => (upgradePathSelectModel = val)"
           />
         </FormSection>
 
         <!-- Merchant -->
-        <FormSection title="" :theme="safeTheme">
+        <FormSection title="" :theme="calculatorTheme">
           <SelectField
             :label="terminology.merchant || 'Merchant'"
             id="merchants"
             :model-value="merchantSelectModel"
             :options="merchantItems"
             :placeholder="`Select a ${terminology.merchant?.toLowerCase() || 'merchant'} (optional)`"
-            :theme="safeTheme"
+            :theme="calculatorTheme"
             @update:model-value="(val) => (merchantSelectModel = val)"
           />
         </FormSection>
 
         <!-- Clear Button -->
         <div class="flex justify-end">
-          <UButton color="primary" variant="outline" @click.prevent="clearForm">
+          <UButton
+            color="primary"
+            variant="outline"
+            @click.prevent="clearForm"
+            :class="`${calculatorTheme.iconBg} ${calculatorTheme.hoverBg} text-white border-${calculatorTheme.border.split('-')[1]}-300 hover:border-${calculatorTheme.border.split('-')[1]}-400`"
+          >
             <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
             Clear
           </UButton>
@@ -214,32 +240,21 @@ const howToUseSteps = [
       </div>
     </UCard>
 
-    <!-- Summary Card for Total Cost -->
-    <SummaryCard
-      v-if="unwrappedResult && unwrappedResult.souls > 0 && hasBothLevels"
-      :label="`Total ${terminology.souls || 'Souls'} Required`"
-      :value="unwrappedResult.souls"
-      :unit="terminology.souls || 'Souls'"
-      subtitle="Calculation result"
-      :details="`${terminology.level || 'Level'} ${state.currentLevel} → ${state.desiredLevel} (${unwrappedResult.steps.length} steps)`"
-      :theme="safeTheme"
-      :terminology="terminology"
-      class="mt-6"
-    />
-
-    <!-- Upgrade Summary -->
-    <UpgradeSummary
-      v-if="unwrappedResult && hasBothLevels"
-      :souls="unwrappedResult.souls"
-      :materials="unwrappedResult.materials"
-      :steps="unwrappedResult.steps"
-      :selected-merchant-id="merchantIdString"
-      :selected-theme="safeTheme"
-      :icon-path="
-        toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'
-      "
-      :terminology="terminology"
-    />
+    <!-- Upgrade Summary with themed styling -->
+    <div v-if="unwrappedResult && hasBothLevels" class="mt-6">
+      <UpgradeSummary
+        :souls="unwrappedResult.souls"
+        :materials="unwrappedResult.materials"
+        :steps="unwrappedResult.steps"
+        :selected-merchant-id="merchantIdString"
+        :selected-theme="summaryTheme"
+        :icon-path="
+          toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'
+        "
+        :terminology="terminology"
+        :total-cost="totalCost"
+      />
+    </div>
   </ErrorBoundary>
 
   <!-- How to Use -->

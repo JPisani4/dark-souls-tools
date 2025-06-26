@@ -259,12 +259,16 @@ const handleSelection = (value: string) => {
 // Get item category for display
 const getItemCategory = (item: Weapon | Shield | Sorcery | Miracle) => {
   const option = props.options.find((opt) => opt.item.name === item.name);
-  return option?.category || "Unknown";
+  const category = option?.category || "Unknown";
+  return formatCategoryName(category);
 };
 
 // Format category name for display
 const formatCategoryName = (category: string) => {
-  return category.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  return category
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+    .trim();
 };
 
 // Format requirements for display

@@ -282,9 +282,10 @@ export function useStartingClassOptimizer() {
 
     // If two-handed mode is enabled, only allow one weapon OR one shield, not both
     if (baseTool.state.isTwoHanded) {
+      // In two-handed mode, you can only have one weapon OR one shield, not both
       return (
         baseTool.state.selectedItems.weapons.length > 0 ||
-        totalWeaponsAndShields >= 2
+        baseTool.state.selectedItems.shields.length > 0
       );
     }
 
@@ -299,9 +300,10 @@ export function useStartingClassOptimizer() {
 
     // If two-handed mode is enabled, only allow one weapon OR one shield, not both
     if (baseTool.state.isTwoHanded) {
+      // In two-handed mode, you can only have one weapon OR one shield, not both
       return (
         baseTool.state.selectedItems.shields.length > 0 ||
-        totalWeaponsAndShields >= 2
+        baseTool.state.selectedItems.weapons.length > 0
       );
     }
 

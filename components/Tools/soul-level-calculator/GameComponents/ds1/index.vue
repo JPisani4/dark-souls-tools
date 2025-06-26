@@ -139,19 +139,11 @@ const howToUseSteps = [
   />
 
   <!-- Calculator Card -->
-  <UCard>
-    <template #header>
-      <div class="flex items-center justify-center">
-        <h3 class="text-lg font-semibold">
-          {{ terminology.level || "Level" }} Calculator
-        </h3>
-      </div>
-    </template>
-
+  <UCard :class="`border-l-4 ${safeTheme.border}`">
     <div class="space-y-6">
       <!-- Input Fields -->
       <FormSection
-        :title="`${terminology.level || 'Level'} Calculator`"
+        title=""
         :description="`Enter your current and desired ${terminology.level?.toLowerCase() || 'level'}s`"
         :theme="safeTheme"
       >
@@ -212,14 +204,25 @@ const howToUseSteps = [
   </UCard>
 
   <!-- Results Table -->
-  <ResultsTable
+  <UCard
     v-if="filteredLevelsCount > 0"
-    :columns="tableColumns"
-    :data="formattedTableData"
-    :theme="safeTheme"
-    :terminology="terminology"
-    class="mt-8"
-  />
+    :class="`border-l-4 ${safeTheme.border} mt-8`"
+  >
+    <template #header>
+      <div class="flex items-center justify-center">
+        <h3 class="text-lg font-semibold">
+          {{ terminology.level || "Level" }} Breakdown
+        </h3>
+      </div>
+    </template>
+
+    <ResultsTable
+      :columns="tableColumns"
+      :data="formattedTableData"
+      :theme="safeTheme"
+      :terminology="terminology"
+    />
+  </UCard>
 
   <!-- Pagination -->
   <div class="flex justify-center mt-4">

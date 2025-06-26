@@ -15,11 +15,35 @@
         <div
           v-if="icon || safeTheme.iconBg"
           :class="[
-            'w-14 h-14 flex items-center justify-center rounded-full',
+            'w-16 h-16 flex items-center justify-center rounded-full',
             safeTheme.iconBg || 'bg-gray-500',
           ]"
         >
-          <Icon v-if="icon" :name="icon" class="w-3 h-3 text-white" />
+          <template v-if="icon">
+            <Icon
+              v-if="icon.startsWith('i-heroicons')"
+              :name="icon"
+              :class="`${iconSize} text-white`"
+            />
+            <picture
+              v-else-if="icon.includes('.webp') || icon.includes('.png')"
+            >
+              <source
+                v-if="icon.includes('.webp')"
+                :srcset="icon"
+                type="image/webp"
+              />
+              <img
+                :src="
+                  icon.includes('.png') ? icon : icon.replace('.webp', '.png')
+                "
+                :alt="`${label} icon`"
+                :class="`${iconSize} object-contain`"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          </template>
           <svg
             v-else-if="safeTheme.iconBg"
             class="w-5 h-5 text-white"
@@ -73,6 +97,7 @@ interface Props {
   subtitle?: string;
   details?: string;
   icon?: string;
+  iconSize?: string;
   theme?: ColorTheme;
   variant?: string;
   format?: "number" | "currency" | "percentage";
@@ -89,6 +114,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   unit: "",
   format: "number",
+  iconSize: "w-3 h-3",
 });
 
 const safeTheme = useSafeTheme(props.theme, props.variant);

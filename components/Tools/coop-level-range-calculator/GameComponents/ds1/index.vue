@@ -248,14 +248,6 @@ useToolLayout({
       sectionTheme.border,
     ]"
   >
-    <template #header>
-      <div class="flex items-center justify-end">
-        <UButton color="primary" variant="outline" @click.prevent="resetForm">
-          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
-      </div>
-    </template>
     <div class="space-y-6">
       <!-- Input Fields -->
       <div class="grid gap-4">
@@ -340,6 +332,14 @@ useToolLayout({
           />
         </div>
       </div>
+
+      <!-- Clear Button at bottom right -->
+      <div class="flex justify-end">
+        <UButton color="primary" variant="outline" @click.prevent="resetForm">
+          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
+          Clear
+        </UButton>
+      </div>
     </div>
   </UCard>
 
@@ -354,36 +354,58 @@ useToolLayout({
       ]"
     >
       <template #header>
-        <h3 class="text-md font-semibold">Results</h3>
+        <h3 class="text-md font-semibold text-center">
+          Soul and Weapon Level ranges
+        </h3>
       </template>
       <div class="p-4">
         <table
           class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm"
         >
-          <thead>
+          <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-4 py-2 text-left">
+              <th
+                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ terminology.multiplayerItem || "Item" }}
               </th>
-              <th class="px-4 py-2 text-left">
+              <th
+                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ terminology.levelRange || "Level Range" }}
               </th>
-              <th class="px-4 py-2 text-left">
+              <th
+                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              >
                 {{ terminology.weaponLevelRange || "Weapon Level Range" }}
               </th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="row in results" :key="row.item">
-              <td class="px-4 py-2">{{ row.item }}</td>
-              <td class="px-4 py-2">
+          <tbody
+            class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+          >
+            <tr
+              v-for="row in results"
+              :key="row.item"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <td
+                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+              >
+                {{ row.item }}
+              </td>
+              <td
+                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+              >
                 <span v-if="row.bypass">All*</span>
                 <span v-else-if="state.characterLevel.trim().length > 0"
                   >{{ row.minLevel }} – {{ row.maxLevel }}</span
                 >
                 <span v-else>—</span>
               </td>
-              <td class="px-4 py-2">
+              <td
+                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+              >
                 <span v-if="row.bypass">All*</span>
                 <span v-else-if="row.weaponLevelRange">
                   {{ row.weaponLevelRange[0] }} –
@@ -429,19 +451,41 @@ useToolLayout({
     ]"
   >
     <template #header>
-      <h3 class="text-md font-semibold">Quick Reference</h3>
+      <h3 class="text-md font-semibold text-center">Quick Reference</h3>
     </template>
-    <div class="p-4 space-y-3">
-      <div v-for="ref in quickReference" :key="ref.title" class="mb-2">
-        <div class="font-semibold">
-          {{ ref.title }}{{ ref.showAsterisk ? "*" : "" }}
+    <div class="p-4 space-y-6">
+      <div
+        v-for="ref in quickReference"
+        :key="ref.title"
+        class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0"
+      >
+        <div class="font-semibold mb-2">
+          {{ ref.title }}
+          <span
+            v-if="ref.superscriptType === 1"
+            class="text-sm align-super ml-1"
+            >¹</span
+          >
+          <span
+            v-if="ref.superscriptType === 2"
+            class="text-sm align-super ml-1"
+            >²</span
+          >
+          <span
+            v-if="ref.superscriptType === 12"
+            class="text-sm align-super ml-1"
+            >¹<span class="ml-1">²</span></span
+          >
         </div>
-        <div class="text-gray-700 dark:text-gray-300">
+        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
           {{ ref.description }}
         </div>
       </div>
-      <div class="mt-4 text-xs text-gray-600 dark:text-gray-400 italic">
-        *Must be human
+      <div
+        class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400 italic space-y-2"
+      >
+        <div>¹ Must be human to see this sign</div>
+        <div>² Must be human to use this item</div>
       </div>
     </div>
   </UCard>

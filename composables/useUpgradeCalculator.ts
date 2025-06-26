@@ -163,7 +163,7 @@ function buildUpgradeJourney({
 export function useUpgradeCalculator() {
   // Initialize state
   const initialState: UpgradeCalculatorState = {
-    currentLevel: 0,
+    currentLevel: -1,
     desiredLevel: 0,
     selectedPathId: "",
     selectedMerchantId: "",
@@ -173,6 +173,7 @@ export function useUpgradeCalculator() {
   // Validation rules
   const validationRules = {
     currentLevel: (value: number) => {
+      if (value === -1) return null; // Allow -1 as "no value"
       if (value < 0 || value > 15) {
         return "Current level must be between 0 and 15";
       }
@@ -213,6 +214,11 @@ export function useUpgradeCalculator() {
       selectedMerchantId,
       currentWeaponPathId,
     } = state;
+
+    // Check for invalid state
+    if (currentLevel === -1) {
+      throw new Error("Current level is required");
+    }
 
     const merchant = selectedMerchantId
       ? merchants.find((v) => v.id === selectedMerchantId)

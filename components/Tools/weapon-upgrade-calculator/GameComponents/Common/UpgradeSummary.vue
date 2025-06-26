@@ -12,12 +12,22 @@ import MaterialsCards from "./MaterialsCards.vue";
 import JourneyCard from "./JourneyCard.vue";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import SummaryCard from "../../../Common/display/SummaryCard.vue";
 
 const props = defineProps<
   UpgradeSummaryProps & {
     selectedTheme?: ColorTheme;
     iconPath?: string;
     selectedMerchantId?: string;
+    totalCost?: number;
+    terminology?: {
+      souls?: string;
+      level?: string;
+      weapon?: string;
+      upgrade?: string;
+      material?: string;
+      [key: string]: string | undefined;
+    };
   }
 >();
 
@@ -48,20 +58,6 @@ const formatNumber = (value: number): string => {
     <UCard>
       <template #header>
         <div class="flex items-center justify-center gap-2">
-          <svg
-            v-if="ICONS.BOOK_OPEN"
-            :class="`w-6 h-6 ${safeTheme.icon}`"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              :d="ICONS.BOOK_OPEN"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            />
-          </svg>
           <h2
             class="text-xl font-semibold text-center text-black dark:text-white"
           >
@@ -71,6 +67,21 @@ const formatNumber = (value: number): string => {
       </template>
 
       <div class="flex flex-col w-full">
+        <!-- Total Souls Required Card -->
+        <SummaryCard
+          v-if="props.totalCost && props.totalCost > 0"
+          :label="`Total ${props.terminology?.souls || 'Souls'} Required`"
+          :value="props.totalCost"
+          :unit="props.terminology?.souls || 'Souls'"
+          subtitle="Calculation result"
+          :details="`Level ${props.steps?.[0]?.from || 0} → ${props.steps?.[props.steps.length - 1]?.to || 0} (${props.steps?.length || 0} steps)`"
+          :theme="safeTheme"
+          :terminology="props.terminology"
+          icon="/soul-level-calculator-icon.webp"
+          icon-size="w-10 h-10"
+          class="mb-6"
+        />
+
         <!-- Summary Cards -->
         <SummaryCards
           :souls="props.souls"

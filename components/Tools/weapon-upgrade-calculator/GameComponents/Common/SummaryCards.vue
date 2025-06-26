@@ -43,6 +43,8 @@ const formatNumber = (value: number): string => {
         :value="props.souls"
         unit="Souls"
         :theme="safeTheme"
+        icon="i-heroicons-wrench-screwdriver"
+        icon-size="w-10 h-10"
         :class="[
           'h-full',
           props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'w-full',
@@ -62,6 +64,8 @@ const formatNumber = (value: number): string => {
         :value="props.purchaseCost ?? 0"
         unit="Souls"
         :theme="safeTheme"
+        icon="/weapon-upgrade-calculator-icon.webp"
+        icon-size="w-10 h-10"
         :class="[
           'h-full',
           props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'w-full',
