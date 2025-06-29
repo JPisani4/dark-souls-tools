@@ -24,7 +24,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 112,
+      magicAdjust: 200,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -86,7 +86,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 122,
+      magicAdjust: 220,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -117,7 +117,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 100,
+      magicAdjust: 234,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -148,7 +148,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 100,
+      magicAdjust: 240,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -179,7 +179,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 102,
+      magicAdjust: 234,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -210,7 +210,7 @@ export const talismans: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 127,
+      magicAdjust: 220,
     },
     auxillaryDamage: {
       bleed: 0,

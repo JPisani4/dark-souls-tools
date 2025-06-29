@@ -62,6 +62,7 @@ const {
   result,
   minimumRequirements,
   isTwoHandedDisabled,
+  isTwoHandedLocked,
   isShieldSelectionDisabled,
   isWeaponSelectionDisabled,
   hasRequiredTwoHandedWeapon,
@@ -345,17 +346,17 @@ const howToUseSteps = [
         >
           <button
             @click="handleTwoHandedToggle"
-            :disabled="isTwoHandedDisabled"
+            :disabled="isTwoHandedDisabled || isTwoHandedLocked"
             class="flex items-center gap-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg p-2 -m-2"
             :class="
-              isTwoHandedDisabled
+              isTwoHandedDisabled || isTwoHandedLocked
                 ? 'cursor-not-allowed opacity-50'
                 : 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
             "
           >
             <UCheckbox
               :model-value="state.isTwoHanded"
-              :disabled="isTwoHandedDisabled"
+              :disabled="isTwoHandedDisabled || isTwoHandedLocked"
               @update:model-value="handleTwoHandedToggle"
               @click.stop
             />
@@ -363,15 +364,24 @@ const howToUseSteps = [
               <label
                 class="text-sm font-medium cursor-pointer"
                 :class="
-                  isTwoHandedDisabled
+                  isTwoHandedDisabled || isTwoHandedLocked
                     ? 'text-gray-400 dark:text-gray-500'
                     : 'text-gray-900 dark:text-white'
                 "
               >
                 Two-Handed
+                <span
+                  v-if="isTwoHandedLocked"
+                  class="text-xs text-amber-600 dark:text-amber-400 ml-1"
+                >
+                  (Required)
+                </span>
               </label>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Reduces Strength requirement by ~33%
+                <span v-if="isTwoHandedLocked">
+                  Required for selected weapon(s)
+                </span>
+                <span v-else> Reduces Strength requirement by ~33% </span>
               </p>
             </div>
           </button>

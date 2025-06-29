@@ -120,7 +120,7 @@ export const spears: Weapon[] = [
       physical: 100,
       magic: 0,
       fire: 0,
-      lightning: 80,
+      lightning: 120,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -137,7 +137,7 @@ export const spears: Weapon[] = [
     name: "Pike",
     weaponType: "spear",
     attackType: {
-      regular: true,
+      thrust: true,
     },
     requirements: {
       strength: 24,
@@ -181,7 +181,7 @@ export const spears: Weapon[] = [
     criticalDamage: 100,
     weight: 6.0,
     damage: {
-      physical: 155,
+      physical: 163,
       magic: 0,
       fire: 0,
       lightning: 0,
@@ -192,7 +192,7 @@ export const spears: Weapon[] = [
       toxic: 0,
       curse: 0,
       occult: 0,
-      divine: 0,
+      divine: 110,
     },
     upgradePath: "special",
   },
@@ -240,13 +240,14 @@ export const spears: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 10.0,
     damage: {
-      physical: 90,
+      physical: 95,
       magic: 0,
       fire: 0,
-      lightning: 60,
+      lightning: 65,
     },
     auxillaryDamage: {
       bleed: 0,
@@ -303,6 +304,7 @@ export const spears: Weapon[] = [
       intelligence: 24,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {

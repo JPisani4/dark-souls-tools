@@ -13,20 +13,17 @@ export const smallShields: Shield[] = [
     },
     weight: 2.0,
     defense: {
-      physical: 70,
+      physical: 78,
       magic: 30,
       fire: 65,
       lightning: 50,
       stability: 45,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "special",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/leather-shield.png",
@@ -47,13 +44,10 @@ export const smallShields: Shield[] = [
       stability: 45,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/plank-shield.png",
@@ -74,13 +68,10 @@ export const smallShields: Shield[] = [
       stability: 45,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/caduceus-round-shield.png",
@@ -101,13 +92,10 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/red-and-white-round-shield.png",
@@ -128,10 +116,8 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
     upgradePath:
       "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
@@ -155,13 +141,10 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/effigy-round-shield.png",
@@ -171,7 +154,7 @@ export const smallShields: Shield[] = [
       strength: 10,
       dexterity: 0,
       intelligence: 0,
-      faith: 0,
+      faith: 16,
     },
     weight: 3.0,
     defense: {
@@ -182,13 +165,10 @@ export const smallShields: Shield[] = [
       stability: 45,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/cracked-round-shield.png",
@@ -209,13 +189,9 @@ export const smallShields: Shield[] = [
       stability: 30,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/buckler.png",
@@ -223,7 +199,7 @@ export const smallShields: Shield[] = [
     shieldType: "small-shield",
     requirements: {
       strength: 7,
-      dexterity: 0,
+      dexterity: 13,
       intelligence: 0,
       faith: 0,
     },
@@ -236,13 +212,10 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "special",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/small-leather-shield.png",
@@ -263,13 +236,10 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/small-shields/crystal-ring-shield.png",
@@ -281,6 +251,7 @@ export const smallShields: Shield[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     weight: 3.0,
     defense: {
       physical: 70,
@@ -290,10 +261,7 @@ export const smallShields: Shield[] = [
       stability: 40,
     },
     effect: {
-      parry: true,
-      bash: false,
-      special: "magic_projectile",
-      weightReduction: 0,
+      deflection: "light",
     },
     upgradePath: "special",
   },

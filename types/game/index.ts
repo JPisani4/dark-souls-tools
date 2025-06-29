@@ -124,3 +124,6 @@ export * from "./ds1/sorceries";
 
 // Re-export shield types for easy importing
 export * from "./ds1/shields";
+
+// Re-export achievement types for easy importing
+export * from "./ds1/achievements";

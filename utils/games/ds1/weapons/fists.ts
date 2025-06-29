@@ -116,6 +116,7 @@ export const fists: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 120,
     weight: 0.5,
     damage: {

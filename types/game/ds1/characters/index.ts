@@ -11,6 +11,10 @@ export interface CharacterStats {
   resistance: number;
   intelligence: number;
   faith: number;
+  // Derived stats
+  hp: number;
+  stamina: number;
+  equipLoad: number;
 }
 
 export interface CharacterEquipment {

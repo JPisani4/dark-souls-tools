@@ -6,21 +6,15 @@ import type {
   SorceryCategory,
   AllSorceries,
 } from "~/types/game/ds1/sorceries";
-import { soulArrow } from "./soul-arrow";
-import { soulSpear } from "./soul-spear";
-import { magicWeapon } from "./magic-weapon";
-import { utility } from "./utility";
-import { covenant } from "./covenant";
-import { special } from "./special";
+import { offensive } from "./offensive";
+import { weaponBuff } from "./weapon-buff";
+import { support } from "./support";
 
 // Combine all sorcery data
 const sorceryData: AllSorceries = {
-  "soul-arrow": soulArrow,
-  "soul-spear": soulSpear,
-  "magic-weapon": magicWeapon,
-  utility,
-  covenant,
-  special,
+  offensive: offensive,
+  "weapon-buff": weaponBuff,
+  support,
 };
 
 // Export the complete sorcery data

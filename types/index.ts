@@ -31,5 +31,15 @@ export type {
   UpgradeSummaryProps,
 } from "./game/upgradeSummary";
 
+// Quest Types - Quest tracking and NPC questline interfaces
+export type {
+  QuestState,
+  QuestRequirement,
+  QuestReward,
+  QuestCategory,
+  QuestCollection,
+  AllQuests,
+} from "./game/ds1/quests";
+
 // Common Types - Shared interfaces used across the application
 export * from "./common";

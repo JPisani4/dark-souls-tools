@@ -24,7 +24,7 @@ export const healing: Miracle[] = [
     miracleType: "healing",
     uses: 3,
     requirements: {
-      faith: 18,
+      faith: 24,
     },
     attunementSlots: 1,
     effect: {
@@ -72,7 +72,7 @@ export const healing: Miracle[] = [
     icon: "/miracles/healing/bountiful-sunlight.png",
     name: "Bountiful Sunlight",
     miracleType: "healing",
-    uses: 1,
+    uses: 2,
     requirements: {
       faith: 36,
     },
@@ -92,7 +92,7 @@ export const healing: Miracle[] = [
     miracleType: "healing",
     uses: 2,
     requirements: {
-      faith: 14,
+      faith: 16,
     },
     attunementSlots: 1,
     effect: {
@@ -101,23 +101,6 @@ export const healing: Miracle[] = [
       duration: 30,
     },
     description: "Gradually restores HP over time.",
-    location: "Petrus of Thorolund in Firelink Shrine",
-  },
-  {
-    icon: "/miracles/healing/seek-guidance.png",
-    name: "Seek Guidance",
-    miracleType: "healing",
-    uses: 5,
-    requirements: {
-      faith: 12,
-    },
-    attunementSlots: 1,
-    effect: {
-      buff: "message_guidance",
-      duration: 300,
-    },
-    description:
-      "Reveals more messages and bloodstains. Also shows more summon signs.",
     location: "Petrus of Thorolund in Firelink Shrine",
   },
 ];

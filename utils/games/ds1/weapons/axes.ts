@@ -113,6 +113,7 @@ export const axes: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 16.0,
     damage: {
@@ -175,6 +176,7 @@ export const axes: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 5.0,
     damage: {

@@ -110,6 +110,7 @@ export const crossbows: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {

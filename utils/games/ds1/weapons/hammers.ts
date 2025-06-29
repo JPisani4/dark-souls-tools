@@ -209,7 +209,7 @@ export const hammers: Weapon[] = [
       faith: 0,
     },
     criticalDamage: 100,
-    weight: 5.0,
+    weight: 3.5,
     damage: {
       physical: 91,
       magic: 0,

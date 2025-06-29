@@ -20,13 +20,10 @@ export const greatshields: Shield[] = [
       stability: 72,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/greatshields/stone-greatshield.png",
@@ -38,6 +35,7 @@ export const greatshields: Shield[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     weight: 20.0,
     defense: {
       physical: 100,
@@ -47,13 +45,10 @@ export const greatshields: Shield[] = [
       stability: 80,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "special",
   },
   {
     icon: "/shields/greatshields/havel-greatshield.png",
@@ -65,6 +60,7 @@ export const greatshields: Shield[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     weight: 26.0,
     defense: {
       physical: 100,
@@ -74,10 +70,8 @@ export const greatshields: Shield[] = [
       stability: 84,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "spell",
+      deflection: "heavy",
     },
     upgradePath: "special",
   },
@@ -100,13 +94,10 @@ export const greatshields: Shield[] = [
       stability: 71,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/greatshields/giant-shield.png",
@@ -127,13 +118,10 @@ export const greatshields: Shield[] = [
       stability: 68,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/greatshields/eagle-shield.png",
@@ -154,13 +142,10 @@ export const greatshields: Shield[] = [
       stability: 70,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/greatshields/greatshield-of-artorias.png",
@@ -181,13 +166,11 @@ export const greatshields: Shield[] = [
       stability: 88,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
+      description: "100% Poison, Toxic, and Bleed blocking in PvE.",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "boss",
   },
   {
     icon: "/shields/greatshields/bonewheel-shield.png",
@@ -199,6 +182,7 @@ export const greatshields: Shield[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     weight: 12.0,
     defense: {
       physical: 90,
@@ -208,13 +192,10 @@ export const greatshields: Shield[] = [
       stability: 66,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "spin",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/greatshields/cleansing-greatshield.png",
@@ -235,12 +216,9 @@ export const greatshields: Shield[] = [
       stability: 77,
     },
     effect: {
-      parry: false,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "special",
   },
 ];

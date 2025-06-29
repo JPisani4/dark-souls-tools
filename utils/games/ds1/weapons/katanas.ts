@@ -83,6 +83,7 @@ export const katanas: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {
@@ -106,7 +107,7 @@ export const katanas: Weapon[] = [
     name: "Iaito",
     weaponType: "katana",
     attackType: {
-      regular: true,
+      slash: true,
     },
     requirements: {
       strength: 14,

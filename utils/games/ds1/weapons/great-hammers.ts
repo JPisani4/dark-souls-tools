@@ -41,7 +41,7 @@ export const greatHammers: Weapon[] = [
     name: "Large Club",
     weaponType: "great-hammer",
     attackType: {
-      regular: true,
+      strike: true,
     },
     requirements: {
       strength: 26,
@@ -129,7 +129,7 @@ export const greatHammers: Weapon[] = [
       occult: 0,
       divine: 0,
     },
-    upgradePath: "regular",
+    upgradePath: "dragon",
   },
   {
     icon: "/weapons/great-hammers/smoughs-hammer.png",
@@ -144,6 +144,7 @@ export const greatHammers: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 28.0,
     damage: {
@@ -175,6 +176,7 @@ export const greatHammers: Weapon[] = [
       intelligence: 0,
       faith: 30,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 24.0,
     damage: {

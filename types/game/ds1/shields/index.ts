@@ -17,10 +17,10 @@ export interface ShieldDefense {
 }
 
 export interface ShieldEffect {
-  parry?: boolean;
-  bash?: boolean;
-  special?: string;
-  weightReduction?: number;
+  parry?: string;
+  deflection?: string;
+  staminaRegenBonus?: number;
+  description?: string;
 }
 
 export interface Shield {
@@ -33,6 +33,7 @@ export interface Shield {
   effect: ShieldEffect;
   upgradePath?: string;
   twoHanded?: boolean;
+  weaponArt?: boolean;
 }
 
 // Shield category types for organization

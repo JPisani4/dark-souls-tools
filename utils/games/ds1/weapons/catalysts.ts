@@ -334,7 +334,7 @@ export const catalysts: Weapon[] = [
       magic: 0,
       fire: 0,
       lightning: 0,
-      magicAdjust: 136,
+      magicAdjust: 220,
     },
     auxillaryDamage: {
       bleed: 0,

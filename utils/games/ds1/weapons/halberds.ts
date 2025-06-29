@@ -78,7 +78,7 @@ export const halberds: Weapon[] = [
     },
     requirements: {
       strength: 14,
-      dexterity: 14,
+      dexterity: 12,
       intelligence: 0,
       faith: 0,
     },
@@ -114,7 +114,7 @@ export const halberds: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
-    criticalDamage: 110,
+    criticalDamage: 100,
     weight: 6.0,
     damage: {
       physical: 115,
@@ -208,10 +208,11 @@ export const halberds: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {
-      physical: 165,
+      physical: 180,
       magic: 0,
       fire: 0,
       lightning: 0,
@@ -239,11 +240,12 @@ export const halberds: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {
-      physical: 120,
-      magic: 0,
+      physical: 125,
+      magic: 145,
       fire: 0,
       lightning: 0,
     },
@@ -274,10 +276,10 @@ export const halberds: Weapon[] = [
     criticalDamage: 100,
     weight: 16.0,
     damage: {
-      physical: 110,
+      physical: 140,
       magic: 0,
       fire: 0,
-      lightning: 0,
+      lightning: 135,
     },
     auxillaryDamage: {
       bleed: 0,

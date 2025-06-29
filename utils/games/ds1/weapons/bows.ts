@@ -8,7 +8,6 @@ export const bows: Weapon[] = [
     icon: "/weapons/bows/short-bow.png",
     name: "Short Bow",
     weaponType: "bow",
-    twoHanded: false,
     requiredTwoHanded: true,
     attackType: {
       regular: true,
@@ -42,7 +41,6 @@ export const bows: Weapon[] = [
     icon: "/weapons/bows/longbow.png",
     name: "Longbow",
     weaponType: "bow",
-    twoHanded: false,
     requiredTwoHanded: true,
     attackType: {
       regular: true,
@@ -110,7 +108,6 @@ export const bows: Weapon[] = [
     icon: "/weapons/bows/black-bow-of-pharis.png",
     name: "Black Bow of Pharis",
     weaponType: "bow",
-    twoHanded: false,
     requiredTwoHanded: true,
     attackType: {
       regular: true,
@@ -144,7 +141,6 @@ export const bows: Weapon[] = [
     icon: "/weapons/bows/darkmoon-bow.png",
     name: "Darkmoon Bow",
     weaponType: "bow",
-    twoHanded: false,
     requiredTwoHanded: true,
     attackType: {
       regular: true,
@@ -158,8 +154,8 @@ export const bows: Weapon[] = [
     criticalDamage: 100,
     weight: 1.0,
     damage: {
-      physical: 85,
-      magic: 85,
+      physical: 80,
+      magic: 80,
       fire: 0,
       lightning: 0,
     },

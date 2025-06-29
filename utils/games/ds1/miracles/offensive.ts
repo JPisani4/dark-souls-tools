@@ -93,9 +93,45 @@ export const offensive: Miracle[] = [
     icon: "/miracles/offensive/force.png",
     name: "Force",
     miracleType: "offensive",
-    uses: 1,
+    uses: 21,
     requirements: {
       faith: 12,
+    },
+    attunementSlots: 1,
+    effect: {
+      damage: 0,
+      range: 0,
+      area: 5,
+    },
+    description:
+      "Creates a force wave that knocks back enemies without damage.",
+    location: "Petrus of Thorolund in Firelink Shrine",
+  },
+  {
+    icon: "/miracles/offensive/gravelord-sword-dance.png",
+    name: "Gravelord Sword Dance",
+    miracleType: "offensive",
+    uses: 40,
+    requirements: {
+      faith: 0,
+    },
+    attunementSlots: 1,
+    effect: {
+      damage: 0,
+      range: 0,
+      area: 5,
+    },
+    description:
+      "Creates a force wave that knocks back enemies without damage.",
+    location: "Petrus of Thorolund in Firelink Shrine",
+  },
+  {
+    icon: "/miracles/offensive/gravelord-greatsword-dance.png",
+    name: "Gravelord Greatsword Dance",
+    miracleType: "offensive",
+    uses: 40,
+    requirements: {
+      faith: 0,
     },
     attunementSlots: 1,
     effect: {

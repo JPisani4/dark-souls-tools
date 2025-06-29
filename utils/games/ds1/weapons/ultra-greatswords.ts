@@ -10,7 +10,6 @@ export const ultraGreatswords: Weapon[] = [
     weaponType: "ultra-greatsword",
     attackType: {
       regular: true,
-      thrust: true,
     },
     requirements: {
       strength: 24,
@@ -147,6 +146,7 @@ export const ultraGreatswords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 24.0,
     damage: {

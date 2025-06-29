@@ -187,7 +187,6 @@ const howToUseSteps = [
         :value="totalSoulsCost"
         :label="terminology.totalCost || 'Total Souls Required'"
         :unit="terminology.souls || 'Souls'"
-        :subtitle="'Calculation result'"
         :details="`${terminology.level || 'Level'} ${current} → ${desired} (${filteredLevelsCount} ${terminology.level?.toLowerCase() || 'level'}s)`"
         :theme="safeTheme"
         :terminology="terminology"

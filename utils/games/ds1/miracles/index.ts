@@ -8,8 +8,8 @@ import type {
 } from "~/types/game/ds1/miracles";
 import { healing } from "./healing";
 import { offensive } from "./offensive";
-import { buff } from "./buff";
-import { special } from "./special";
+import { buff } from "./weapon-buff";
+import { special } from "./support";
 
 // Combine all miracle data
 const miracleData: AllMiracles = {

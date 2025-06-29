@@ -325,8 +325,7 @@ export const straightSwords: Weapon[] = [
       occult: 0,
       divine: 0,
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "special",
   },
   {
     icon: "/weapons/straight-swords/drake-sword.png",

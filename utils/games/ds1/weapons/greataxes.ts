@@ -18,7 +18,7 @@ export const greataxes: Weapon[] = [
       faith: 0,
     },
     criticalDamage: 100,
-    weight: 10.0,
+    weight: 14.0,
     damage: {
       physical: 140,
       magic: 0,
@@ -81,6 +81,7 @@ export const greataxes: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 24.0,
     damage: {
@@ -143,6 +144,7 @@ export const greataxes: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 24.0,
     damage: {

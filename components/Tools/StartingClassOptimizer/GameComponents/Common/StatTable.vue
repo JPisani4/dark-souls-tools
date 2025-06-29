@@ -41,11 +41,11 @@
                 <NumericInput
                   :model-value="stat === 1 ? '' : stat.toString()"
                   placeholder="10"
-                  :min="minimumRequirements[statKey as keyof CharacterStats]"
+                  :min="filteredMinimumRequirements[statKey as keyof BaseStats]"
                   :max="99"
                   :class="[
                     'w-20',
-                    !statValidation[statKey as keyof CharacterStats].isValid
+                    !filteredStatValidation[statKey as keyof BaseStats]?.isValid
                       ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
                       : '',
                   ]"
@@ -121,6 +121,19 @@ import {
 import { getRandomTheme } from "~/utils/themes/colorSystem";
 import Icon from "~/components/Common/Icon.vue";
 
+// Type for base stats only (excluding derived stats)
+type BaseStats = Pick<
+  CharacterStats,
+  | "vitality"
+  | "attunement"
+  | "endurance"
+  | "strength"
+  | "dexterity"
+  | "resistance"
+  | "intelligence"
+  | "faith"
+>;
+
 interface Props {
   stats: CharacterStats;
   minimumRequirements: CharacterStats;
@@ -148,10 +161,10 @@ const themeColor = computed(() => {
   return "primary";
 });
 
-// Filter out the level field from displayed stats
+// Filter out the level field and derived stats from displayed stats
 const displayStats = computed(() => {
-  const { level, ...otherStats } = props.stats;
-  return otherStats;
+  const { level, hp, stamina, equipLoad, ...otherStats } = props.stats;
+  return otherStats as BaseStats;
 });
 
 const updateStat = (stat: keyof CharacterStats, value: string) => {
@@ -265,4 +278,43 @@ const increaseToSoftCap = (stat: keyof CharacterStats) => {
     emit("update:stat", stat, nextCap);
   }
 };
+
+// Filter validation to only include displayed stats (exclude level)
+const filteredStatValidation = computed(() => {
+  // Ensure props.statValidation exists and has all required properties
+  const validation = props.statValidation || {};
+
+  const filteredValidation: Record<
+    keyof BaseStats,
+    { isValid: boolean; error?: string }
+  > = {
+    vitality: validation.vitality || { isValid: true },
+    attunement: validation.attunement || { isValid: true },
+    endurance: validation.endurance || { isValid: true },
+    strength: validation.strength || { isValid: true },
+    dexterity: validation.dexterity || { isValid: true },
+    resistance: validation.resistance || { isValid: true },
+    intelligence: validation.intelligence || { isValid: true },
+    faith: validation.faith || { isValid: true },
+  };
+
+  return filteredValidation;
+});
+
+// Filter minimum requirements to only include displayed stats (exclude level)
+const filteredMinimumRequirements = computed(() => {
+  // Ensure props.minimumRequirements exists and has all required properties
+  const requirements = props.minimumRequirements || {};
+
+  return {
+    vitality: requirements.vitality || 1,
+    attunement: requirements.attunement || 1,
+    endurance: requirements.endurance || 1,
+    strength: requirements.strength || 1,
+    dexterity: requirements.dexterity || 1,
+    resistance: requirements.resistance || 1,
+    intelligence: requirements.intelligence || 1,
+    faith: requirements.faith || 1,
+  } as BaseStats;
+});
 </script>

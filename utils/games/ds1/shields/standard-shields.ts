@@ -20,40 +20,10 @@ export const standardShields: Shield[] = [
       stability: 55,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
-  },
-  {
-    icon: "/shields/standard-shields/knight-shield.png",
-    name: "Knight Shield",
-    shieldType: "standard-shield",
-    requirements: {
-      strength: 10,
-      dexterity: 0,
-      intelligence: 0,
-      faith: 0,
-    },
-    weight: 5.5,
-    defense: {
-      physical: 100,
-      magic: 30,
-      fire: 60,
-      lightning: 40,
-      stability: 56,
-    },
-    effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
-    },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/balder-shield.png",
@@ -74,13 +44,10 @@ export const standardShields: Shield[] = [
       stability: 63,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/crest-shield.png",
@@ -101,13 +68,10 @@ export const standardShields: Shield[] = [
       stability: 55,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "special",
   },
   {
     icon: "/shields/standard-shields/dragon-crest-shield.png",
@@ -128,13 +92,10 @@ export const standardShields: Shield[] = [
       stability: 55,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "special",
   },
   {
     icon: "/shields/standard-shields/silver-knight-shield.png",
@@ -155,10 +116,8 @@ export const standardShields: Shield[] = [
       stability: 64,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
     upgradePath: "special",
   },
@@ -181,10 +140,8 @@ export const standardShields: Shield[] = [
       stability: 62,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
     upgradePath: "special",
   },
@@ -207,12 +164,10 @@ export const standardShields: Shield[] = [
       stability: 44,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/wooden-shield.png",
@@ -233,12 +188,10 @@ export const standardShields: Shield[] = [
       stability: 52,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/large-leather-shield.png",
@@ -259,12 +212,10 @@ export const standardShields: Shield[] = [
       stability: 52,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "fast",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/tower-kite-shield.png",
@@ -285,12 +236,10 @@ export const standardShields: Shield[] = [
       stability: 58,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/caduceus-kite-shield.png",
@@ -311,12 +260,10 @@ export const standardShields: Shield[] = [
       stability: 58,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/hollow-soldier-shield.png",
@@ -337,16 +284,14 @@ export const standardShields: Shield[] = [
       stability: 56,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/sanctuary-shield.png",
-    name: "SAnctus",
+    name: "Sanctus",
     shieldType: "standard-shield",
     requirements: {
       strength: 10,
@@ -354,6 +299,7 @@ export const standardShields: Shield[] = [
       intelligence: 0,
       faith: 18,
     },
+    weaponArt: true,
     weight: 3.0,
     defense: {
       physical: 95,
@@ -363,12 +309,11 @@ export const standardShields: Shield[] = [
       stability: 51,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
+      description: "Restores 2 HP every 2 seconds",
     },
-    upgradePath: "special",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/spider-shield.png",
@@ -389,13 +334,11 @@ export const standardShields: Shield[] = [
       stability: 56,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "poison_resistance",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
+      description: "Grants 100% block for poison and toxic attacks in PvE.",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/grass-crest-shield.png",
@@ -416,17 +359,16 @@ export const standardShields: Shield[] = [
       stability: 51,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "stamina_regeneration",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
+      staminaRegenBonus: 10,
+      description: "Increases stamina regeneration by 10 points per second.",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
-    icon: "/shields/standard-shields/blood-shield.png",
-    name: "Blood Shield",
+    icon: "/shields/standard-shields/bloodshield.png",
+    name: "Bloodshield",
     shieldType: "standard-shield",
     requirements: {
       strength: 10,
@@ -443,13 +385,12 @@ export const standardShields: Shield[] = [
       stability: 53,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "bleed_resistance",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
+      description:
+        "Raises Bleed/Poison/Curse resist by 50% of your base resistances.",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/iron-round-shield.png",
@@ -470,13 +411,10 @@ export const standardShields: Shield[] = [
       stability: 52,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "bleed_resistance",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "heavy",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/sunlight-shield.png",
@@ -497,13 +435,10 @@ export const standardShields: Shield[] = [
       stability: 60,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/pierce-shield.png",
@@ -524,10 +459,8 @@ export const standardShields: Shield[] = [
       stability: 49,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "light",
     },
     upgradePath:
       "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
@@ -551,13 +484,10 @@ export const standardShields: Shield[] = [
       stability: 48,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "light",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/gargoyle-shield.png",
@@ -578,13 +508,10 @@ export const standardShields: Shield[] = [
       stability: 56,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "normal",
+      deflection: "medium",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
+    upgradePath: "regular,crystal,fire,lightning,magic,divine",
   },
   {
     icon: "/shields/standard-shields/crystal-shield.png",
@@ -605,39 +532,9 @@ export const standardShields: Shield[] = [
       stability: 60,
     },
     effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
+      parry: "bash",
+      deflection: "medium",
+      description: "Blocks 100% poison, toxin and bleeding in PvE.",
     },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
-  },
-  {
-    icon: "/shields/standard-shields/crystal-shield.png",
-    name: "Crystal Shield",
-    shieldType: "standard-shield",
-    requirements: {
-      strength: 14,
-      dexterity: 0,
-      intelligence: 0,
-      faith: 0,
-    },
-    weight: 5.0,
-    defense: {
-      physical: 100,
-      magic: 60,
-      fire: 80,
-      lightning: 80,
-      stability: 60,
-    },
-    effect: {
-      parry: true,
-      bash: true,
-      special: "",
-      weightReduction: 0,
-    },
-    upgradePath:
-      "regular,raw,crystal,enchanted,chaos,fire,lightning,magic,divine,occult",
   },
 ];

@@ -25,6 +25,7 @@ import { halberds } from "./halberds";
 import { whips } from "./whips";
 import { fists } from "./fists";
 import { bows } from "./bows";
+import { greatbows } from "./greatbows";
 import { crossbows } from "./crossbows";
 import { catalysts } from "./catalysts";
 import { talismans } from "./talismans";
@@ -48,6 +49,7 @@ const weaponData: AllWeapons = {
   whips,
   fists,
   bows,
+  greatbows,
   crossbows,
   catalysts,
   talismans,

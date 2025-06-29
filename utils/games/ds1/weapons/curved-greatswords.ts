@@ -50,6 +50,7 @@ export const curvedGreatswords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 10.0,
     damage: {
@@ -59,9 +60,9 @@ export const curvedGreatswords: Weapon[] = [
       lightning: 0,
     },
     auxillaryDamage: {
-      bleed: 333,
+      bleed: 0,
       poison: 0,
-      toxic: 0,
+      toxic: 333,
       curse: 0,
       occult: 0,
       divine: 0,

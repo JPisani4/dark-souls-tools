@@ -38,6 +38,7 @@ export interface Weapon {
   weaponType: string;
   attackType: AttackType;
   requirements: WeaponRequirements;
+  weaponArt?: boolean;
   criticalDamage: number;
   weight: number;
   damage: WeaponDamage;
@@ -66,6 +67,7 @@ export type WeaponCategory =
   | "whips"
   | "fists"
   | "bows"
+  | "greatbows"
   | "crossbows"
   | "catalysts"
   | "talismans";

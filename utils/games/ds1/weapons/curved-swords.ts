@@ -41,7 +41,7 @@ export const curvedSwords: Weapon[] = [
     name: "Falchion",
     weaponType: "curved-sword",
     attackType: {
-      regular: true,
+      slash: true,
     },
     requirements: {
       strength: 9,
@@ -105,7 +105,7 @@ export const curvedSwords: Weapon[] = [
     name: "Painting Guardian Sword",
     weaponType: "curved-sword",
     attackType: {
-      regular: true,
+      slash: true,
     },
     requirements: {
       strength: 7,
@@ -145,6 +145,7 @@ export const curvedSwords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 3.5,
     damage: {
@@ -177,6 +178,7 @@ export const curvedSwords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 1.5,
     damage: {
@@ -208,6 +210,7 @@ export const curvedSwords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 2.0,
     damage: {

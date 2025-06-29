@@ -359,63 +359,61 @@ useToolLayout({
         </h3>
       </template>
       <div class="p-4">
-        <table
-          class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm"
-        >
-          <thead class="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th
-                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                {{ terminology.multiplayerItem || "Item" }}
-              </th>
-              <th
-                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                {{ terminology.levelRange || "Level Range" }}
-              </th>
-              <th
-                class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                {{ terminology.weaponLevelRange || "Weapon Level Range" }}
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+        <div class="overflow-x-auto">
+          <table
+            class="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm"
           >
-            <tr
-              v-for="row in results"
-              :key="row.item"
-              class="hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              <td
-                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
-              >
-                {{ row.item }}
-              </td>
-              <td
-                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
-              >
-                <span v-if="row.bypass">All*</span>
-                <span v-else-if="state.characterLevel.trim().length > 0"
-                  >{{ row.minLevel }} – {{ row.maxLevel }}</span
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th
+                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                 >
-                <span v-else>—</span>
-              </td>
-              <td
-                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+                  {{ terminology.multiplayerItem || "Item" }}
+                </th>
+                <th
+                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  {{ terminology.levelRange || "Level Range" }}
+                </th>
+                <th
+                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  {{ terminology.weaponLevelRange || "Weapon Level Range" }}
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+            >
+              <tr
+                v-for="row in results"
+                :key="row.item"
+                class="hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                <span v-if="row.bypass">All*</span>
-                <span v-else-if="row.weaponLevelRange">
-                  {{ row.weaponLevelRange[0] }} –
-                  {{ row.weaponLevelRange[1] }}
-                </span>
-                <span v-else>—</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <td
+                  class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 break-words"
+                >
+                  {{ row.item }}
+                </td>
+                <td class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
+                  <span v-if="row.bypass">All*</span>
+                  <span v-else-if="state.characterLevel.trim().length > 0"
+                    >{{ row.minLevel }} – {{ row.maxLevel }}</span
+                  >
+                  <span v-else>—</span>
+                </td>
+                <td class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
+                  <span v-if="row.bypass">All*</span>
+                  <span v-else-if="row.weaponLevelRange">
+                    {{ row.weaponLevelRange[0] }} –
+                    {{ row.weaponLevelRange[1] }}
+                  </span>
+                  <span v-else>—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <!-- Footnote about overleveled summons -->
         <div
           v-if="state.usePassword"

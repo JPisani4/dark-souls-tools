@@ -43,7 +43,6 @@ export const daggers: Weapon[] = [
     weaponType: "dagger",
     attackType: {
       slash: true,
-      thrust: true,
     },
     requirements: {
       strength: 6,
@@ -75,7 +74,8 @@ export const daggers: Weapon[] = [
     name: "Parrying Dagger",
     weaponType: "dagger",
     attackType: {
-      regular: true,
+      slash: true,
+      thrust: true,
     },
     requirements: {
       strength: 5,
@@ -140,7 +140,6 @@ export const daggers: Weapon[] = [
     weaponType: "dagger",
     attackType: {
       slash: true,
-      thrust: true,
     },
     requirements: {
       strength: 6,
@@ -180,10 +179,11 @@ export const daggers: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
-    criticalDamage: 100,
+    weaponArt: true,
+    criticalDamage: 160,
     weight: 1.0,
     damage: {
-      physical: 80,
+      physical: 75,
       magic: 0,
       fire: 0,
       lightning: 0,

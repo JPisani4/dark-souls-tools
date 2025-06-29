@@ -1,9 +1,11 @@
 import type { GameData } from "~/types/game";
 import { soulCosts } from "./soulCosts";
-import { upgradeCosts } from "./upgradeCosts";
-import { upgradePaths } from "./upgradePaths";
-import { merchants } from "./merchants";
+import { upgradeCosts, merchants as merchantsArray } from "./upgradeCosts";
+import { upgradePaths as upgradePathsObject } from "./upgradePaths";
 import * as stats from "./stats";
+import * as quests from "./quests";
+import * as vitalityHp from "./vitalityHp";
+import * as enduranceStamina from "./enduranceStamina";
 import {
   MULTIPLAYER_ITEMS,
   getLevelRange,
@@ -12,6 +14,23 @@ import {
   isPasswordBypass,
   getUpgradePathConfig,
 } from "./coopLevelRanges";
+
+// Convert merchants array to object format expected by GameData
+const merchants = Object.fromEntries(
+  merchantsArray.map((merchant) => [
+    merchant.id,
+    {
+      name: merchant.name,
+      location: "Various", // Default location since not provided in upgradeCosts
+      items: Object.entries(merchant.materialPrices).map(
+        ([material, price]) => ({
+          name: material,
+          cost: price,
+        })
+      ),
+    },
+  ])
+);
 
 const ds1GameData: GameData = {
   metadata: {
@@ -72,7 +91,7 @@ const ds1GameData: GameData = {
   },
   soulCosts,
   upgradeCosts,
-  upgradePaths,
+  upgradePaths: upgradePathsObject as any, // Type assertion to handle interface mismatch
   merchants,
   coopLevelRanges: {
     MULTIPLAYER_ITEMS,
@@ -109,3 +128,12 @@ export default ds1GameData;
 
 // Export stats utilities
 export { stats };
+
+// Export quest utilities
+export { quests };
+
+// Export vitality HP utilities
+export { vitalityHp };
+
+// Export endurance stamina utilities
+export { enduranceStamina };

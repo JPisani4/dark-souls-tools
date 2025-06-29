@@ -81,6 +81,7 @@ export const whips: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 5.0,
     damage: {
@@ -91,7 +92,7 @@ export const whips: Weapon[] = [
     },
     auxillaryDamage: {
       bleed: 0,
-      poison: 180,
+      poison: 176,
       toxic: 0,
       curse: 0,
       occult: 0,

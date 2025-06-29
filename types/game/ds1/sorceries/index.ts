@@ -34,13 +34,7 @@ export interface Sorcery {
 }
 
 // Sorcery category types for organization
-export type SorceryCategory =
-  | "soul-arrow"
-  | "soul-spear"
-  | "magic-weapon"
-  | "utility"
-  | "covenant"
-  | "special";
+export type SorceryCategory = "offensive" | "weapon-buff" | "support";
 
 // Collection of sorceries by category
 export interface SorceryCollection {

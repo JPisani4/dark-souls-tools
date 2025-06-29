@@ -339,11 +339,11 @@ export const specialUpgradePath: UpgradePath = {
   id: "special",
   name: "Special (+0 to +5)",
   steps: [
-    { from: 0, to: 1, souls: 200, materials: { twinkling_titanite: 1 } },
-    { from: 1, to: 2, souls: 200, materials: { twinkling_titanite: 1 } },
-    { from: 2, to: 3, souls: 200, materials: { twinkling_titanite: 2 } },
-    { from: 3, to: 4, souls: 200, materials: { twinkling_titanite: 2 } },
-    { from: 4, to: 5, souls: 200, materials: { twinkling_titanite: 4 } },
+    { from: 0, to: 1, souls: 2000, materials: { twinkling_titanite: 1 } },
+    { from: 1, to: 2, souls: 2000, materials: { twinkling_titanite: 1 } },
+    { from: 2, to: 3, souls: 2000, materials: { twinkling_titanite: 2 } },
+    { from: 3, to: 4, souls: 2000, materials: { twinkling_titanite: 2 } },
+    { from: 4, to: 5, souls: 2000, materials: { twinkling_titanite: 4 } },
   ],
 };
 
@@ -352,11 +352,11 @@ export const dragonUpgradePath: UpgradePath = {
   id: "dragon",
   name: "Dragon (+0 to +5)",
   steps: [
-    { from: 0, to: 1, souls: 200, materials: { dragon_scale: 1 } },
-    { from: 1, to: 2, souls: 200, materials: { dragon_scale: 1 } },
-    { from: 2, to: 3, souls: 200, materials: { dragon_scale: 2 } },
-    { from: 3, to: 4, souls: 200, materials: { dragon_scale: 2 } },
-    { from: 4, to: 5, souls: 200, materials: { dragon_scale: 4 } },
+    { from: 0, to: 1, souls: 10000, materials: { dragon_scale: 1 } },
+    { from: 1, to: 2, souls: 10000, materials: { dragon_scale: 1 } },
+    { from: 2, to: 3, souls: 10000, materials: { dragon_scale: 2 } },
+    { from: 3, to: 4, souls: 10000, materials: { dragon_scale: 2 } },
+    { from: 4, to: 5, souls: 10000, materials: { dragon_scale: 4 } },
   ],
 };
 

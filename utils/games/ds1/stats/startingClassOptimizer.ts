@@ -59,9 +59,14 @@ export function calculateMinimumRequirements(
   // Calculate weapon requirements
   weapons.forEach((weapon) => {
     if (weapon.requirements) {
+      // Only apply two-handed strength reduction if the weapon can be used one-handed
+      // Weapons with twoHanded: false (like greatbows) always require full strength
+      const shouldApplyTwoHandedReduction =
+        isTwoHanded && weapon.twoHanded !== false;
+
       requirements.strength = Math.max(
         requirements.strength,
-        isTwoHanded
+        shouldApplyTwoHandedReduction
           ? Math.ceil(
               (weapon.requirements.strength || 0) /
                 TWO_HANDED_STRENGTH_MULTIPLIER
@@ -207,11 +212,16 @@ export function isTwoHandedModeDisabled(
     return weapons.some((weapon) => {
       if (!weapon.requirements) return false;
 
-      const twoHandedStrength = Math.ceil(
-        weapon.requirements.strength / TWO_HANDED_STRENGTH_MULTIPLIER
-      );
+      // Only apply two-handed strength reduction if the weapon can be used one-handed
+      // Weapons with twoHanded: false (like greatbows) always require full strength
+      const shouldApplyTwoHandedReduction = weapon.twoHanded !== false;
+      const requiredStrength = shouldApplyTwoHandedReduction
+        ? Math.ceil(
+            weapon.requirements.strength / TWO_HANDED_STRENGTH_MULTIPLIER
+          )
+        : weapon.requirements.strength;
 
-      return currentStats.strength < twoHandedStrength;
+      return currentStats.strength < requiredStrength;
     });
   }
 
@@ -506,7 +516,12 @@ export function calculateItemRequirements(
   if ("weaponType" in item) {
     // Weapon
     if (item.requirements) {
-      requirements.strength = isTwoHanded
+      // Only apply two-handed strength reduction if the weapon can be used one-handed
+      // Weapons with twoHanded: false (like greatbows) always require full strength
+      const shouldApplyTwoHandedReduction =
+        isTwoHanded && item.twoHanded !== false;
+
+      requirements.strength = shouldApplyTwoHandedReduction
         ? Math.ceil(
             (item.requirements.strength || 0) / TWO_HANDED_STRENGTH_MULTIPLIER
           )

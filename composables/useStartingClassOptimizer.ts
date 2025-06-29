@@ -274,6 +274,18 @@ export function useStartingClassOptimizer() {
     return false;
   });
 
+  // Check if two-handed mode should be locked due to required two-handed items
+  const isTwoHandedLocked = computed(() => {
+    const weapons = baseTool.state.selectedItems.weapons;
+
+    // Check if any weapon requires two-handed mode
+    const hasRequiredTwoHandedWeapon = weapons.some(
+      (weapon) => weapon.requiredTwoHanded === true
+    );
+
+    return hasRequiredTwoHandedWeapon;
+  });
+
   const isShieldSelectionDisabled = computed(() => {
     // Shield selection should be disabled when the total number of weapons + shields reaches 2
     const totalWeaponsAndShields =
@@ -431,6 +443,13 @@ export function useStartingClassOptimizer() {
         },
       });
 
+      // Auto-enable two-handed mode if the weapon requires it
+      if (weapon.requiredTwoHanded === true && !baseTool.state.isTwoHanded) {
+        baseTool.setState({
+          isTwoHanded: true,
+        });
+      }
+
       // Auto-update stats from requirements after adding weapon
       nextTick(() => {
         updateStatsFromRequirements();
@@ -449,6 +468,23 @@ export function useStartingClassOptimizer() {
         weapons: newWeapons,
       },
     });
+
+    // Check if we need to reset two-handed mode after removing the weapon
+    const hasRemainingRequiredTwoHandedWeapons = newWeapons.some(
+      (weapon) => weapon.requiredTwoHanded === true
+    );
+
+    // If the removed weapon required two-handed mode and no other weapons require it,
+    // reset the two-handed state to false
+    if (
+      removedWeapon.requiredTwoHanded === true &&
+      !hasRemainingRequiredTwoHandedWeapons &&
+      baseTool.state.isTwoHanded
+    ) {
+      baseTool.setState({
+        isTwoHanded: false,
+      });
+    }
 
     // Reset stats to minimum requirements after removing weapon
     nextTick(() => {
@@ -750,6 +786,7 @@ export function useStartingClassOptimizer() {
         miracles: [],
       },
       characterStats: { ...DEFAULT_CHARACTER_STATS },
+      isTwoHanded: false,
       searchQueries: {
         weapons: "",
         shields: "",
@@ -760,6 +797,11 @@ export function useStartingClassOptimizer() {
   };
 
   const toggleTwoHanded = () => {
+    // Don't allow toggling if two-handed mode is locked due to required items
+    if (isTwoHandedLocked.value) {
+      return;
+    }
+
     if (!isTwoHandedDisabled.value) {
       baseTool.setState({
         isTwoHanded: !baseTool.state.isTwoHanded,
@@ -844,6 +886,7 @@ export function useStartingClassOptimizer() {
     minimumRequirements,
     validation,
     isTwoHandedDisabled,
+    isTwoHandedLocked,
     isShieldSelectionDisabled,
     isWeaponSelectionDisabled,
     hasRequiredTwoHandedWeapon,

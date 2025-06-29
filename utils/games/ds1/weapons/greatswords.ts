@@ -71,7 +71,7 @@ export const greatswords: Weapon[] = [
   },
   {
     icon: "/weapons/greatswords/man-serpent-greatsword.png",
-    name: "Man-serpent Greatsword",
+    name: "Man-Serpent Greatsword",
     weaponType: "greatsword",
     attackType: {
       regular: true,
@@ -106,7 +106,7 @@ export const greatswords: Weapon[] = [
     name: "Flamberge",
     weaponType: "greatsword",
     attackType: {
-      regular: true,
+      slash: true,
     },
     requirements: {
       strength: 16,
@@ -146,6 +146,7 @@ export const greatswords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 18.0,
     damage: {
@@ -177,6 +178,7 @@ export const greatswords: Weapon[] = [
       intelligence: 28,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 6.0,
     damage: {
@@ -208,7 +210,7 @@ export const greatswords: Weapon[] = [
       intelligence: 20,
       faith: 20,
     },
-    criticalDamage: 110,
+    criticalDamage: 100,
     weight: 10.0,
     damage: {
       physical: 120,
@@ -239,6 +241,7 @@ export const greatswords: Weapon[] = [
       intelligence: 18,
       faith: 18,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 9.0,
     damage: {
@@ -269,12 +272,12 @@ export const greatswords: Weapon[] = [
       strength: 24,
       dexterity: 18,
       intelligence: 18,
-      faith: 20,
+      faith: 18,
     },
-    criticalDamage: 110,
+    criticalDamage: 100,
     weight: 10.0,
     damage: {
-      physical: 178,
+      physical: 158,
       magic: 0,
       fire: 0,
       lightning: 0,
@@ -305,7 +308,7 @@ export const greatswords: Weapon[] = [
     criticalDamage: 100,
     weight: 8.0,
     damage: {
-      physical: 256,
+      physical: 231,
       magic: 0,
       fire: 0,
       lightning: 0,
@@ -336,7 +339,7 @@ export const greatswords: Weapon[] = [
     criticalDamage: 100,
     weight: 8.0,
     damage: {
-      physical: 190,
+      physical: 180,
       magic: 0,
       fire: 0,
       lightning: 0,
@@ -356,6 +359,7 @@ export const greatswords: Weapon[] = [
     weaponType: "greatsword",
     attackType: {
       regular: true,
+      thrust: true,
     },
     requirements: {
       strength: 20,
@@ -394,6 +398,7 @@ export const greatswords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 8.0,
     damage: {

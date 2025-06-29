@@ -82,6 +82,7 @@ export const thrustingSwords: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 2.0,
     damage: {
@@ -147,7 +148,7 @@ export const thrustingSwords: Weapon[] = [
       faith: 0,
     },
     criticalDamage: 120,
-    weight: 1.5,
+    weight: 0.5,
     damage: {
       physical: 57,
       magic: 0,

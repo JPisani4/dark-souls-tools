@@ -1,9 +1,9 @@
-// Bow weapons data for Dark Souls 1
-// This file contains all bow weapons with their complete stats
+// Greatbow weapons data for Dark Souls 1
+// This file contains all greatbow weapons with their complete stats
 
 import type { Weapon } from "~/types/game/ds1/weapons";
 
-export const bows: Weapon[] = [
+export const greatbows: Weapon[] = [
   {
     icon: "/weapons/greatbows/dragonslayer-greatbow.png",
     name: "Dragonslayer Greatbow",
@@ -52,6 +52,7 @@ export const bows: Weapon[] = [
       intelligence: 0,
       faith: 0,
     },
+    weaponArt: true,
     criticalDamage: 100,
     weight: 13.0,
     damage: {
