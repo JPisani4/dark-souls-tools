@@ -11,7 +11,7 @@ export const tools: Tool[] = [
     tags: ["co-op","level range","multiplayer","weapon level","calculator","dark souls","remastered"],
     order: 1,
     loadComponent: () => import('~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T17:36:56.717Z'),
+    createdAt: new Date('2025-06-30T22:01:01.394Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Co-op Level Range Calculator",
@@ -65,7 +65,7 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T17:36:56.717Z'),
+    createdAt: new Date('2025-06-30T22:01:01.394Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Soul Level Calculator",
@@ -113,7 +113,7 @@ export const tools: Tool[] = [
     tags: ["starting-class-optimizer","character-planner","ds1","planner"],
     order: 1,
     loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T17:36:56.717Z'),
+    createdAt: new Date('2025-06-30T22:01:01.394Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Starting Class Optimizer",
@@ -159,7 +159,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T17:36:56.717Z'),
+    createdAt: new Date('2025-06-30T22:01:01.394Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Upgrade Calculator",
@@ -202,6 +202,33 @@ export const tools: Tool[] = [
         ],
         "ogImage": "public/weapon-upgrade-calculator-icon.png"
       }
+    },
+  },
+  {
+    title: "NPC Quest Tracker",
+    description: "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
+    slug: "npc-quest-tracker",
+    icon: "/warrior-of-sunlight-covenant-dks.png",
+    category: "planner",
+    tags: ["npc","quest","tracker","progress","ds1"],
+    order: 10,
+    loadComponent: () => import('~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    gameCategories: ["ds1"],
+    config: {
+      "title": "NPC Quest Tracker",
+      "description": "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
+      "icon": "/warrior-of-sunlight-covenant-dks.png",
+      "category": "planner",
+      "order": 10,
+      "tags": [
+        "npc",
+        "quest",
+        "tracker",
+        "progress",
+        "ds1"
+      ],
+      "gameCategory": "ds1"
     },
   }
 ]

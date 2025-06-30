@@ -158,6 +158,11 @@ export function useBaseTool<
 
   const setState = (updates: Partial<TState>) => {
     Object.assign(state, updates);
+
+    // Auto-save immediately if enabled and no debounce
+    if (options.autoSave && !options.debounceMs) {
+      saveToStorage();
+    }
   };
 
   const setError = (newError: Error | null) => {
@@ -183,6 +188,7 @@ export function useBaseTool<
       if (serialized !== lastSavedState.value) {
         localStorage.setItem(options.autoSaveKey, serialized);
         lastSavedState.value = serialized;
+        console.log(`Auto-saved state for ${options.autoSaveKey}:`, data.state);
       }
     } catch (err) {
       console.warn("Failed to save tool state:", err);
@@ -207,10 +213,16 @@ export function useBaseTool<
           Object.assign(state, data.state);
           result.value = data.result;
           lastSavedState.value = stored;
+          console.log(`Loaded state for ${options.autoSaveKey}:`, data.state);
         } else {
           // Clear old data
+          console.log(
+            `Clearing old data for ${options.autoSaveKey} (${hoursDiff.toFixed(1)} hours old)`
+          );
           clearStorage();
         }
+      } else {
+        console.log(`No saved state found for ${options.autoSaveKey}`);
       }
     } catch (err) {
       console.warn("Failed to load tool state:", err);
@@ -245,17 +257,22 @@ export function useBaseTool<
   // Auto-save watcher
   let saveTimeout: NodeJS.Timeout | null = null;
 
-  if (options.autoSave && options.debounceMs) {
+  if (options.autoSave) {
     watch(
       state,
       () => {
-        if (saveTimeout) {
-          clearTimeout(saveTimeout);
-        }
+        if (options.debounceMs) {
+          if (saveTimeout) {
+            clearTimeout(saveTimeout);
+          }
 
-        saveTimeout = setTimeout(() => {
+          saveTimeout = setTimeout(() => {
+            saveToStorage();
+          }, options.debounceMs);
+        } else {
+          // Save immediately if no debounce
           saveToStorage();
-        }, options.debounceMs);
+        }
       },
       { deep: true }
     );
