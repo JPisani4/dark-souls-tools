@@ -2,6 +2,7 @@
 // This file handles HP, Stamina, Equip Load calculations and dodge roll mechanics
 
 import type { CharacterStats } from "~/types/game/ds1/characters";
+import { vitalityHp } from "~/utils/games/ds1/vitalityHp";
 
 // Base stats for calculations
 export const BASE_HP = 300; // Base HP at level 1
@@ -17,8 +18,8 @@ export const HP_REDUCTION_AFTER_CAP_2 = 0.25; // HP gain reduction after second 
 
 // Stamina calculation constants
 export const STAMINA_PER_ENDURANCE = 2; // Stamina gained per endurance level
-export const STAMINA_SOFT_CAP = 40; // Soft cap for endurance
-export const STAMINA_REDUCTION_AFTER_CAP = 0.5; // Stamina gain reduction after cap
+export const STAMINA_SOFT_CAP = 40; // Soft cap for endurance (stamina stops increasing here)
+export const STAMINA_REDUCTION_AFTER_CAP = 0.5; // Stamina gain reduction after cap (unused now)
 
 // Equip Load calculation constants
 export const EQUIP_LOAD_PER_ENDURANCE = 1; // Equip load gained per endurance level
@@ -211,33 +212,14 @@ export function getStartingEndurance(characterClass: string): number {
 }
 
 /**
- * Calculate HP based on vitality level
+ * Calculate HP based on vitality level using exact game values
  * @param vitality - The character's vitality level
  * @returns The calculated HP value
  */
 export function calculateHP(vitality: number): number {
-  if (vitality <= 0) return BASE_HP;
-
-  let hp = BASE_HP;
-
-  if (vitality <= HP_SOFT_CAP_1) {
-    // Before first soft cap
-    hp += vitality * HP_PER_VITALITY;
-  } else if (vitality <= HP_SOFT_CAP_2) {
-    // Between first and second soft cap
-    hp += HP_SOFT_CAP_1 * HP_PER_VITALITY;
-    const additionalVitality = vitality - HP_SOFT_CAP_1;
-    hp += additionalVitality * HP_PER_VITALITY * HP_REDUCTION_AFTER_CAP_1;
-  } else {
-    // After second soft cap
-    hp += HP_SOFT_CAP_1 * HP_PER_VITALITY;
-    const secondCapVitality = HP_SOFT_CAP_2 - HP_SOFT_CAP_1;
-    hp += secondCapVitality * HP_PER_VITALITY * HP_REDUCTION_AFTER_CAP_1;
-    const additionalVitality = vitality - HP_SOFT_CAP_2;
-    hp += additionalVitality * HP_PER_VITALITY * HP_REDUCTION_AFTER_CAP_2;
-  }
-
-  return Math.floor(hp);
+  if (vitality <= 0) return vitalityHp[1] || 400;
+  if (vitality > 99) return vitalityHp[99] || 1900;
+  return vitalityHp[vitality] || 400;
 }
 
 /**
@@ -251,14 +233,12 @@ export function calculateStamina(endurance: number): number {
   let stamina = BASE_STAMINA;
 
   if (endurance <= STAMINA_SOFT_CAP) {
-    // Before soft cap
+    // Before soft cap (up to level 40)
     stamina += endurance * STAMINA_PER_ENDURANCE;
   } else {
-    // After soft cap
+    // After soft cap (level 40+), stamina stops increasing
     stamina += STAMINA_SOFT_CAP * STAMINA_PER_ENDURANCE;
-    const additionalEndurance = endurance - STAMINA_SOFT_CAP;
-    stamina +=
-      additionalEndurance * STAMINA_PER_ENDURANCE * STAMINA_REDUCTION_AFTER_CAP;
+    // No additional stamina gain after level 40
   }
 
   return Math.floor(stamina);
@@ -292,18 +272,15 @@ export function calculateStaminaRegen(
     shields?: number;
   } = {}
 ): number {
-  // Base stamina regen is 45 per second
+  // Base stamina regen is 45 per second (endurance does not affect this in DS1)
   const baseRegen = 45;
-
-  // Endurance provides a small bonus to stamina regen
-  const enduranceBonus = endurance * 0.5;
 
   // Equipment bonuses
   const armorBonus = equipmentBonuses.armor || 0;
   const ringBonus = equipmentBonuses.rings || 0;
   const shieldBonus = equipmentBonuses.shields || 0;
 
-  return baseRegen + enduranceBonus + armorBonus + ringBonus + shieldBonus;
+  return baseRegen + armorBonus + ringBonus + shieldBonus;
 }
 
 /**
@@ -374,29 +351,29 @@ export function calculateDerivedStats(stats: CharacterStats): CharacterStats {
  * Get the minimum endurance level needed for a specific dodge roll
  * @param targetRoll - The desired dodge roll type
  * @param equippedWeight - The weight of equipped items
+ * @param equipmentBonuses - Bonuses from equipped items
  * @returns The minimum endurance level needed, or null if impossible
  */
 export function getMinEnduranceForRoll(
   targetRoll: string,
-  equippedWeight: number
+  equippedWeight: number,
+  equipmentBonuses: { equipLoadMultipliers: number[] }
 ): number | null {
   const roll = DODGE_ROLLS.find((r) => r.name === targetRoll);
   if (!roll) return null;
 
-  // Calculate required equip load capacity
-  const requiredEquipLoad = (equippedWeight / roll.equipLoadThreshold) * 100;
+  // Calculate the minimum equip load needed for this roll threshold
+  const minEquipLoad = equippedWeight / (roll.equipLoadThreshold / 100);
 
-  // Calculate required endurance level
-  if (requiredEquipLoad <= BASE_EQUIP_LOAD) {
-    return EQUIP_LOAD_START_LEVEL;
+  // Find the minimum endurance such that calculateEquipLoadWithBonuses(endurance, equipmentBonuses) >= minEquipLoad
+  for (let endurance = EQUIP_LOAD_START_LEVEL; endurance <= 99; endurance++) {
+    if (
+      calculateEquipLoadWithBonuses(endurance, equipmentBonuses) >= minEquipLoad
+    ) {
+      return endurance;
+    }
   }
-
-  const additionalEquipLoad = requiredEquipLoad - BASE_EQUIP_LOAD;
-  const additionalEndurance = Math.ceil(
-    additionalEquipLoad / EQUIP_LOAD_PER_ENDURANCE
-  );
-
-  return EQUIP_LOAD_START_LEVEL + additionalEndurance;
+  return null; // Not possible
 }
 
 /**
@@ -425,7 +402,9 @@ export function getNextEnduranceForBetterRoll(
   if (currentRollIndex <= 0) return null; // Already at best roll
 
   const nextRoll = DODGE_ROLLS[currentRollIndex - 1];
-  return getMinEnduranceForRoll(nextRoll.name, equippedWeight);
+  return getMinEnduranceForRoll(nextRoll.name, equippedWeight, {
+    equipLoadMultipliers: [],
+  });
 }
 
 /**
@@ -434,5 +413,256 @@ export function getNextEnduranceForBetterRoll(
  * @returns Total weight
  */
 export function calculateTotalWeight(items: Array<{ weight: number }>): number {
-  return items.reduce((total, item) => total + (item.weight || 0), 0);
+  const totalWeight = items.reduce(
+    (total, item) => total + (item.weight || 0),
+    0
+  );
+  // Round down to the nearest tenth
+  return Math.floor(totalWeight * 10) / 10;
+}
+
+/**
+ * Calculate equipment bonuses from all equipped items
+ * @param weapons - Array of equipped weapons
+ * @param shields - Array of equipped shields
+ * @param armor - Array of equipped armor
+ * @param rings - Array of equipped rings
+ * @returns Combined equipment bonuses
+ */
+export function calculateEquipmentBonuses(
+  weapons: Array<{ effect?: any }> = [],
+  shields: Array<{ effect?: any }> = [],
+  armor: Array<{ effect?: any; staminaRegenReduction?: number }> = [],
+  rings: Array<{ effect?: any }> = []
+) {
+  const bonuses = {
+    hpBonus: 0,
+    staminaBonus: 0,
+    staminaRegenBonus: 0,
+    equipLoadMultipliers: [] as number[], // Store as separate multipliers
+    hasDarkWoodGrainRing: false,
+  };
+
+  // Calculate bonuses from rings
+  rings.forEach((ring) => {
+    if (ring.effect) {
+      // Handle direct effect properties
+      bonuses.hpBonus += ring.effect.hpBonus || 0;
+      bonuses.staminaBonus += ring.effect.staminaBonus || 0;
+      bonuses.staminaRegenBonus += ring.effect.staminaRegenBonus || 0;
+
+      // Store equip load bonuses as separate multipliers
+      if (ring.effect.equipLoadBonus) {
+        bonuses.equipLoadMultipliers.push(1 + ring.effect.equipLoadBonus / 100);
+      }
+
+      // Handle statBonus object (for rings like Ring of Favor and Protection)
+      if (ring.effect.statBonus) {
+        bonuses.hpBonus += ring.effect.statBonus.maxHp || 0;
+        bonuses.staminaBonus += ring.effect.statBonus.staminaBonus || 0;
+        if (ring.effect.statBonus.equipLoadBonus) {
+          bonuses.equipLoadMultipliers.push(
+            1 + ring.effect.statBonus.equipLoadBonus / 100
+          );
+        }
+      }
+
+      // Check for Dark Wood Grain Ring
+      if (ring.effect.special === "dark-wood-grain-ring") {
+        bonuses.hasDarkWoodGrainRing = true;
+      }
+    }
+  });
+
+  // Calculate bonuses from armor
+  armor.forEach((piece) => {
+    if (piece.effect) {
+      bonuses.staminaRegenBonus += piece.effect.staminaRegenBonus || 0;
+      if (piece.effect.equipLoadBonus) {
+        bonuses.equipLoadMultipliers.push(
+          1 + piece.effect.equipLoadBonus / 100
+        );
+      }
+      // Add maxHpBonus from armor effects
+      if (piece.effect.maxHpBonus) {
+        bonuses.hpBonus += piece.effect.maxHpBonus;
+      }
+    }
+    // Handle stamina regeneration reduction from armor weight
+    if (piece.staminaRegenReduction) {
+      bonuses.staminaRegenBonus -= piece.staminaRegenReduction;
+    }
+  });
+
+  // Calculate bonuses from shields
+  shields.forEach((shield) => {
+    if (shield.effect) {
+      bonuses.staminaRegenBonus += shield.effect.staminaRegenBonus || 0;
+    }
+  });
+
+  return bonuses;
+}
+
+/**
+ * Calculate max HP with equipment bonuses
+ * @param vitality - Character's vitality level
+ * @param equipmentBonuses - Bonuses from equipped items
+ * @returns Maximum HP
+ */
+export function calculateMaxHp(
+  vitality: number,
+  equipmentBonuses: { hpBonus: number } = { hpBonus: 0 }
+): number {
+  const baseHp = calculateHP(vitality);
+  // Handle percentage-based bonuses (like Ring of Favor and Protection)
+  const percentageBonus = baseHp * (equipmentBonuses.hpBonus / 100);
+  return baseHp + percentageBonus;
+}
+
+/**
+ * Calculate max stamina with equipment bonuses
+ * @param endurance - Character's endurance level
+ * @param equipmentBonuses - Bonuses from equipped items
+ * @returns Maximum stamina
+ */
+export function calculateMaxStamina(
+  endurance: number,
+  equipmentBonuses: { staminaBonus: number } = { staminaBonus: 0 }
+): number {
+  const baseStamina = calculateStamina(endurance);
+  // Handle percentage-based bonuses (like Ring of Favor and Protection)
+  const percentageBonus = baseStamina * (equipmentBonuses.staminaBonus / 100);
+  return baseStamina + percentageBonus;
+}
+
+/**
+ * Calculate stamina regeneration with equipment bonuses
+ * @param endurance - Character's endurance level
+ * @param equipmentBonuses - Bonuses from equipped items
+ * @returns Stamina regeneration rate
+ */
+export function calculateStaminaRegenWithBonuses(
+  endurance: number,
+  equipmentBonuses: { staminaRegenBonus: number } = { staminaRegenBonus: 0 }
+): number {
+  const baseRegen = calculateStaminaRegen(endurance);
+  const totalBonus = equipmentBonuses.staminaRegenBonus || 0;
+  const totalRegen = Math.max(0, baseRegen + totalBonus); // Ensure stamina regen doesn't go below 0
+  return Math.round(totalRegen); // Round to whole number to avoid decimal display
+}
+
+/**
+ * Calculate equip load with equipment bonuses
+ * @param endurance - Character's endurance level
+ * @param equipmentBonuses - Bonuses from equipped items
+ * @returns Equip load capacity
+ */
+export function calculateEquipLoadWithBonuses(
+  endurance: number,
+  equipmentBonuses: { equipLoadMultipliers: number[] } = {
+    equipLoadMultipliers: [],
+  }
+): number {
+  const baseEquipLoad = calculateEquipLoad(endurance);
+
+  // Apply bonuses multiplicatively to match in-game behavior
+  // In-game: Havel's Ring (+50%) is applied first, then Ring of Favor and Protection (+20%)
+  // So with both rings: base * 1.5 * 1.2 = base * 1.8
+  // The equipLoadMultipliers are the separate multipliers (1.5 and 1.2)
+  // We need to calculate the total multiplier
+  const totalMultiplier = equipmentBonuses.equipLoadMultipliers.reduce(
+    (total, multiplier) => total * multiplier,
+    1
+  );
+  return baseEquipLoad * totalMultiplier;
+}
+
+/**
+ * Calculate dodge roll type based on equip load percentage and equipment
+ * @param equipLoadPercentage - Percentage of equip load being used
+ * @param hasDarkWoodGrainRing - Whether the character has the Dark Wood Grain Ring
+ * @returns Dodge roll type name
+ */
+export function calculateDodgeRollType(
+  equipLoadPercentage: number,
+  hasDarkWoodGrainRing: boolean = false
+): string {
+  const dodgeRoll = getDodgeRoll(equipLoadPercentage, hasDarkWoodGrainRing);
+  return dodgeRoll.name;
+}
+
+/**
+ * Calculate all derived stats for a character with equipment
+ * @param stats - Base character stats
+ * @param weapons - Equipped weapons
+ * @param shields - Equipped shields
+ * @param armor - Equipped armor
+ * @param rings - Equipped rings
+ * @returns Character stats with derived values calculated
+ */
+export function calculateAllDerivedStats(
+  stats: CharacterStats,
+  weapons: Array<{ weight: number; effect?: any }> = [],
+  shields: Array<{ weight: number; effect?: any }> = [],
+  armor: Array<{
+    weight: number;
+    effect?: any;
+    staminaRegenReduction?: number;
+  }> = [],
+  rings: Array<{ effect?: any }> = []
+): CharacterStats {
+  // Calculate equipment bonuses
+  const equipmentBonuses = calculateEquipmentBonuses(
+    weapons,
+    shields,
+    armor,
+    rings
+  );
+
+  // Calculate total equipped weight
+  const equippedWeight = calculateTotalWeight([
+    ...weapons,
+    ...shields,
+    ...armor,
+  ]);
+
+  // Calculate base derived stats
+  const baseDerivedStats = calculateDerivedStats(stats);
+
+  // Calculate enhanced derived stats with equipment bonuses
+  const maxHp = Math.floor(calculateMaxHp(stats.vitality, equipmentBonuses));
+  const maxStamina =
+    Math.round(calculateMaxStamina(stats.endurance, equipmentBonuses) * 10) /
+    10;
+  const staminaRegen =
+    Math.round(
+      calculateStaminaRegenWithBonuses(stats.endurance, equipmentBonuses) * 10
+    ) / 10;
+  const equipLoad =
+    Math.floor(
+      calculateEquipLoadWithBonuses(stats.endurance, equipmentBonuses) * 10
+    ) / 10;
+
+  // Calculate equip load percentage
+  const equipLoadPercentage =
+    Math.round(calculateEquipLoadPercentage(equippedWeight, equipLoad) * 10) /
+    10;
+
+  // Calculate dodge roll type
+  const dodgeRoll = calculateDodgeRollType(
+    equipLoadPercentage,
+    equipmentBonuses.hasDarkWoodGrainRing
+  );
+
+  return {
+    ...baseDerivedStats,
+    maxHp,
+    maxStamina,
+    staminaRegen,
+    equipLoad,
+    dodgeRoll,
+    equippedWeight: Math.round(equippedWeight * 10) / 10,
+    equipLoadPercentage,
+  };
 }

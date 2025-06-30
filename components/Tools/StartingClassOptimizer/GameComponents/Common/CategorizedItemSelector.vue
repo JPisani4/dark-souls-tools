@@ -15,58 +15,80 @@
     </div>
 
     <!-- Selected Items Display -->
-    <div v-if="selectedItems.length > 0" class="space-y-2">
+    <div v-if="selectedItems.length > 0" class="space-y-3">
       <div
         v-for="(item, index) in selectedItems"
         :key="`${item.name}-${index}`"
-        class="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+        class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
       >
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <p class="font-medium text-gray-900 dark:text-white">
-              {{ item.name }}
-            </p>
-            <span
-              class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300"
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-2">
+              <p class="font-medium text-gray-900 dark:text-white truncate">
+                {{ item.name }}
+              </p>
+              <span
+                class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 flex-shrink-0"
+              >
+                {{ getItemCategory(item) }}
+              </span>
+            </div>
+
+            <!-- Stat Requirements -->
+            <div
+              v-if="!isRing(item) || hasRequirements(item)"
+              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
             >
-              {{ getItemCategory(item) }}
-            </span>
+              <span class="font-medium">Requirements:</span>
+              {{ formatRequirements(item) }}
+            </div>
+
+            <!-- Weight for weapons and shields -->
+            <div
+              v-if="isWeaponOrShield(item)"
+              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+            >
+              {{ (item as Weapon | Shield).weight }} weight
+            </div>
+
+            <!-- Weight for armor -->
+            <div
+              v-if="isArmor(item)"
+              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+            >
+              {{ (item as Armor).weight }} weight
+            </div>
+
+            <!-- Additional Info for Spells -->
+            <div
+              v-if="isSpell(item)"
+              class="text-xs text-gray-500 dark:text-gray-400 mb-2"
+            >
+              {{ (item as Sorcery | Miracle).attunementSlots }} attunement
+              slot{{
+                (item as Sorcery | Miracle).attunementSlots !== 1 ? "s" : ""
+              }}
+            </div>
+
+            <!-- Description for rings -->
+            <div
+              v-if="isRing(item)"
+              class="text-xs text-gray-500 dark:text-gray-400 mb-2"
+            >
+              {{ (item as Ring).description }}
+            </div>
           </div>
 
-          <!-- Stat Requirements -->
-          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            <span class="font-medium">Requirements:</span>
-            {{ formatRequirements(item) }}
-          </div>
-
-          <!-- Additional Info for Spells -->
-          <div
-            v-if="isSpell(item)"
-            class="text-xs text-gray-500 dark:text-gray-400"
+          <UButton
+            size="sm"
+            variant="ghost"
+            color="error"
+            @click="$emit('remove', index)"
+            class="text-red-600 hover:text-red-700 ml-3 flex-shrink-0"
           >
-            {{ (item as Sorcery | Miracle).attunementSlots }} attunement slot{{
-              (item as Sorcery | Miracle).attunementSlots !== 1 ? "s" : ""
-            }}
-          </div>
-
-          <!-- Additional Info for Weapons/Shields -->
-          <div
-            v-else-if="hasAdditionalInfo(item)"
-            class="text-xs text-gray-500 dark:text-gray-400"
-          >
-            {{ getAdditionalInfo(item) }}
-          </div>
+            <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
+          </UButton>
         </div>
-
-        <UButton
-          size="sm"
-          variant="ghost"
-          color="error"
-          @click="$emit('remove', index)"
-          class="text-red-600 hover:text-red-700 ml-2 flex-shrink-0"
-        >
-          <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
-        </UButton>
       </div>
     </div>
 
@@ -112,6 +134,8 @@ import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
 import type { Miracle } from "~/types/game/ds1/miracles";
+import type { Ring } from "~/types/game/ds1/rings";
+import type { Armor } from "~/types/game/ds1/armor";
 import SelectField from "../../../Common/forms/SelectField.vue";
 import {
   getAttunementSlots,
@@ -127,9 +151,9 @@ interface Props {
     value: string;
     label: string;
     category: string;
-    item: Weapon | Shield | Sorcery | Miracle;
+    item: Weapon | Shield | Sorcery | Miracle | Ring | Armor;
   }>;
-  selectedItems: (Weapon | Shield | Sorcery | Miracle)[];
+  selectedItems: (Weapon | Shield | Sorcery | Miracle | Ring | Armor)[];
   maxItems?: number;
   disabled?: boolean;
   currentAttunement?: number;
@@ -142,7 +166,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  add: [item: Weapon | Shield | Sorcery | Miracle];
+  add: [item: Weapon | Shield | Sorcery | Miracle | Ring | Armor];
   remove: [index: number];
   increaseAttunement: [level: number];
 }>();
@@ -155,8 +179,69 @@ const isMaxSelected = computed(() => {
 });
 
 // Check if an item is a spell (sorcery or miracle)
-const isSpell = (item: Weapon | Shield | Sorcery | Miracle): boolean => {
+const isSpell = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+): boolean => {
   return "sorceryType" in item || "miracleType" in item;
+};
+
+// Check if an item is a weapon or shield
+const isWeaponOrShield = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+): boolean => {
+  return "weaponType" in item || "shieldType" in item;
+};
+
+// Check if an item is a ring
+const isRing = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+): boolean => {
+  return "ringType" in item;
+};
+
+// Check if an item is armor
+const isArmor = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+): boolean => {
+  return "slot" in item && "armorType" in item;
+};
+
+// Check if an item has requirements
+const hasRequirements = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+): boolean => {
+  // Armor doesn't have requirements
+  if (isArmor(item)) {
+    return false;
+  }
+
+  // Type assertion for items with requirements
+  const req = (item as Weapon | Shield | Sorcery | Miracle | Ring).requirements;
+
+  // Check based on item type
+  if (isWeaponOrShield(item)) {
+    return (
+      (req as any).strength > 0 ||
+      (req as any).dexterity > 0 ||
+      (req as any).intelligence > 0 ||
+      (req as any).faith > 0
+    );
+  } else if (isSpell(item)) {
+    return (
+      (req as any).intelligence > 0 ||
+      (req as any).faith > 0 ||
+      (req as any).attunement > 0
+    );
+  } else if (isRing(item)) {
+    return (
+      (req as any).strength > 0 ||
+      (req as any).dexterity > 0 ||
+      (req as any).intelligence > 0 ||
+      (req as any).faith > 0
+    );
+  }
+
+  return false;
 };
 
 // Calculate total attunement slots required by selected spells
@@ -222,16 +307,34 @@ const selectOptions = computed(() => {
     // Add items in this category
     categoryOptions.forEach((option) => {
       if (!isItemSelected(option.value)) {
-        const itemLabel = `${option.item.name} (${formatRequirements(option.item)})`;
+        let itemLabel = option.item.name;
+
+        // Add requirements info for non-ring items
+        if (!isRing(option.item)) {
+          const requirements = formatRequirements(option.item);
+          if (requirements !== "No requirements") {
+            itemLabel += ` (${requirements})`;
+          }
+        }
+
+        // Add weight info for weapons and shields
+        if (isWeaponOrShield(option.item)) {
+          itemLabel += ` - ${(option.item as Weapon | Shield).weight} weight`;
+        }
+
+        // Add weight info for armor
+        if (isArmor(option.item)) {
+          itemLabel += ` - ${(option.item as Armor).weight} weight`;
+        }
 
         // Add attunement slot info for spells
-        const finalLabel = isSpell(option.item)
-          ? `${itemLabel} - ${(option.item as Sorcery | Miracle).attunementSlots || 1} slot${((option.item as Sorcery | Miracle).attunementSlots || 1) !== 1 ? "s" : ""}`
-          : itemLabel;
+        if (isSpell(option.item)) {
+          itemLabel += ` - ${(option.item as Sorcery | Miracle).attunementSlots || 1} slot${((option.item as Sorcery | Miracle).attunementSlots || 1) !== 1 ? "s" : ""}`;
+        }
 
         options.push({
           value: option.value,
-          label: finalLabel,
+          label: itemLabel,
         });
       }
     });
@@ -257,7 +360,9 @@ const handleSelection = (value: string) => {
 };
 
 // Get item category for display
-const getItemCategory = (item: Weapon | Shield | Sorcery | Miracle) => {
+const getItemCategory = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+) => {
   const option = props.options.find((opt) => opt.item.name === item.name);
   const category = option?.category || "Unknown";
   return formatCategoryName(category);
@@ -272,8 +377,16 @@ const formatCategoryName = (category: string) => {
 };
 
 // Format requirements for display
-const formatRequirements = (item: Weapon | Shield | Sorcery | Miracle) => {
-  const req = item.requirements;
+const formatRequirements = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+) => {
+  // Armor doesn't have requirements
+  if (isArmor(item)) {
+    return "No requirements";
+  }
+
+  // Type assertion for items with requirements
+  const req = (item as Weapon | Shield | Sorcery | Miracle | Ring).requirements;
   const requirements = [];
 
   // Handle different requirement types
@@ -289,19 +402,22 @@ const formatRequirements = (item: Weapon | Shield | Sorcery | Miracle) => {
   return requirements.length > 0 ? requirements.join(", ") : "No requirements";
 };
 
-// Check if an item has additional info
-const hasAdditionalInfo = (
-  item: Weapon | Shield | Sorcery | Miracle
+// Check if an item has a description
+const hasDescription = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
 ): boolean => {
-  // Removed additional info display for cleaner UI
-  return false;
+  return isSpell(item) && (item as Sorcery | Miracle).description !== undefined;
 };
 
-// Get additional info for an item
-const getAdditionalInfo = (
-  item: Weapon | Shield | Sorcery | Miracle
+// Get the description of an item
+const getDescription = (
+  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
 ): string => {
-  // Removed additional info display for cleaner UI
-  return "";
+  if (isSpell(item)) {
+    return (
+      (item as Sorcery | Miracle).description || "No description available."
+    );
+  }
+  return "No description available.";
 };
 </script>

@@ -163,7 +163,6 @@ export const support: Sorcery[] = [
     description:
       "Transforms you into an object to hide from enemies and players.",
     location: "Griggs of Vinheim in Lower Undead Burg",
-    special: true,
   },
   {
     icon: "/sorceries/utility/resist-curse.png",

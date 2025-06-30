@@ -246,7 +246,7 @@ export const heavyArmor: Armor[] = [
       poise: 35,
     },
     upgradePath: "regular",
-    set: "Giant Set",
+    set: "Giant Armor Set",
   },
   {
     icon: "/armor/heavy-armor/giant-gauntlets.png",
@@ -271,7 +271,7 @@ export const heavyArmor: Armor[] = [
       poise: 21,
     },
     upgradePath: "regular",
-    set: "Giant Set",
+    set: "Giant Armor Set",
   },
   {
     icon: "/armor/heavy-armor/giant-leggings.png",
@@ -296,7 +296,7 @@ export const heavyArmor: Armor[] = [
       poise: 21,
     },
     upgradePath: "regular",
-    set: "Giant Set",
+    set: "Giant Armor Set",
   },
   // Stone Knight Set
   {
@@ -424,7 +424,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/smoughs-armor.png",
     name: "Smough's Armor",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "chest",
     weight: 17.6,
     staminaRegenReduction: 2,
     defense: {
@@ -448,7 +448,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/smoughs-gauntlets.png",
     name: "Smough's Gauntlets",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "hands",
     weight: 10.4,
     staminaRegenReduction: 1,
     defense: {
@@ -472,7 +472,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/smoughs-leggings.png",
     name: "Smough's Leggings",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "legs",
     weight: 10.4,
     staminaRegenReduction: 1,
     defense: {
@@ -521,7 +521,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/golem-armor.png",
     name: "Golem Armor",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "chest",
     weight: 16.4,
     staminaRegenReduction: 2,
     defense: {
@@ -545,7 +545,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/golem-gauntlets.png",
     name: "Golem Gauntlets",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "hands",
     weight: 9.7,
     staminaRegenReduction: 1,
     defense: {
@@ -569,7 +569,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/golem-leggings.png",
     name: "Golem Leggings",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "legs",
     weight: 9.7,
     staminaRegenReduction: 1,
     defense: {
@@ -618,7 +618,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/guardian-armor.png",
     name: "Guardian Armor",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "chest",
     weight: 17.0,
     staminaRegenReduction: 2,
     defense: {
@@ -642,7 +642,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/guardian-gauntlets.png",
     name: "Guardian Gauntlets",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "hands",
     weight: 10.4,
     staminaRegenReduction: 1,
     defense: {
@@ -666,7 +666,7 @@ export const heavyArmor: Armor[] = [
     icon: "/armor/heavy-armor/guardian-helm.png",
     name: "Guardian Helm",
     armorType: "heavy-armor",
-    slot: "head",
+    slot: "legs",
     weight: 10.4,
     staminaRegenReduction: 1,
     defense: {

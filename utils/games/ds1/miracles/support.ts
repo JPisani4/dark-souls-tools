@@ -17,7 +17,6 @@ export const special: Miracle[] = [
     },
     description: "Slows the movement of all nearby enemies and players.",
     location: "Blade of the Darkmoon covenant reward",
-    special: true,
   },
   {
     icon: "/miracles/buff/magic-barrier.png",
@@ -85,7 +84,6 @@ export const special: Miracle[] = [
     },
     description: "Explodes when you take damage, damaging nearby enemies.",
     location: "Blade of the Darkmoon covenant reward",
-    special: true,
   },
   {
     icon: "/miracles/special/vow-of-silence.png",
@@ -103,7 +101,6 @@ export const special: Miracle[] = [
     },
     description: "Prevents all magic casting in a large area.",
     location: "Blade of the Darkmoon covenant reward",
-    special: true,
   },
   {
     icon: "/miracles/buff/homeward.png",

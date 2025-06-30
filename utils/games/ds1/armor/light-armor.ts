@@ -697,6 +697,8 @@ export const lightArmor: Armor[] = [
     },
     effect: {
       poise: 0,
+      description:
+        "Boosts serceries, miracles, and pyromancies by 20%. Reduces magic defense by 30%.",
     },
     special: true,
     set: "Antiquated Set",
@@ -968,30 +970,6 @@ export const lightArmor: Armor[] = [
     set: "Lord's Blade Set",
   },
   // Shadow Set
-  {
-    icon: "/armor/light-armor/shadow-mask.png",
-    name: "Shadow Mask",
-    armorType: "light-armor",
-    slot: "head",
-    weight: 0.9,
-    defense: {
-      normal: 9,
-      strike: 9.9,
-      slash: 9,
-      thrust: 9,
-      magic: 5,
-      fire: 6,
-      lightning: 6,
-      bleed: 15,
-      poison: 18,
-      curse: 0,
-    },
-    effect: {
-      poise: 0,
-    },
-    upgradePath: "special",
-    set: "Shadow Set",
-  },
   {
     icon: "/armor/light-armor/shadow-mask.png",
     name: "Shadow Mask",
@@ -1425,6 +1403,7 @@ export const lightArmor: Armor[] = [
     },
     effect: {
       poise: 0,
+      description: "Boosts serceries, miracles, and pyromancies by 10%.",
     },
     special: true,
     set: "Gwyndolin Moonlight Set",
@@ -1669,10 +1648,10 @@ export const lightArmor: Armor[] = [
     set: "Crimson Set",
   },
   {
-    icon: "/armor/light-armor/crimson-robe.png",
-    name: "Crimson Robe",
+    icon: "/armor/light-armor/crimson-waistcloth.png",
+    name: "Crimson Waistcloth",
     armorType: "light-armor",
-    slot: "chest",
+    slot: "legs",
     weight: 3.5,
     defense: {
       normal: 29,

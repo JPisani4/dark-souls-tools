@@ -18,6 +18,7 @@ export interface ArmorEffect {
   poise?: number;
   weight?: number;
   staminaRegenBonus?: number; // Stamina regeneration bonus (per second)
+  maxHpBonus?: number;
   special?: string;
   description?: string;
   equipLoadBonus?: number;

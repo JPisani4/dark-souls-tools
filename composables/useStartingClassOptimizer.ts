@@ -3,6 +3,8 @@ import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
 import type { Miracle } from "~/types/game/ds1/miracles";
+import type { Armor } from "~/types/game/ds1/armor";
+import type { Ring } from "~/types/game/ds1/rings";
 import type {
   CharacterStats,
   StartingCharacter,
@@ -11,12 +13,15 @@ import { getAllWeapons, getWeaponByName } from "~/utils/games/ds1/weapons";
 import { getAllShields, getShieldByName } from "~/utils/games/ds1/shields";
 import { getAllSorceries, getSorceryByName } from "~/utils/games/ds1/sorceries";
 import { getAllMiracles, getMiracleByName } from "~/utils/games/ds1/miracles";
+import { getAllArmor, getArmorByName } from "~/utils/games/ds1/armor";
+import { getAllRings, getRingByName } from "~/utils/games/ds1/rings";
 import { allCharacters } from "~/utils/games/ds1/characters";
 import {
-  getNextAttunementSlotLevel,
   getAttunementSlots,
   getAttunementLevelForSlots,
+  getNextAttunementSlotLevel,
 } from "~/utils/games/ds1/stats/attunementSlots";
+import { calculateAllDerivedStats } from "~/utils/games/ds1/stats/characterStats";
 import { getNextSoftCap, getSoftCaps } from "~/utils/games/ds1/stats/softCaps";
 import { useBaseTool } from "./useBaseTool";
 import {
@@ -30,7 +35,6 @@ import {
   resetStatsToRequirements as resetStatsToRequirementsUtil,
   updateStatsForTwoHandedToggle as updateStatsForTwoHandedToggleUtil,
   resetStatsForRemovedItem as resetStatsForRemovedItemUtil,
-  findOptimalStartingClass,
   findAllStartingClasses,
   calculateRequiredAttunementSlots,
   hasSufficientAttunementSlots,
@@ -53,6 +57,8 @@ export interface StartingClassOptimizerState {
     shields: Shield[];
     sorceries: Sorcery[];
     miracles: Miracle[];
+    armor: Armor[];
+    rings: Ring[];
   };
   characterStats: CharacterStats;
   isTwoHanded: boolean;
@@ -61,6 +67,8 @@ export interface StartingClassOptimizerState {
     shields: string;
     sorceries: string;
     miracles: string;
+    armor: string;
+    rings: string;
   };
 }
 
@@ -80,7 +88,7 @@ export interface ItemOption {
   value: string;
   label: string;
   category: string;
-  item: Weapon | Shield | Sorcery | Miracle;
+  item: Weapon | Shield | Sorcery | Miracle | Armor | Ring;
 }
 
 export interface StartingClassOptimizerValidation {
@@ -97,6 +105,8 @@ export function useStartingClassOptimizer() {
       shields: [],
       sorceries: [],
       miracles: [],
+      armor: [],
+      rings: [],
     },
     characterStats: { ...DEFAULT_CHARACTER_STATS },
     isTwoHanded: false,
@@ -105,6 +115,8 @@ export function useStartingClassOptimizer() {
       shields: "",
       sorceries: "",
       miracles: "",
+      armor: "",
+      rings: "",
     },
   };
 
@@ -152,9 +164,18 @@ export function useStartingClassOptimizer() {
       throw new Error("Character stats do not meet minimum requirements");
     }
 
+    // Calculate derived stats with equipment
+    const statsWithDerived = calculateAllDerivedStats(
+      characterStats,
+      selectedItems.weapons,
+      selectedItems.shields,
+      selectedItems.armor,
+      selectedItems.rings
+    );
+
     // Find all starting classes ranked by soul level investment
     const allClasses = findAllStartingClasses(
-      characterStats,
+      statsWithDerived,
       minimumRequirements
     );
 
@@ -191,6 +212,8 @@ export function useStartingClassOptimizer() {
   const allShields = getAllShields();
   const allSorceries = getAllSorceries();
   const allMiracles = getAllMiracles();
+  const allArmor = getAllArmor();
+  const allRings = getAllRings();
 
   // Auto-calculate when state changes
   watch(
@@ -205,7 +228,9 @@ export function useStartingClassOptimizer() {
         baseTool.state.selectedItems.weapons.length > 0 ||
         baseTool.state.selectedItems.shields.length > 0 ||
         baseTool.state.selectedItems.sorceries.length > 0 ||
-        baseTool.state.selectedItems.miracles.length > 0;
+        baseTool.state.selectedItems.miracles.length > 0 ||
+        baseTool.state.selectedItems.armor.length > 0 ||
+        baseTool.state.selectedItems.rings.length > 0;
 
       const hasModifiedStats = Object.entries(
         baseTool.state.characterStats
@@ -359,7 +384,9 @@ export function useStartingClassOptimizer() {
         .filter((weapon: Weapon) =>
           weapon.name
             .toLowerCase()
-            .includes(baseTool.state.searchQueries.weapons.toLowerCase())
+            .includes(
+              (baseTool.state.searchQueries?.weapons || "").toLowerCase()
+            )
         ),
       "weapon"
     )
@@ -372,7 +399,9 @@ export function useStartingClassOptimizer() {
         .filter((shield: Shield) =>
           shield.name
             .toLowerCase()
-            .includes(baseTool.state.searchQueries.shields.toLowerCase())
+            .includes(
+              (baseTool.state.searchQueries?.shields || "").toLowerCase()
+            )
         ),
       "shield"
     )
@@ -385,7 +414,9 @@ export function useStartingClassOptimizer() {
         .filter((sorcery: Sorcery) =>
           sorcery.name
             .toLowerCase()
-            .includes(baseTool.state.searchQueries.sorceries.toLowerCase())
+            .includes(
+              (baseTool.state.searchQueries?.sorceries || "").toLowerCase()
+            )
         ),
       "sorcery"
     )
@@ -398,15 +429,43 @@ export function useStartingClassOptimizer() {
         .filter((miracle: Miracle) =>
           miracle.name
             .toLowerCase()
-            .includes(baseTool.state.searchQueries.miracles.toLowerCase())
+            .includes(
+              (baseTool.state.searchQueries?.miracles || "").toLowerCase()
+            )
         ),
       "miracle"
     )
   );
 
+  const armorOptions = computed(() =>
+    createItemOptions(
+      Object.values(allArmor)
+        .flat()
+        .filter((armor: Armor) =>
+          armor.name
+            .toLowerCase()
+            .includes((baseTool.state.searchQueries?.armor || "").toLowerCase())
+        ),
+      "armor"
+    )
+  );
+
+  const ringOptions = computed(() =>
+    createItemOptions(
+      Object.values(allRings)
+        .flat()
+        .filter((ring: Ring) =>
+          ring.name
+            .toLowerCase()
+            .includes((baseTool.state.searchQueries?.rings || "").toLowerCase())
+        ),
+      "ring"
+    )
+  );
+
   // Helper function to create item options
   const createItemOptions = (
-    items: (Weapon | Shield | Sorcery | Miracle)[],
+    items: (Weapon | Shield | Sorcery | Miracle | Armor | Ring)[],
     category: string
   ): ItemOption[] => {
     return items.map((item) => {
@@ -421,6 +480,10 @@ export function useStartingClassOptimizer() {
         actualCategory = item.sorceryType;
       } else if ("miracleType" in item) {
         actualCategory = item.miracleType;
+      } else if ("armorType" in item) {
+        actualCategory = item.armorType;
+      } else if ("ringType" in item) {
+        actualCategory = item.ringType;
       }
 
       return {
@@ -749,6 +812,56 @@ export function useStartingClassOptimizer() {
     });
   };
 
+  // Armor management actions
+  const addArmor = (armorName: string) => {
+    const armor = getArmorByName(armorName);
+    if (armor) {
+      baseTool.setState({
+        selectedItems: {
+          ...baseTool.state.selectedItems,
+          armor: [...baseTool.state.selectedItems.armor, armor],
+        },
+      });
+    }
+  };
+
+  const removeArmor = (index: number) => {
+    const newArmor = baseTool.state.selectedItems.armor.filter(
+      (_, i) => i !== index
+    );
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        armor: newArmor,
+      },
+    });
+  };
+
+  // Ring management actions
+  const addRing = (ringName: string) => {
+    const ring = getRingByName(ringName);
+    if (ring && baseTool.state.selectedItems.rings.length < 2) {
+      baseTool.setState({
+        selectedItems: {
+          ...baseTool.state.selectedItems,
+          rings: [...baseTool.state.selectedItems.rings, ring],
+        },
+      });
+    }
+  };
+
+  const removeRing = (index: number) => {
+    const newRings = baseTool.state.selectedItems.rings.filter(
+      (_, i) => i !== index
+    );
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        rings: newRings,
+      },
+    });
+  };
+
   // Stat management actions
   const updateStat = (stat: keyof CharacterStats, value: number) => {
     const clampedValue = Math.max(
@@ -784,6 +897,8 @@ export function useStartingClassOptimizer() {
         shields: [],
         sorceries: [],
         miracles: [],
+        armor: [],
+        rings: [],
       },
       characterStats: { ...DEFAULT_CHARACTER_STATS },
       isTwoHanded: false,
@@ -792,6 +907,8 @@ export function useStartingClassOptimizer() {
         shields: "",
         sorceries: "",
         miracles: "",
+        armor: "",
+        rings: "",
       },
     });
   };
@@ -846,9 +963,24 @@ export function useStartingClassOptimizer() {
   };
 
   const getNextSoftCapLevel = (stat: keyof CharacterStats) => {
+    // Only apply soft caps to numeric stats, not derived stats
+    const numericStats = [
+      "vitality",
+      "attunement",
+      "endurance",
+      "strength",
+      "dexterity",
+      "resistance",
+      "intelligence",
+      "faith",
+    ] as const;
+    if (!numericStats.includes(stat as any)) {
+      return null;
+    }
+
     return getNextSoftCap(
       stat,
-      baseTool.state.characterStats[stat],
+      baseTool.state.characterStats[stat] as number,
       baseTool.state.isTwoHanded
     );
   };
@@ -897,6 +1029,8 @@ export function useStartingClassOptimizer() {
     shieldOptions,
     sorceryOptions,
     miracleOptions,
+    armorOptions,
+    ringOptions,
 
     // Actions from base tool
     calculate: baseTool.calculate,
@@ -928,5 +1062,9 @@ export function useStartingClassOptimizer() {
     canIncreaseSoftCap,
     increaseToNextAttunementSlot,
     increaseToSoftCap,
+    addArmor,
+    removeArmor,
+    addRing,
+    removeRing,
   };
 }

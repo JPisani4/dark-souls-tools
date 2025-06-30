@@ -47,6 +47,7 @@ export const specialArmor: Armor[] = [
     },
     effect: {
       poise: 0,
+      maxHpBonus: 10,
       description: "Increases maximum HP by 10%.",
     },
     special: true,
@@ -77,29 +78,6 @@ export const specialArmor: Armor[] = [
     special: true,
   },
   {
-    icon: "/armor/special-armor/moonlight-helm.png",
-    name: "Moonlight Helm",
-    armorType: "special-armor",
-    slot: "head",
-    weight: 4.0,
-    defense: {
-      normal: 32,
-      strike: 32,
-      slash: 32,
-      thrust: 32,
-      magic: 35,
-      fire: 20,
-      lightning: 35,
-      bleed: 0,
-      poison: 0,
-      curse: 0,
-    },
-    effect: {
-      poise: 7,
-    },
-    special: true,
-  },
-  {
     icon: "/armor/special-armor/crown-of-dusk.png",
     name: "Crown of Dusk",
     armorType: "special-armor",
@@ -119,6 +97,8 @@ export const specialArmor: Armor[] = [
     },
     effect: {
       poise: 0,
+      description:
+        "Boosts serceries, miracles, and pyromancies by 20%. Reduces magic defense by 30%.",
     },
     special: true,
     set: "Antiquated Set",
@@ -143,6 +123,7 @@ export const specialArmor: Armor[] = [
     },
     effect: {
       poise: 0,
+      description: "Boosts serceries, miracles, and pyromancies by 10%.",
     },
     special: true,
     set: "Gwyndolin Moonlight Set",

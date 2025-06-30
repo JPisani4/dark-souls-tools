@@ -13,25 +13,6 @@ export const defense: Ring[] = [
     },
     effect: {
       statBonus: {
-        resistance: 10,
-      },
-    },
-    description: "Increases physical defense by 10%.",
-    location: "Sen's Fortress",
-    weight: 0,
-  },
-  {
-    icon: "/rings/defensive/ring-of-steel-protection.png",
-    name: "Ring of Steel Protection",
-    ringType: "defensive",
-    requirements: {
-      strength: 0,
-      dexterity: 0,
-      intelligence: 0,
-      faith: 0,
-    },
-    effect: {
-      statBonus: {
         phsyicalDefense: 50,
       },
     },

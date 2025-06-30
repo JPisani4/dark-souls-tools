@@ -122,17 +122,16 @@ import { getRandomTheme } from "~/utils/themes/colorSystem";
 import Icon from "~/components/Common/Icon.vue";
 
 // Type for base stats only (excluding derived stats)
-type BaseStats = Pick<
-  CharacterStats,
-  | "vitality"
-  | "attunement"
-  | "endurance"
-  | "strength"
-  | "dexterity"
-  | "resistance"
-  | "intelligence"
-  | "faith"
->;
+type BaseStats = {
+  vitality: number;
+  attunement: number;
+  endurance: number;
+  strength: number;
+  dexterity: number;
+  resistance: number;
+  intelligence: number;
+  faith: number;
+};
 
 interface Props {
   stats: CharacterStats;
@@ -163,14 +162,32 @@ const themeColor = computed(() => {
 
 // Filter out the level field and derived stats from displayed stats
 const displayStats = computed(() => {
-  const { level, hp, stamina, equipLoad, ...otherStats } = props.stats;
+  const {
+    level,
+    hp,
+    stamina,
+    equipLoad,
+    maxHp,
+    maxStamina,
+    staminaRegen,
+    dodgeRoll,
+    equippedWeight,
+    equipLoadPercentage,
+    ...otherStats
+  } = props.stats;
   return otherStats as BaseStats;
 });
 
 const updateStat = (stat: keyof CharacterStats, value: string) => {
-  const numValue = parseInt(value, 10);
-  if (!isNaN(numValue)) {
-    emit("update:stat", stat, numValue);
+  if (value === "" || value === null) {
+    // If input is cleared, set to minimum requirement or 1
+    const min = filteredMinimumRequirements.value[stat as keyof BaseStats] ?? 1;
+    emit("update:stat", stat, min);
+  } else {
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue)) {
+      emit("update:stat", stat, numValue);
+    }
   }
 };
 
@@ -228,11 +245,13 @@ const increaseAttunementSlots = () => {
 
 // Soft cap button logic
 const canIncreaseSoftCap = (stat: keyof CharacterStats) => {
-  return getNextSoftCap(stat, props.stats[stat], props.isTwoHanded) !== null;
+  const statValue = Number(props.stats[stat]);
+  return getNextSoftCap(stat, statValue, props.isTwoHanded) !== null;
 };
 
 const getSoftCapButtonTitle = (stat: keyof CharacterStats) => {
-  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  const statValue = Number(props.stats[stat]);
+  const nextCap = getNextSoftCap(stat, statValue, props.isTwoHanded);
   if (nextCap === null) {
     // Special handling for Strength stat to clarify two-handed vs one-handed
     if (stat === "strength") {
@@ -258,13 +277,15 @@ const getSoftCapButtonTitle = (stat: keyof CharacterStats) => {
 };
 
 const getSoftCapButtonColor = (stat: keyof CharacterStats) => {
-  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  const statValue = Number(props.stats[stat]);
+  const nextCap = getNextSoftCap(stat, statValue, props.isTwoHanded);
   if (nextCap === null) return "green";
   return themeColor.value;
 };
 
 const getSoftCapButtonIcon = (stat: keyof CharacterStats) => {
-  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  const statValue = Number(props.stats[stat]);
+  const nextCap = getNextSoftCap(stat, statValue, props.isTwoHanded);
   // Show checkmark when at soft cap, up arrow when can increase
   if (nextCap === null) {
     return "i-heroicons-check";
@@ -273,7 +294,8 @@ const getSoftCapButtonIcon = (stat: keyof CharacterStats) => {
 };
 
 const increaseToSoftCap = (stat: keyof CharacterStats) => {
-  const nextCap = getNextSoftCap(stat, props.stats[stat], props.isTwoHanded);
+  const statValue = Number(props.stats[stat]);
+  const nextCap = getNextSoftCap(stat, statValue, props.isTwoHanded);
   if (nextCap !== null) {
     emit("update:stat", stat, nextCap);
   }

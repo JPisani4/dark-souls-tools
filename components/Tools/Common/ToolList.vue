@@ -265,6 +265,11 @@ const closeGameSelection = () => {
                     :src="tool.icon.replace(/^public\//, '/')"
                     alt="icon"
                     class="w-8 h-8 object-contain rounded-full scale-125"
+                    :style="
+                      tool.slug === 'starting-class-optimizer'
+                        ? { transform: 'scale(1.5)' }
+                        : undefined
+                    "
                     loading="lazy"
                     decoding="async"
                     width="32"
@@ -275,6 +280,11 @@ const closeGameSelection = () => {
                   v-else
                   :name="tool.icon || 'i-heroicons-cube'"
                   class="w-3 h-3 text-white"
+                  :style="
+                    tool.slug === 'starting-class-optimizer'
+                      ? { transform: 'scale(1.5)' }
+                      : undefined
+                  "
                 />
               </div>
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">

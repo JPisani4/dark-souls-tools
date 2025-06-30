@@ -15,6 +15,13 @@ export interface CharacterStats {
   hp: number;
   stamina: number;
   equipLoad: number;
+  // New derived stats
+  maxHp: number;
+  maxStamina: number;
+  staminaRegen: number;
+  dodgeRoll: string;
+  equippedWeight: number;
+  equipLoadPercentage: number;
 }
 
 export interface CharacterEquipment {

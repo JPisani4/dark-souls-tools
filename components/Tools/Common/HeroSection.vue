@@ -5,7 +5,16 @@
         class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
         :class="safeTheme.bg"
       >
-        <Icon v-if="iconName" :name="iconName" class="w-3 h-3 text-white" />
+        <Icon
+          v-if="iconName"
+          :name="iconName"
+          class="w-3 h-3 text-white"
+          :style="
+            props.iconZoom !== 1
+              ? { transform: `scale(${props.iconZoom})` }
+              : undefined
+          "
+        />
         <picture
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg|webp)$/i.test(iconPath)"
         >
@@ -19,7 +28,12 @@
           <img
             :src="iconPath.replace(/^public\//, '/')"
             :alt="`${title} icon`"
-            class="w-12 h-12 object-contain rounded-full scale-175"
+            class="w-12 h-12 object-contain rounded-full"
+            :style="
+              props.iconZoom !== 1
+                ? { transform: `scale(${props.iconZoom})` }
+                : undefined
+            "
             loading="lazy"
             decoding="async"
             width="48"
@@ -32,6 +46,11 @@
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          :style="
+            props.iconZoom !== 1
+              ? { transform: `scale(${props.iconZoom})` }
+              : undefined
+          "
         >
           <path
             stroke-linecap="round"
@@ -89,12 +108,17 @@ interface Props {
   theme?: ColorTheme;
   variant?: string;
   gameData?: GameData;
+  /**
+   * Optional zoom factor for the icon (1 = normal, 2 = 2x, etc). Only used for special cases.
+   */
+  iconZoom?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   iconPath: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
   iconName: "",
   variant: "default",
+  iconZoom: 1,
 });
 
 const safeTheme = useSafeTheme(props.theme, props.variant);

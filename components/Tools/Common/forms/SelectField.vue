@@ -13,6 +13,7 @@
       :items="options"
       :value-key="valueKey"
       :label-key="labelKey"
+      :disabled-key="disabledKey"
       :placeholder="placeholder"
       :disabled="disabled"
       :class="[inputClasses, 'w-full']"
@@ -32,9 +33,10 @@ interface Props {
   id: string;
   modelValue?: string;
   placeholder?: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; disabled?: boolean }>;
   valueKey?: "value" | "label";
   labelKey?: "value" | "label";
+  disabledKey?: "disabled";
   theme?: ColorTheme;
   variant?: string;
   required?: boolean;
@@ -48,6 +50,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: "Select an option",
   valueKey: "value",
   labelKey: "label",
+  disabledKey: "disabled",
   variant: "default",
   required: false,
   disabled: false,

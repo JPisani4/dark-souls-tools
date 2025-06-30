@@ -7,6 +7,7 @@ import type {
 import { lightArmor } from "./light-armor";
 import { mediumArmor } from "./medium-armor";
 import { heavyArmor } from "./heavy-armor";
+import { specialArmor } from "./special-armor";
 
 // Helper to group armor pieces by set name
 function groupArmorSets(
@@ -38,7 +39,10 @@ function groupArmorSets(
     };
     let totalPoise = 0;
     for (const p of pieces) {
-      for (const k in totalDefense) totalDefense[k] += p.defense[k];
+      for (const k in totalDefense) {
+        const key = k as keyof typeof totalDefense;
+        totalDefense[key] += p.defense[key];
+      }
       totalPoise += p.effect.poise || 0;
     }
     return {
@@ -60,11 +64,13 @@ function groupArmorSets(
 const lightArmorSets = groupArmorSets(lightArmor, "light-armor");
 const mediumArmorSets = groupArmorSets(mediumArmor, "medium-armor");
 const heavyArmorSets = groupArmorSets(heavyArmor, "heavy-armor");
+const specialArmorSets = groupArmorSets(specialArmor, "special-armor");
 
 const armorSetData: AllArmorSets = {
   "light-armor": lightArmorSets,
   "medium-armor": mediumArmorSets,
   "heavy-armor": heavyArmorSets,
+  "special-armor": specialArmorSets,
 };
 
 export const getAllArmorSets = (): AllArmorSets => armorSetData;

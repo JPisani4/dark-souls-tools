@@ -53,6 +53,13 @@ export const DEFAULT_CHARACTER_STATS = {
   hp: BASE_HP,
   stamina: BASE_STAMINA,
   equipLoad: BASE_EQUIP_LOAD,
+  // New derived stats
+  maxHp: BASE_HP,
+  maxStamina: BASE_STAMINA,
+  staminaRegen: 45, // Base stamina regeneration
+  dodgeRoll: "Fast Roll (0%)",
+  equippedWeight: 0,
+  equipLoadPercentage: 0,
 } as const;
 
 // Validation error messages

@@ -19,7 +19,6 @@ import {
   calculateArmorSetStats,
   getArmorSetsByWeightRange,
   getArmorSetsByPoiseRange,
-  getSpecialArmorSets,
   getArmorSetsByDefenseType,
 } from "./armor-sets";
 
@@ -162,6 +161,5 @@ export {
   calculateArmorSetStats,
   getArmorSetsByWeightRange,
   getArmorSetsByPoiseRange,
-  getSpecialArmorSets,
   getArmorSetsByDefenseType,
 };
