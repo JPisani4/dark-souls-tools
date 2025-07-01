@@ -5,7 +5,7 @@ export interface AchievementRequirement {
   id: string;
   name: string;
   category: string;
-  cost?: number;
+  cost?: number | {};
   quest?: boolean;
   price?: number;
   logansQuest?: boolean;
@@ -29,6 +29,7 @@ export interface Achievement {
   isSecret?: boolean;
   ngRequired?: boolean;
   totalRequired: number;
+  questNPC?: string;
   notes?: string;
 }
 

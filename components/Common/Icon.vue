@@ -83,10 +83,12 @@ import {
   TagIcon,
   TruckIcon,
   UserIcon,
+  UserGroupIcon,
   VideoCameraIcon,
   WifiIcon,
   WrenchScrewdriverIcon,
   ArrowUpIcon,
+  TrophyIcon,
 } from "@heroicons/vue/24/outline";
 
 import {
@@ -164,10 +166,12 @@ import {
   TagIcon as TagSolidIcon,
   TruckIcon as TruckSolidIcon,
   UserIcon as UserSolidIcon,
+  UserGroupIcon as UserGroupSolidIcon,
   VideoCameraIcon as VideoCameraSolidIcon,
   WifiIcon as WifiSolidIcon,
   WrenchScrewdriverIcon as WrenchScrewdriverSolidIcon,
   ArrowUpIcon as ArrowUpSolidIcon,
+  TrophyIcon as TrophySolidIcon,
 } from "@heroicons/vue/24/solid";
 
 interface Props {
@@ -258,10 +262,12 @@ const iconMap = {
   "i-heroicons-tag": TagIcon,
   "i-heroicons-truck": TruckIcon,
   "i-heroicons-user": UserIcon,
+  "i-heroicons-user-group": UserGroupIcon,
   "i-heroicons-video-camera": VideoCameraIcon,
   "i-heroicons-wifi": WifiIcon,
   "i-heroicons-wrench-screwdriver": WrenchScrewdriverIcon,
   "i-heroicons-arrow-up": ArrowUpIcon,
+  "i-heroicons-trophy": TrophyIcon,
 
   // Solid icons
   "i-heroicons-magnifying-glass-solid": MagnifyingGlassSolidIcon,
@@ -338,10 +344,12 @@ const iconMap = {
   "i-heroicons-tag-solid": TagSolidIcon,
   "i-heroicons-truck-solid": TruckSolidIcon,
   "i-heroicons-user-solid": UserSolidIcon,
+  "i-heroicons-user-group-solid": UserGroupSolidIcon,
   "i-heroicons-video-camera-solid": VideoCameraSolidIcon,
   "i-heroicons-wifi-solid": WifiSolidIcon,
   "i-heroicons-wrench-screwdriver-solid": WrenchScrewdriverSolidIcon,
   "i-heroicons-arrow-up-solid": ArrowUpSolidIcon,
+  "i-heroicons-trophy-solid": TrophySolidIcon,
 };
 
 const iconComponent = computed(() => {

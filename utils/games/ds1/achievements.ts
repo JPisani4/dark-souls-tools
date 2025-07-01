@@ -23,7 +23,7 @@ const knightsHonor: Achievement = {
       name: "Greatsword of Artorias",
       category: "boss",
       location: "Giant Blacksmith",
-      ascendsFrom: ["Broken Straight Sword, Straight Sword Hilt"],
+      ascendsFrom: ["Broken Straight Sword", "Straight Sword Hilt"],
       bossSoul: "Soul of Artorias",
     },
     {
@@ -381,6 +381,7 @@ const wisdomOfASage: Achievement = {
   category: "magic",
   ngRequired: true,
   totalRequired: 24,
+  questNPC: "Big Hat Logan",
   requirements: [
     // Logan's Sorceries
     {
@@ -606,6 +607,7 @@ const bondOfAPyromancer: Achievement = {
   category: "pyromancy",
   ngRequired: false,
   totalRequired: 19,
+  questNPC: "Quelana of Izalith",
   requirements: [
     // Laurentius' Pyromancies
     {
@@ -787,7 +789,10 @@ const prayerOfAMaiden: Achievement = {
       id: "heal",
       name: "Heal",
       category: "purchase",
-      cost: 4000,
+      cost: {
+        petrus: 4000,
+        reah: 1000,
+      },
       location: [
         "Petrus of Thorolund (Firelink)",
         "Reah of Thorolund (Undead Parish)",
@@ -798,7 +803,10 @@ const prayerOfAMaiden: Achievement = {
       id: "great-heal-excerpt",
       name: "Great Heal Excerpt",
       category: "purchase",
-      cost: 10000,
+      cost: {
+        petrus: 10000,
+        reah: 2000,
+      },
       location: [
         "Petrus of Thorolund (Firelink)",
         "Reah of Thorolund (Undead Parish)",
@@ -809,7 +817,10 @@ const prayerOfAMaiden: Achievement = {
       id: "homeward",
       name: "Homeward",
       category: "purchase",
-      cost: 8000,
+      cost: {
+        petrus: 8000,
+        reah: 1000,
+      },
       location: [
         "Petrus of Thorolund (Firelink)",
         "Reah of Thorolund (Undead Parish)",
@@ -819,7 +830,10 @@ const prayerOfAMaiden: Achievement = {
       id: "force",
       name: "Force",
       category: "purchase",
-      cost: 4000,
+      cost: {
+        petrus: 4000,
+        reah: 1000,
+      },
       location: [
         "Petrus of Thorolund (Firelink)",
         "Reah of Thorolund (Undead Parish)",
@@ -829,7 +843,10 @@ const prayerOfAMaiden: Achievement = {
       id: "seek-guidance",
       name: "Seek Guidance",
       category: "purchase",
-      cost: 2000,
+      cost: {
+        petrus: 2000,
+        reah: 500,
+      },
       location: [
         "Petrus of Thorolund (Firelink)",
         "Reah of Thorolund (Undead Parish)",
@@ -941,7 +958,6 @@ const prayerOfAMaiden: Achievement = {
       location:
         "Offer the soul of Gwyn at the sunlight altar after ranking up once as a sunbro",
     },
-
     {
       id: "gravelord-sword-dance",
       name: "Gravelord Sword Dance",

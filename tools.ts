@@ -11,7 +11,7 @@ export const tools: Tool[] = [
     tags: ["co-op","level range","multiplayer","weapon level","calculator","dark souls","remastered"],
     order: 1,
     loadComponent: () => import('~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    createdAt: new Date('2025-06-30T23:58:50.734Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Co-op Level Range Calculator",
@@ -65,7 +65,7 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    createdAt: new Date('2025-06-30T23:58:50.735Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Soul Level Calculator",
@@ -113,7 +113,7 @@ export const tools: Tool[] = [
     tags: ["starting-class-optimizer","character-planner","ds1","planner"],
     order: 1,
     loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    createdAt: new Date('2025-06-30T23:58:50.735Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Starting Class Optimizer",
@@ -159,7 +159,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    createdAt: new Date('2025-06-30T23:58:50.735Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Upgrade Calculator",
@@ -208,17 +208,17 @@ export const tools: Tool[] = [
     title: "NPC Quest Tracker",
     description: "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
     slug: "npc-quest-tracker",
-    icon: "/warrior-of-sunlight-covenant-dks.png",
+    icon: "i-heroicons-user-group",
     category: "planner",
-    tags: ["npc","quest","tracker","progress","ds1"],
+    tags: ["npc","quest","tracker","progress","ds1","dark souls","remastered","questline"],
     order: 10,
     loadComponent: () => import('~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-06-30T22:01:01.394Z'),
+    createdAt: new Date('2025-06-30T23:58:50.735Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "NPC Quest Tracker",
       "description": "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
-      "icon": "/warrior-of-sunlight-covenant-dks.png",
+      "icon": "i-heroicons-user-group",
       "category": "planner",
       "order": 10,
       "tags": [
@@ -226,9 +226,93 @@ export const tools: Tool[] = [
         "quest",
         "tracker",
         "progress",
-        "ds1"
+        "ds1",
+        "dark souls",
+        "remastered",
+        "questline"
       ],
-      "gameCategory": "ds1"
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Dark Souls Remastered NPC Quest Tracker - Complete All Questlines | Gold Phantom",
+        "description": "Complete Dark Souls Remastered NPC quest tracker. Track Siegmeyer, Solaire, Big Hat Logan, Reah, and other NPC questlines. Avoid fail conditions, find locations, and get all rewards.",
+        "keywords": [
+          "dark souls remastered",
+          "npc quest tracker",
+          "siegmeyer quest",
+          "solaire quest",
+          "big hat logan quest",
+          "reah quest",
+          "questline guide",
+          "npc locations",
+          "fail conditions",
+          "quest rewards",
+          "ds1 quests",
+          "side quests",
+          "quest progression",
+          "gold phantom"
+        ],
+        "ogImage": "/warrior-of-sunlight-covenant-dks.webp"
+      }
+    },
+  },
+  {
+    title: "Achievement Tracker",
+    description: "Track your progress through Dark Souls Remastered achievements. Mark requirements as completed, view progress by category, and monitor your completion percentage for each achievement.",
+    slug: "achievement-tracker",
+    icon: "i-heroicons-trophy",
+    category: "planner",
+    tags: ["achievement","tracker","progress","completion","ds1","dark souls","remastered"],
+    order: 15,
+    loadComponent: () => import('~/components/Tools/AchievementTracker/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-06-30T23:58:50.735Z'),
+    gameCategories: ["ds1"],
+    config: {
+      "title": "Achievement Tracker",
+      "description": "Track your progress through Dark Souls Remastered achievements. Mark requirements as completed, view progress by category, and monitor your completion percentage for each achievement.",
+      "icon": "i-heroicons-trophy",
+      "category": "planner",
+      "order": 15,
+      "tags": [
+        "achievement",
+        "tracker",
+        "progress",
+        "completion",
+        "ds1",
+        "dark souls",
+        "remastered"
+      ],
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
+        "description": "Complete Dark Souls Remastered achievement tracker. Track Knight's Honor, Wisdom of a Sage, Bond of a Pyromancer, and Prayer of a Maiden achievements. Monitor progress, mark completed requirements, and get quest guidance.",
+        "keywords": [
+          "dark souls remastered",
+          "achievement tracker",
+          "knight's honor",
+          "wisdom of a sage",
+          "bond of a pyromancer",
+          "prayer of a maiden",
+          "rare weapons",
+          "sorceries",
+          "pyromancies",
+          "miracles",
+          "quest progression",
+          "boss weapons",
+          "covenant weapons",
+          "tail cutoffs",
+          "ds1 achievements",
+          "100% completion",
+          "achievement guide",
+          "gold phantom"
+        ],
+        "ogImage": "/weapon-upgrade-calculator-icon.webp"
+      }
     },
   }
 ]
