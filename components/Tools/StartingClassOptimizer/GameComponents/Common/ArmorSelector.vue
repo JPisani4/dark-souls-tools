@@ -568,9 +568,11 @@ watch(
 
 // Total weight calculation
 const totalWeight = computed(() => {
-  return Object.values(props.selectedArmor).reduce((total, armor) => {
+  const weight = Object.values(props.selectedArmor).reduce((total, armor) => {
     return total + (armor?.weight || 0);
   }, 0);
+  // Round to the nearest tenth
+  return Math.round(weight * 10) / 10;
 });
 
 // Total poise calculation

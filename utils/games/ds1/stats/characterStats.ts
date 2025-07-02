@@ -51,6 +51,12 @@ export interface DodgeRoll {
   description: string;
 }
 
+export interface MovementSpeed {
+  weightClass: string;
+  speed: string;
+  description: string;
+}
+
 export const DODGE_ROLLS: DodgeRoll[] = [
   // Ninja Flip (requires Dark Wood Grain Ring)
   {
@@ -201,6 +207,47 @@ export const DODGE_ROLLS: DodgeRoll[] = [
     description: "Slow roll with fewer iframes. Poor for evasion.",
   },
 ];
+
+// Movement speed thresholds and mechanics
+export const MOVEMENT_SPEEDS: MovementSpeed[] = [
+  {
+    weightClass: "Light",
+    speed: "Fastest",
+    description: "25% or less equip load - optimal movement speed",
+  },
+  {
+    weightClass: "Medium",
+    speed: "Moderate",
+    description: "Between 25% and 50% equip load - standard movement speed",
+  },
+  {
+    weightClass: "Heavy",
+    speed: "Slow",
+    description: "Between 50% and 100% equip load - reduced movement speed",
+  },
+  {
+    weightClass: "Over-encumbered",
+    speed: "Slowest",
+    description: "More than 100% equip load - cannot roll, very slow movement",
+  },
+];
+
+/**
+ * Get movement speed based on equip load percentage
+ * @param equipLoadPercentage - The percentage of equip load being used (0-100+)
+ * @returns The movement speed information
+ */
+export function getMovementSpeed(equipLoadPercentage: number): MovementSpeed {
+  if (equipLoadPercentage <= 25) {
+    return MOVEMENT_SPEEDS[0]; // Light
+  } else if (equipLoadPercentage <= 50) {
+    return MOVEMENT_SPEEDS[1]; // Medium
+  } else if (equipLoadPercentage <= 100) {
+    return MOVEMENT_SPEEDS[2]; // Heavy
+  } else {
+    return MOVEMENT_SPEEDS[3]; // Over-encumbered
+  }
+}
 
 /**
  * Get starting endurance for a character class
@@ -417,8 +464,8 @@ export function calculateTotalWeight(items: Array<{ weight: number }>): number {
     (total, item) => total + (item.weight || 0),
     0
   );
-  // Round down to the nearest tenth
-  return Math.floor(totalWeight * 10) / 10;
+  // Round to the nearest tenth
+  return Math.round(totalWeight * 10) / 10;
 }
 
 /**
@@ -603,14 +650,17 @@ export function calculateDodgeRollType(
  */
 export function calculateAllDerivedStats(
   stats: CharacterStats,
-  weapons: Array<{ weight: number; effect?: any }> = [],
-  shields: Array<{ weight: number; effect?: any }> = [],
-  armor: Array<{
-    weight: number;
-    effect?: any;
-    staminaRegenReduction?: number;
-  }> = [],
-  rings: Array<{ effect?: any }> = []
+  weapons: Array<{ weight: number; effect?: any } | any> = [],
+  shields: Array<{ weight: number; effect?: any } | any> = [],
+  armor: Array<
+    | {
+        weight: number;
+        effect?: any;
+        staminaRegenReduction?: number;
+      }
+    | any
+  > = [],
+  rings: Array<{ effect?: any } | any> = []
 ): CharacterStats {
   // Calculate equipment bonuses
   const equipmentBonuses = calculateEquipmentBonuses(
@@ -621,11 +671,18 @@ export function calculateAllDerivedStats(
   );
 
   // Calculate total equipped weight
-  const equippedWeight = calculateTotalWeight([
-    ...weapons,
-    ...shields,
-    ...armor,
-  ]);
+  const allItems = [
+    ...weapons.filter(
+      (item) => item && typeof item === "object" && "weight" in item
+    ),
+    ...shields.filter(
+      (item) => item && typeof item === "object" && "weight" in item
+    ),
+    ...armor.filter(
+      (item) => item && typeof item === "object" && "weight" in item
+    ),
+  ];
+  const equippedWeight = calculateTotalWeight(allItems);
 
   // Calculate base derived stats
   const baseDerivedStats = calculateDerivedStats(stats);
@@ -655,6 +712,9 @@ export function calculateAllDerivedStats(
     equipmentBonuses.hasDarkWoodGrainRing
   );
 
+  // Calculate movement speed
+  const movementSpeed = getMovementSpeed(equipLoadPercentage);
+
   return {
     ...baseDerivedStats,
     maxHp,
@@ -664,5 +724,7 @@ export function calculateAllDerivedStats(
     dodgeRoll,
     equippedWeight: Math.round(equippedWeight * 10) / 10,
     equipLoadPercentage,
+    movementSpeed: movementSpeed.speed,
+    weightClass: movementSpeed.weightClass,
   };
 }

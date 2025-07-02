@@ -20,21 +20,22 @@ const siegmeyerQuest: QuestState = {
     {
       id: "meet-siegmeyer-sens",
       name: "Meet Siegmeyer in front of Sen's Fortress",
-      description: "He's sitting outside the closed gate of Sen's Fortress.",
+      description: "Exhaust his dialogue.",
       type: "step",
       optional: true,
       isCompleted: false,
-      location: "Sen's Fortress, in front of the gate",
+      location: "Sen's Fortress, in front of the main gate.",
       order: 1,
     },
     {
       id: "help-siegmeyer-sens",
       name: "Help Siegmeyer in Sen's Fortress",
       description:
-        "Sitting at the edge of a cliff, down from where the first rolling boulders are encountered, near the Shotel. Speak to him and redirect the rolling boulders away from the slope nearest to him.",
+        "Exhaust his dialogue and redirect the rolling boulders away from the slope nearest to him.",
       type: "step",
       isCompleted: false,
-      location: "Sen's Fortress, near the boulder mechanism",
+      location:
+        "Sitting at the edge of a cliff, down from where the first rolling boulders are encountered, near the Shotel.",
       prerequisites: ["meet-siegmeyer-sens"],
       order: 2,
     },
@@ -42,10 +43,11 @@ const siegmeyerQuest: QuestState = {
       id: "help-siegmeyer-anor-londo",
       name: "Help Siegmeyer in Anor Londo",
       description:
-        "When you reach the high courtyard with a Silver Knight (sword) and a Silver Knight (greatbow), go through the doorway guarded by the Silver Knight (sword). He will be standing in front of the window. Kill all three Silver Knights in the room in front of him, then speak to him.",
+        "Exhaust his dialogue, kill all three Silver Knights in the room in front of him, then exhaust his dialogue again.",
       type: "step",
       isCompleted: false,
-      location: "Anor Londo, high courtyard, in front of a window",
+      location:
+        "When you reach the high courtyard with a Silver Knight (sword) and a Silver Knight (greatbow), go through the doorway guarded by the Silver Knight (sword). He will be standing in front of the window.",
       prerequisites: ["help-siegmeyer-sens"],
       rewards: ["Tiny Being's Ring"],
       order: 3,
@@ -54,7 +56,7 @@ const siegmeyerQuest: QuestState = {
       id: "meet-siegmeyer-firelink",
       name: "Meet Siegmeyer at Firelink Shrine",
       description:
-        "He will ask you if you were the undead who opened the gates at Sen's Fortress, answer yes.",
+        "He will ask you if you were the undead who opened the gates at Sen's Fortress, answer yes then exhaust his dialogue.",
       type: "step",
       isCompleted: false,
       location: "Firelink Shrine",
@@ -91,7 +93,7 @@ const siegmeyerQuest: QuestState = {
       id: "meet-sieglinde-firelink-one",
       name: "Meet Sieglinde at Firelink Shrine",
       description:
-        "Speak with her. She will again ask if you have seen her father, reply yes",
+        "Speak with her. She will again ask if you have seen her father, reply yes.",
       type: "step",
       isCompleted: false,
       location: "Firelink Shrine",
@@ -131,9 +133,9 @@ const siegmeyerQuest: QuestState = {
       order: 9,
     },
     {
-      id: "find-siegmeyer-ashes",
-      name: "Find Siegmeyer's Ashes",
-      description: "Speak with Sieglinde.",
+      id: "meet-sieglinde-ash-lake",
+      name: "Meet Sieglinde at Ash Lake",
+      description: "Exhaust her dialogue.",
       type: "step",
       isCompleted: false,
       location: "She and Siegmeyer will be near the first bonfire.",

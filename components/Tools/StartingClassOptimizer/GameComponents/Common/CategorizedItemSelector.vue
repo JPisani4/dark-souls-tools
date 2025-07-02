@@ -284,7 +284,8 @@ const isItemSelected = (itemName: string) => {
 
 // Create select options with categorized structure
 const selectOptions = computed(() => {
-  const options: Array<{ value: string; label: string }> = [];
+  const options: Array<{ value: string; label: string; disabled?: boolean }> =
+    [];
 
   // Group options by category
   const grouped: Record<string, typeof props.options> = {};
@@ -298,10 +299,11 @@ const selectOptions = computed(() => {
 
   // Add category headers and items
   Object.entries(grouped).forEach(([category, categoryOptions]) => {
-    // Add category header
+    // Add category header (disabled/unselectable)
     options.push({
       value: `category-${category}`,
       label: `--- ${formatCategoryName(category)} ---`,
+      disabled: true,
     });
 
     // Add items in this category

@@ -22,6 +22,8 @@ export interface CharacterStats {
   dodgeRoll: string;
   equippedWeight: number;
   equipLoadPercentage: number;
+  movementSpeed: string;
+  weightClass: string;
 }
 
 export interface CharacterEquipment {

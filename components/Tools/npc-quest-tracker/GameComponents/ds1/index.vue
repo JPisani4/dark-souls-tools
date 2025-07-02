@@ -25,9 +25,16 @@ const initialState: NpcQuestTrackerState = {
   search: "",
 };
 
+interface NpcQuestTrackerResult {
+  timestamp: Date;
+  completedSteps: Record<string, string[]>;
+  expandedNpcId: string | null;
+  search: string;
+}
+
 const { state, setState, reset, error, setError, clearError } = useBaseTool<
   NpcQuestTrackerState,
-  {}
+  NpcQuestTrackerResult
 >(
   {
     initialState,
@@ -55,16 +62,29 @@ const npcQuests = computed(() => {
 const filteredNpcQuests = computed(() => {
   if (!state.search) return npcQuests.value;
 
-  // Use fuzzy search for better typo tolerance
-  const fuse = new Fuse(npcQuests.value, {
-    keys: ["name", "npcName", "description"],
-    threshold: 0.35, // typo tolerance
-    minMatchCharLength: 2,
-    ignoreLocation: true,
-  });
+  const searchTerm = state.search.toLowerCase();
 
-  const fuseResults = fuse.search(state.search);
-  return fuseResults.map((result) => result.item);
+  // Manual filtering to include rewards in search
+  return npcQuests.value.filter((npc) => {
+    // Check basic fields
+    if (
+      npc.name.toLowerCase().includes(searchTerm) ||
+      npc.npcName.toLowerCase().includes(searchTerm) ||
+      npc.description.toLowerCase().includes(searchTerm)
+    ) {
+      return true;
+    }
+
+    // Check rewards in requirements
+    return npc.requirements.some((req) => {
+      if (req.rewards && Array.isArray(req.rewards)) {
+        return req.rewards.some((reward) =>
+          reward.toLowerCase().includes(searchTerm)
+        );
+      }
+      return false;
+    });
+  });
 });
 
 // Store a random theme for each NPC (stable per session)
@@ -136,7 +156,7 @@ const toggleStepCompleted = (
       <h1 class="text-2xl font-bold">NPC Quest Tracker</h1>
       <UInput
         v-model="state.search"
-        placeholder="Search NPCs..."
+        placeholder="Search NPCs, rewards..."
         class="w-full sm:w-64"
       />
       <UButton @click="resetAllProgress" variant="outline" size="sm">
@@ -201,7 +221,7 @@ const toggleStepCompleted = (
               (npc.requirements.length || 0)
             "
             :subtitle="npc.description"
-            :format="'text'"
+            :format="'number'"
             :icon="npcThemes[npc.id]?.icon || 'i-heroicons-user'"
             :theme="npcThemes[npc.id]"
           />
@@ -246,11 +266,19 @@ const toggleStepCompleted = (
               </div>
               <div class="flex-1 min-w-0">
                 <div class="mb-2">
-                  <div
-                    class="font-semibold text-base text-gray-900 dark:text-white break-words max-w-full"
-                    :title="step.name"
-                  >
-                    {{ step.name }}
+                  <div class="flex items-center gap-2 mb-1">
+                    <div
+                      class="font-semibold text-base text-gray-900 dark:text-white break-words max-w-full"
+                      :title="step.name"
+                    >
+                      {{ step.name }}
+                    </div>
+                    <CategoryChip
+                      v-if="step.optional"
+                      category="optional"
+                      display-name="Optional"
+                      size="sm"
+                    />
                   </div>
                   <!-- Location moved below the title for better reading order -->
                   <div

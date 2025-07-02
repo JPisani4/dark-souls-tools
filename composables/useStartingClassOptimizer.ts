@@ -51,6 +51,141 @@ import {
   TWO_HANDED_STRENGTH_MULTIPLIER,
 } from "~/utils/constants";
 
+// Cache for precomputed options to improve mobile performance
+interface OptionsCache {
+  weapons: ItemOption[];
+  shields: ItemOption[];
+  sorceries: ItemOption[];
+  miracles: ItemOption[];
+  armor: ItemOption[];
+  rings: ItemOption[];
+  isInitialized: boolean;
+}
+
+// Global cache instance
+const optionsCache: OptionsCache = {
+  weapons: [],
+  shields: [],
+  sorceries: [],
+  miracles: [],
+  armor: [],
+  rings: [],
+  isInitialized: false,
+};
+
+// Initialize the cache with all options
+const initializeOptionsCache = () => {
+  if (optionsCache.isInitialized) return;
+
+  // Get all items
+  const allWeapons = getAllWeapons();
+  const allShields = getAllShields();
+  const allSorceries = getAllSorceries();
+  const allMiracles = getAllMiracles();
+  const allArmor = getAllArmor();
+  const allRings = getAllRings();
+
+  // Precompute all options
+  optionsCache.weapons = createItemOptions(
+    Object.values(allWeapons).flat(),
+    "weapon"
+  );
+  optionsCache.shields = createItemOptions(
+    Object.values(allShields).flat(),
+    "shield"
+  );
+  optionsCache.sorceries = createItemOptions(
+    Object.values(allSorceries).flat(),
+    "sorcery"
+  );
+  optionsCache.miracles = createItemOptions(
+    Object.values(allMiracles).flat(),
+    "miracle"
+  );
+  optionsCache.armor = createItemOptions(
+    Object.values(allArmor).flat(),
+    "armor"
+  );
+  optionsCache.rings = createItemOptions(
+    Object.values(allRings).flat(),
+    "ring"
+  );
+
+  optionsCache.isInitialized = true;
+};
+
+// Helper function to create item options (moved outside the composable for caching)
+const createItemOptions = (
+  items: (Weapon | Shield | Sorcery | Miracle | Armor | Ring)[],
+  category: string
+): ItemOption[] => {
+  return items.map((item) => {
+    // Get the actual category from the item's type property
+    let actualCategory = category;
+
+    if ("weaponType" in item) {
+      actualCategory = item.weaponType;
+    } else if ("shieldType" in item) {
+      actualCategory = item.shieldType;
+    } else if ("sorceryType" in item) {
+      actualCategory = item.sorceryType;
+    } else if ("miracleType" in item) {
+      actualCategory = item.miracleType;
+    } else if ("armorType" in item) {
+      actualCategory = item.armorType;
+    } else if ("ringType" in item) {
+      actualCategory = item.ringType;
+    }
+
+    return {
+      value: item.name,
+      label: item.name,
+      category: actualCategory,
+      item,
+    };
+  });
+};
+
+// Debounced search function for better performance
+const debouncedSearch = (
+  query: string,
+  options: ItemOption[]
+): ItemOption[] => {
+  if (!query.trim()) return options;
+
+  const searchTerm = query.toLowerCase();
+  return options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm)
+  );
+};
+
+// Cache for search results to avoid repeated filtering
+const searchCache = new Map<string, ItemOption[]>();
+
+// Optimized search with caching
+const optimizedSearch = (
+  query: string,
+  options: ItemOption[]
+): ItemOption[] => {
+  if (!query.trim()) return options;
+
+  const cacheKey = `${query}:${options.length}`;
+  if (searchCache.has(cacheKey)) {
+    return searchCache.get(cacheKey)!;
+  }
+
+  const results = debouncedSearch(query, options);
+  searchCache.set(cacheKey, results);
+
+  // Limit cache size to prevent memory leaks
+  if (searchCache.size > 100) {
+    const firstKey = searchCache.keys().next().value;
+    searchCache.delete(firstKey);
+  }
+
+  return results;
+};
+
 export interface StartingClassOptimizerState {
   selectedItems: {
     weapons: Weapon[];
@@ -98,6 +233,9 @@ export interface StartingClassOptimizerValidation {
 }
 
 export function useStartingClassOptimizer() {
+  // Initialize the options cache on first use
+  initializeOptionsCache();
+
   // Initialize state
   const initialState: StartingClassOptimizerState = {
     selectedItems: {
@@ -207,13 +345,7 @@ export function useStartingClassOptimizer() {
     calculateOptimalStartingClass
   );
 
-  // Get all available items
-  const allWeapons = getAllWeapons();
-  const allShields = getAllShields();
-  const allSorceries = getAllSorceries();
-  const allMiracles = getAllMiracles();
-  const allArmor = getAllArmor();
-  const allRings = getAllRings();
+  // All items are now precomputed in the cache for better performance
 
   // Auto-calculate when state changes
   watch(
@@ -376,124 +508,48 @@ export function useStartingClassOptimizer() {
     return null;
   });
 
-  // Filtered item options based on search queries
+  // Filtered item options based on search queries (now using cached and optimized search)
   const weaponOptions = computed(() =>
-    createItemOptions(
-      Object.values(allWeapons)
-        .flat()
-        .filter((weapon: Weapon) =>
-          weapon.name
-            .toLowerCase()
-            .includes(
-              (baseTool.state.searchQueries?.weapons || "").toLowerCase()
-            )
-        ),
-      "weapon"
+    optimizedSearch(
+      baseTool.state.searchQueries?.weapons || "",
+      optionsCache.weapons
     )
   );
 
   const shieldOptions = computed(() =>
-    createItemOptions(
-      Object.values(allShields)
-        .flat()
-        .filter((shield: Shield) =>
-          shield.name
-            .toLowerCase()
-            .includes(
-              (baseTool.state.searchQueries?.shields || "").toLowerCase()
-            )
-        ),
-      "shield"
+    optimizedSearch(
+      baseTool.state.searchQueries?.shields || "",
+      optionsCache.shields
     )
   );
 
   const sorceryOptions = computed(() =>
-    createItemOptions(
-      Object.values(allSorceries)
-        .flat()
-        .filter((sorcery: Sorcery) =>
-          sorcery.name
-            .toLowerCase()
-            .includes(
-              (baseTool.state.searchQueries?.sorceries || "").toLowerCase()
-            )
-        ),
-      "sorcery"
+    optimizedSearch(
+      baseTool.state.searchQueries?.sorceries || "",
+      optionsCache.sorceries
     )
   );
 
   const miracleOptions = computed(() =>
-    createItemOptions(
-      Object.values(allMiracles)
-        .flat()
-        .filter((miracle: Miracle) =>
-          miracle.name
-            .toLowerCase()
-            .includes(
-              (baseTool.state.searchQueries?.miracles || "").toLowerCase()
-            )
-        ),
-      "miracle"
+    optimizedSearch(
+      baseTool.state.searchQueries?.miracles || "",
+      optionsCache.miracles
     )
   );
 
   const armorOptions = computed(() =>
-    createItemOptions(
-      Object.values(allArmor)
-        .flat()
-        .filter((armor: Armor) =>
-          armor.name
-            .toLowerCase()
-            .includes((baseTool.state.searchQueries?.armor || "").toLowerCase())
-        ),
-      "armor"
+    optimizedSearch(
+      baseTool.state.searchQueries?.armor || "",
+      optionsCache.armor
     )
   );
 
   const ringOptions = computed(() =>
-    createItemOptions(
-      Object.values(allRings)
-        .flat()
-        .filter((ring: Ring) =>
-          ring.name
-            .toLowerCase()
-            .includes((baseTool.state.searchQueries?.rings || "").toLowerCase())
-        ),
-      "ring"
+    optimizedSearch(
+      baseTool.state.searchQueries?.rings || "",
+      optionsCache.rings
     )
   );
-
-  // Helper function to create item options
-  const createItemOptions = (
-    items: (Weapon | Shield | Sorcery | Miracle | Armor | Ring)[],
-    category: string
-  ): ItemOption[] => {
-    return items.map((item) => {
-      // Get the actual category from the item's type property
-      let actualCategory = category;
-
-      if ("weaponType" in item) {
-        actualCategory = item.weaponType;
-      } else if ("shieldType" in item) {
-        actualCategory = item.shieldType;
-      } else if ("sorceryType" in item) {
-        actualCategory = item.sorceryType;
-      } else if ("miracleType" in item) {
-        actualCategory = item.miracleType;
-      } else if ("armorType" in item) {
-        actualCategory = item.armorType;
-      } else if ("ringType" in item) {
-        actualCategory = item.ringType;
-      }
-
-      return {
-        value: item.name,
-        label: item.name,
-        category: actualCategory,
-        item,
-      };
-    });
-  };
 
   // Item management actions
   const addWeapon = (weaponName: string) => {

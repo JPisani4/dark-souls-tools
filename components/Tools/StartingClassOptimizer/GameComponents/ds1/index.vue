@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, nextTick, watch } from "vue";
 import { useToolLayout } from "~/composables/useToolLayout";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 import { useStartingClassOptimizer } from "~/composables/useStartingClassOptimizer";
@@ -34,6 +34,7 @@ import {
   getDodgeRoll,
   calculateEquipmentBonuses,
 } from "~/utils/games/ds1/stats/characterStats";
+import { buildCompression, type BuildData } from "~/utils/buildCompression";
 import Icon from "~/components/Common/Icon.vue";
 
 interface Props {
@@ -104,6 +105,7 @@ const {
   resetForm,
   toggleTwoHanded,
   clearAllItems,
+  setState,
 } = useStartingClassOptimizer();
 
 // Add reset trigger counter
@@ -189,6 +191,8 @@ const statValidation = computed(() => {
       dodgeRoll: { isValid: true },
       equippedWeight: { isValid: true },
       equipLoadPercentage: { isValid: true },
+      movementSpeed: { isValid: true },
+      weightClass: { isValid: true },
     };
   }
   return validation.value.errors;
@@ -217,7 +221,171 @@ const minimumRequirementsWithLevel = computed(() => {
     dodgeRoll: derivedStats.value.dodgeRoll,
     equippedWeight: derivedStats.value.equippedWeight,
     equipLoadPercentage: derivedStats.value.equipLoadPercentage,
+    movementSpeed: derivedStats.value.movementSpeed,
+    weightClass: derivedStats.value.weightClass,
   };
+});
+
+// Share functionality
+const shareUrl = ref<string>("");
+const showShareConfirmation = ref(false);
+
+// Computed property to always get the latest build data
+const currentBuildData = computed((): BuildData => {
+  return {
+    stats: {
+      vitality: state.characterStats.vitality,
+      attunement: state.characterStats.attunement,
+      endurance: state.characterStats.endurance,
+      strength: state.characterStats.strength,
+      dexterity: state.characterStats.dexterity,
+      resistance: state.characterStats.resistance,
+      intelligence: state.characterStats.intelligence,
+      faith: state.characterStats.faith,
+    },
+    equipment: {
+      weapons: state.selectedItems.weapons?.map((w) => w.name) || [],
+      shields: state.selectedItems.shields?.map((s) => s.name) || [],
+      sorceries: state.selectedItems.sorceries?.map((s) => s.name) || [],
+      miracles: state.selectedItems.miracles?.map((m) => m.name) || [],
+      armor: state.selectedItems.armor?.map((a) => a.name) || [],
+      rings: state.selectedItems.rings?.map((r) => r.name) || [],
+    },
+    settings: {
+      isTwoHanded: state.isTwoHanded,
+    },
+  };
+});
+
+// Watch for changes in the build data and update the share URL automatically
+watch(
+  currentBuildData,
+  (newBuildData) => {
+    shareUrl.value = buildCompression.generateUrl(newBuildData);
+  },
+  { deep: true, immediate: true }
+);
+
+const generateShareUrl = () => {
+  shareUrl.value = buildCompression.generateUrl(currentBuildData.value);
+};
+
+const copyShareUrl = async () => {
+  try {
+    // Try the modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(shareUrl.value);
+      showShareConfirmation.value = true;
+      setTimeout(() => {
+        showShareConfirmation.value = false;
+      }, 3000);
+    } else {
+      // Fallback for mobile/older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = shareUrl.value;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        document.execCommand("copy");
+        showShareConfirmation.value = true;
+        setTimeout(() => {
+          showShareConfirmation.value = false;
+        }, 3000);
+      } catch (err) {
+        // If execCommand fails, show the URL in an alert
+        alert(`Share URL: ${shareUrl.value}`);
+      }
+
+      document.body.removeChild(textArea);
+    }
+  } catch (error) {
+    // Final fallback - show URL in alert
+    alert(`Share URL: ${shareUrl.value}`);
+  }
+};
+
+const loadFromUrl = async () => {
+  const route = useRoute();
+  const buildParam = route.query.b as string;
+
+  if (buildParam) {
+    const buildData = buildCompression.decode(buildParam);
+    if (buildData) {
+      // Load stats - update all at once to avoid timing issues
+      const newCharacterStats = {
+        ...state.characterStats,
+        vitality: buildData.stats.vitality,
+        attunement: buildData.stats.attunement,
+        endurance: buildData.stats.endurance,
+        strength: buildData.stats.strength,
+        dexterity: buildData.stats.dexterity,
+        resistance: buildData.stats.resistance,
+        intelligence: buildData.stats.intelligence,
+        faith: buildData.stats.faith,
+      };
+      // Use the composable's setState to update all stats at once
+      setState({ characterStats: newCharacterStats });
+
+      // Wait for next tick to ensure state is updated
+      await nextTick();
+
+      // Load equipment
+      buildData.equipment.weapons.forEach((weaponName) => {
+        const weapon = weaponOptions.value.find(
+          (w) => w.item.name === weaponName
+        );
+        if (weapon) addWeapon(weaponName);
+      });
+
+      buildData.equipment.shields.forEach((shieldName) => {
+        const shield = shieldOptions.value.find(
+          (s) => s.item.name === shieldName
+        );
+        if (shield) addShield(shieldName);
+      });
+
+      buildData.equipment.sorceries.forEach((sorceryName) => {
+        const sorcery = sorceryOptions.value.find(
+          (s) => s.item.name === sorceryName
+        );
+        if (sorcery) addSorcery(sorceryName);
+      });
+
+      buildData.equipment.miracles.forEach((miracleName) => {
+        const miracle = miracleOptions.value.find(
+          (m) => m.item.name === miracleName
+        );
+        if (miracle) addMiracle(miracleName);
+      });
+
+      // Load armor
+      buildData.equipment.armor.forEach((armorName) => {
+        const armor = armorOptions.value.find((a) => a.item.name === armorName);
+        if (armor) addArmor(armorName);
+      });
+
+      // Load rings
+      buildData.equipment.rings.forEach((ringName) => {
+        const ring = ringOptions.value.find((r) => r.item.name === ringName);
+        if (ring) addRing(ringName);
+      });
+
+      // Load settings - set two-handed state directly to avoid overwriting loaded stats
+      if (buildData.settings.isTwoHanded !== state.isTwoHanded) {
+        setState({ isTwoHanded: buildData.settings.isTwoHanded });
+      }
+    }
+  }
+};
+
+// Load from URL on mount
+onMounted(() => {
+  loadFromUrl();
 });
 
 // Handle stat updates
@@ -309,10 +477,10 @@ const improveDodgeRoll = () => {
 
   // Calculate equipment bonuses for the current equipment
   const equipmentBonuses = calculateEquipmentBonuses(
-    state.selectedItems.weapons || [],
-    state.selectedItems.shields || [],
-    state.selectedItems.armor || [],
-    state.selectedItems.rings || []
+    (state.selectedItems.weapons || []) as any[],
+    (state.selectedItems.shields || []) as any[],
+    (state.selectedItems.armor || []) as any[],
+    (state.selectedItems.rings || []) as any[]
   );
 
   // Calculate the minimum endurance needed for that threshold
@@ -663,26 +831,46 @@ const canImproveDodgeRoll = computed(() => {
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold">Character Stats</h2>
-            <UButton
-              size="sm"
-              variant="solid"
-              :color="
-                randomTheme.icon.includes('blue')
-                  ? 'info'
-                  : randomTheme.icon.includes('green')
-                    ? 'success'
-                    : randomTheme.icon.includes('orange')
-                      ? 'warning'
-                      : randomTheme.icon.includes('red')
-                        ? 'error'
-                        : 'primary'
-              "
-              @click="handleReset"
-              class="font-medium shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
-              Reset
-            </UButton>
+            <div class="flex gap-2">
+              <UButton
+                size="sm"
+                variant="outline"
+                :color="showShareConfirmation ? 'success' : 'secondary'"
+                @click="copyShareUrl"
+                class="font-medium shadow-sm hover:shadow-md transition-shadow"
+                :disabled="showShareConfirmation"
+              >
+                <Icon
+                  :name="
+                    showShareConfirmation
+                      ? 'i-heroicons-check'
+                      : 'i-heroicons-link'
+                  "
+                  class="w-4 h-4 mr-1"
+                />
+                {{ showShareConfirmation ? "Copied!" : "Share Build" }}
+              </UButton>
+              <UButton
+                size="sm"
+                variant="solid"
+                :color="
+                  randomTheme.icon.includes('blue')
+                    ? 'info'
+                    : randomTheme.icon.includes('green')
+                      ? 'success'
+                      : randomTheme.icon.includes('orange')
+                        ? 'warning'
+                        : randomTheme.icon.includes('red')
+                          ? 'error'
+                          : 'primary'
+                "
+                @click="handleReset"
+                class="font-medium shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
+                Reset
+              </UButton>
+            </div>
           </div>
         </template>
 

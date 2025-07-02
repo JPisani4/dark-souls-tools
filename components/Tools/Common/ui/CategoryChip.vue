@@ -51,6 +51,10 @@ const getCategoryColor = (
     material: "neutral",
     ring: "primary",
     spell: "secondary",
+    reward: "success",
+    fail: "error",
+    location: "info",
+    optional: "warning",
     default: "neutral",
   };
   return colorMap[category.toLowerCase()] || colorMap.default;

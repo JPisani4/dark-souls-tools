@@ -7,7 +7,29 @@
     :size="size"
     :disabled="disabled"
   >
+    <!-- Mobile: Use native select for better keyboard handling -->
+    <select
+      v-if="isMobile"
+      :id="id"
+      :value="modelValue"
+      :disabled="disabled"
+      :class="[inputClasses, 'w-full']"
+      @change="$emit('update:modelValue', $event.target.value)"
+    >
+      <option value="" disabled>{{ placeholder }}</option>
+      <option
+        v-for="option in options"
+        :key="option.value"
+        :value="option.value"
+        :disabled="option.disabled"
+      >
+        {{ option.label }}
+      </option>
+    </select>
+
+    <!-- Desktop: Use USelectMenu for better UX -->
     <USelectMenu
+      v-else
       :id="id"
       :model-value="modelValue"
       :items="options"
@@ -61,6 +83,19 @@ const props = withDefaults(defineProps<Props>(), {
 
 const safeTheme = useSafeTheme(props.theme, props.variant);
 
+// Detect mobile device for better dropdown handling
+const isMobile = computed(() => {
+  if (process.client) {
+    return (
+      window.innerWidth <= 768 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    );
+  }
+  return false;
+});
+
 const inputClasses = computed(() => [
   props.error ? FORM_STYLES.inputError : FORM_STYLES.input,
   props.disabled
@@ -79,6 +114,61 @@ const inputClasses = computed(() => [
 }
 
 .disabled-select * {
+  cursor: not-allowed !important;
+}
+
+/* Mobile select styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+/* Dark mode arrow */
+.dark select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Style disabled options in native select */
+select option:disabled {
+  color: #9ca3af !important;
+  background-color: #f3f4f6 !important;
+  font-style: italic;
+  cursor: not-allowed;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dark select option:disabled {
+  color: #6b7280 !important;
+  background-color: #374151 !important;
+}
+
+/* Style disabled options in USelectMenu (desktop) */
+:deep(.u-select-menu-option[data-disabled="true"]) {
+  color: #9ca3af !important;
+  background-color: #f3f4f6 !important;
+  font-style: italic;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.dark :deep(.u-select-menu-option[data-disabled="true"]) {
+  color: #6b7280 !important;
+  background-color: #374151 !important;
+}
+
+:deep(.u-select-menu-option[data-disabled="true"]:hover) {
+  background-color: #f3f4f6 !important;
+  cursor: not-allowed !important;
+}
+
+.dark :deep(.u-select-menu-option[data-disabled="true"]:hover) {
+  background-color: #374151 !important;
   cursor: not-allowed !important;
 }
 </style>

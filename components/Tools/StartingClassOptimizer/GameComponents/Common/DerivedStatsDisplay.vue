@@ -68,10 +68,29 @@
         </div>
       </div>
 
-      <!-- Dodge Roll - Spans 2 columns -->
-      <div
-        class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 md:col-span-2 lg:col-span-2"
-      >
+      <!-- Movement Speed -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Movement Speed
+            </p>
+            <p class="text-lg font-bold text-gray-900 dark:text-white">
+              {{ stats.movementSpeed }}
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {{ stats.weightClass }}
+            </p>
+          </div>
+          <Icon
+            name="i-heroicons-arrow-right"
+            class="w-24 h-24 text-indigo-500"
+          />
+        </div>
+      </div>
+
+      <!-- Dodge Roll - Now single column -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
         <div class="flex items-center justify-between">
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -84,7 +103,7 @@
           <div class="flex items-center gap-2 flex-shrink-0">
             <Icon
               name="i-heroicons-arrow-up"
-              class="w-24 h-24 text-purple-500"
+              class="w-20 h-20 text-purple-500"
             />
             <UButton
               v-if="canImproveDodgeRoll"

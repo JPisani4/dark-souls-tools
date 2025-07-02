@@ -173,6 +173,8 @@ const displayStats = computed(() => {
     dodgeRoll,
     equippedWeight,
     equipLoadPercentage,
+    movementSpeed,
+    weightClass,
     ...otherStats
   } = props.stats;
   return otherStats as BaseStats;
