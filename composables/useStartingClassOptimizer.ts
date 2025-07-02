@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
 import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
@@ -253,6 +253,7 @@ export interface StartingClassOptimizerState {
     armor: string;
     rings: string;
   };
+  version?: string; // For state migration tracking
 }
 
 export interface StartingClassResult {
@@ -316,6 +317,7 @@ export function useStartingClassOptimizer() {
       armor: "",
       rings: "",
     },
+    version: "1.0.0", // Current state schema version
   };
 
   // Validation rules
@@ -335,6 +337,7 @@ export function useStartingClassOptimizer() {
     },
     isTwoHanded: () => null,
     searchQueries: () => null,
+    version: () => null,
   };
 
   // Calculation function
@@ -408,6 +411,132 @@ export function useStartingClassOptimizer() {
     calculateOptimalStartingClass
   );
 
+  // State migration logic to handle cached state without twoHanded property
+  onMounted(() => {
+    // Comprehensive state migration to handle any missing properties
+    const migrateState = () => {
+      const currentState = baseTool.state;
+      let needsMigration = false;
+      const migratedState: Partial<StartingClassOptimizerState> = {};
+
+      // Check if state needs migration based on version
+      const currentVersion = currentState.version || "0.0.0";
+      const targetVersion = "1.0.0";
+
+      if (currentVersion !== targetVersion) {
+        needsMigration = true;
+      }
+
+      // Check and migrate selectedItems structure
+      if (currentState.selectedItems) {
+        const selectedItems = currentState.selectedItems;
+        const migratedSelectedItems: any = { ...selectedItems };
+
+        // Ensure all required arrays exist
+        const requiredArrays = [
+          "weapons",
+          "shields",
+          "catalysts",
+          "talismans",
+          "sorceries",
+          "miracles",
+          "pyromancies",
+          "armor",
+          "rings",
+        ] as const;
+        requiredArrays.forEach((arrayName) => {
+          if (!Array.isArray(selectedItems[arrayName])) {
+            (migratedSelectedItems as any)[arrayName] = [];
+            needsMigration = true;
+          }
+        });
+
+        // Migrate twoHanded property if missing
+        if (!selectedItems.twoHanded) {
+          migratedSelectedItems.twoHanded = {
+            weapons: new Array(selectedItems.weapons?.length || 0).fill(false),
+            shields: new Array(selectedItems.shields?.length || 0).fill(false),
+            catalysts: new Array(selectedItems.catalysts?.length || 0).fill(
+              false
+            ),
+            talismans: new Array(selectedItems.talismans?.length || 0).fill(
+              false
+            ),
+          };
+          needsMigration = true;
+        }
+
+        // Ensure twoHanded arrays match the length of their corresponding item arrays
+        if (selectedItems.twoHanded) {
+          const twoHanded = selectedItems.twoHanded;
+          const arraysToCheck = [
+            "weapons",
+            "shields",
+            "catalysts",
+            "talismans",
+          ];
+
+          arraysToCheck.forEach((arrayName) => {
+            const itemArray = (selectedItems as any)[arrayName];
+            const twoHandedArray = (twoHanded as any)[arrayName];
+
+            if (Array.isArray(itemArray) && Array.isArray(twoHandedArray)) {
+              if (twoHandedArray.length !== itemArray.length) {
+                // Extend or truncate the twoHanded array to match
+                const newLength = itemArray.length;
+                const newArray = new Array(newLength).fill(false);
+
+                // Copy existing values up to the minimum length
+                const minLength = Math.min(twoHandedArray.length, newLength);
+                for (let i = 0; i < minLength; i++) {
+                  newArray[i] = twoHandedArray[i];
+                }
+
+                (migratedSelectedItems.twoHanded as any)[arrayName] = newArray;
+                needsMigration = true;
+              }
+            }
+          });
+        }
+
+        if (needsMigration) {
+          migratedState.selectedItems = migratedSelectedItems;
+        }
+      }
+
+      // Check and migrate characterStats
+      if (!currentState.characterStats) {
+        migratedState.characterStats = { ...DEFAULT_CHARACTER_STATS };
+        needsMigration = true;
+      }
+
+      // Check and migrate searchQueries
+      if (!currentState.searchQueries) {
+        migratedState.searchQueries = {
+          weapons: "",
+          shields: "",
+          catalysts: "",
+          talismans: "",
+          sorceries: "",
+          miracles: "",
+          pyromancies: "",
+          armor: "",
+          rings: "",
+        };
+        needsMigration = true;
+      }
+
+      // Apply migration if needed
+      if (needsMigration) {
+        migratedState.version = targetVersion;
+        baseTool.setState(migratedState);
+      }
+    };
+
+    // Run migration
+    migrateState();
+  });
+
   // All items are now precomputed in the cache for better performance
 
   // Auto-calculate when state changes
@@ -415,20 +544,20 @@ export function useStartingClassOptimizer() {
     [
       () => baseTool.state.selectedItems,
       () => baseTool.state.characterStats,
-      () => baseTool.state.selectedItems.twoHanded.weapons,
-      () => baseTool.state.selectedItems.twoHanded.shields,
-      () => baseTool.state.selectedItems.twoHanded.catalysts,
-      () => baseTool.state.selectedItems.twoHanded.talismans,
+      () => baseTool.state.selectedItems?.twoHanded?.weapons || [],
+      () => baseTool.state.selectedItems?.twoHanded?.shields || [],
+      () => baseTool.state.selectedItems?.twoHanded?.catalysts || [],
+      () => baseTool.state.selectedItems?.twoHanded?.talismans || [],
     ],
     async () => {
       // Only calculate if there are items selected or stats have been modified
       const hasSelectedItems =
-        baseTool.state.selectedItems.weapons.length > 0 ||
-        baseTool.state.selectedItems.shields.length > 0 ||
-        baseTool.state.selectedItems.sorceries.length > 0 ||
-        baseTool.state.selectedItems.miracles.length > 0 ||
-        baseTool.state.selectedItems.armor.length > 0 ||
-        baseTool.state.selectedItems.rings.length > 0;
+        (baseTool.state.selectedItems?.weapons?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.shields?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.sorceries?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.miracles?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.armor?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.rings?.length || 0) > 0;
 
       const hasModifiedStats = Object.entries(
         baseTool.state.characterStats
@@ -554,14 +683,14 @@ export function useStartingClassOptimizer() {
 
   // Computed properties
   const allEquippedWeaponLikes = computed(() => [
-    ...baseTool.state.selectedItems.weapons,
-    ...baseTool.state.selectedItems.catalysts,
-    ...baseTool.state.selectedItems.talismans,
+    ...(baseTool.state.selectedItems?.weapons || []),
+    ...(baseTool.state.selectedItems?.catalysts || []),
+    ...(baseTool.state.selectedItems?.talismans || []),
   ]);
   const allTwoHandedStates = computed(() => [
-    ...baseTool.state.selectedItems.twoHanded.weapons,
-    ...baseTool.state.selectedItems.twoHanded.catalysts,
-    ...baseTool.state.selectedItems.twoHanded.talismans,
+    ...(baseTool.state.selectedItems?.twoHanded?.weapons || []),
+    ...(baseTool.state.selectedItems?.twoHanded?.catalysts || []),
+    ...(baseTool.state.selectedItems?.twoHanded?.talismans || []),
   ]);
 
   const minimumRequirements = computed(() => {
@@ -578,18 +707,22 @@ export function useStartingClassOptimizer() {
     };
 
     // Explicitly reference the twoHanded arrays to ensure reactivity
-    const weaponTwoHanded = baseTool.state.selectedItems.twoHanded.weapons;
-    const catalystTwoHanded = baseTool.state.selectedItems.twoHanded.catalysts;
-    const talismanTwoHanded = baseTool.state.selectedItems.twoHanded.talismans;
-    const shieldTwoHanded = baseTool.state.selectedItems.twoHanded.shields;
+    const weaponTwoHanded =
+      baseTool.state.selectedItems?.twoHanded?.weapons || [];
+    const catalystTwoHanded =
+      baseTool.state.selectedItems?.twoHanded?.catalysts || [];
+    const talismanTwoHanded =
+      baseTool.state.selectedItems?.twoHanded?.talismans || [];
+    const shieldTwoHanded =
+      baseTool.state.selectedItems?.twoHanded?.shields || [];
 
     // Weapons
-    baseTool.state.selectedItems.weapons.forEach((item, idx) => {
+    (baseTool.state.selectedItems?.weapons || []).forEach((item, idx) => {
       const is2H = weaponTwoHanded[idx];
       const reqs = calculateItemRequirements(
         item,
         is2H,
-        baseTool.state.selectedItems.weapons
+        baseTool.state.selectedItems?.weapons || []
       );
       Object.keys(reqs).forEach((key) => {
         const statKey = key as keyof typeof minReqs;
@@ -598,7 +731,7 @@ export function useStartingClassOptimizer() {
     });
 
     // Catalysts
-    baseTool.state.selectedItems.catalysts.forEach((item, idx) => {
+    (baseTool.state.selectedItems?.catalysts || []).forEach((item, idx) => {
       const is2H = catalystTwoHanded[idx];
       const reqs = calculateItemRequirements(
         item,
@@ -626,12 +759,12 @@ export function useStartingClassOptimizer() {
     });
 
     // Shields
-    baseTool.state.selectedItems.shields.forEach((item, idx) => {
+    (baseTool.state.selectedItems?.shields || []).forEach((item, idx) => {
       const is2H = shieldTwoHanded[idx];
       const reqs = calculateItemRequirements(
         item,
         is2H,
-        baseTool.state.selectedItems.weapons
+        baseTool.state.selectedItems?.weapons || []
       );
       Object.keys(reqs).forEach((key) => {
         const statKey = key as keyof typeof minReqs;
@@ -640,21 +773,21 @@ export function useStartingClassOptimizer() {
     });
 
     // Spells
-    baseTool.state.selectedItems.sorceries.forEach((item) => {
+    (baseTool.state.selectedItems?.sorceries || []).forEach((item) => {
       const reqs = calculateItemRequirements(item, false, []);
       Object.keys(reqs).forEach((key) => {
         const statKey = key as keyof typeof minReqs;
         minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
       });
     });
-    baseTool.state.selectedItems.miracles.forEach((item) => {
+    (baseTool.state.selectedItems?.miracles || []).forEach((item) => {
       const reqs = calculateItemRequirements(item, false, []);
       Object.keys(reqs).forEach((key) => {
         const statKey = key as keyof typeof minReqs;
         minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
       });
     });
-    baseTool.state.selectedItems.pyromancies.forEach((item) => {
+    (baseTool.state.selectedItems?.pyromancies || []).forEach((item) => {
       const reqs = calculateItemRequirements(item, false, []);
       Object.keys(reqs).forEach((key) => {
         const statKey = key as keyof typeof minReqs;
@@ -664,12 +797,12 @@ export function useStartingClassOptimizer() {
 
     // Attunement slots from rings
     const requiredSlots = calculateRequiredAttunementSlots(
-      baseTool.state.selectedItems.sorceries,
-      baseTool.state.selectedItems.miracles,
-      baseTool.state.selectedItems.pyromancies
+      baseTool.state.selectedItems?.sorceries || [],
+      baseTool.state.selectedItems?.miracles || [],
+      baseTool.state.selectedItems?.pyromancies || []
     );
     const ringSlots = getAttunementSlotsFromRings(
-      baseTool.state.selectedItems.rings
+      baseTool.state.selectedItems?.rings || []
     );
     const slotsNeededFromStat = Math.max(0, requiredSlots - ringSlots);
     minReqs.attunement =
@@ -699,14 +832,16 @@ export function useStartingClassOptimizer() {
   const hasChanges = computed(() => baseTool.hasChanges);
 
   const isTwoHandedDisabled = computed(() => {
-    const hasWeapons = baseTool.state.selectedItems.weapons.length > 0;
-    const hasShields = baseTool.state.selectedItems.shields.length > 0;
-    const hasCatalysts = baseTool.state.selectedItems.catalysts.length > 0;
-    const hasTalismans = baseTool.state.selectedItems.talismans.length > 0;
-    const weaponCount = baseTool.state.selectedItems.weapons.length;
-    const shieldCount = baseTool.state.selectedItems.shields.length;
-    const catalystCount = baseTool.state.selectedItems.catalysts.length;
-    const talismanCount = baseTool.state.selectedItems.talismans.length;
+    const hasWeapons = (baseTool.state.selectedItems?.weapons?.length || 0) > 0;
+    const hasShields = (baseTool.state.selectedItems?.shields?.length || 0) > 0;
+    const hasCatalysts =
+      (baseTool.state.selectedItems?.catalysts?.length || 0) > 0;
+    const hasTalismans =
+      (baseTool.state.selectedItems?.talismans?.length || 0) > 0;
+    const weaponCount = baseTool.state.selectedItems?.weapons?.length || 0;
+    const shieldCount = baseTool.state.selectedItems?.shields?.length || 0;
+    const catalystCount = baseTool.state.selectedItems?.catalysts?.length || 0;
+    const talismanCount = baseTool.state.selectedItems?.talismans?.length || 0;
 
     // Two-handed mode should be disabled when no weapon-like items are selected
     if (!hasWeapons && !hasShields && !hasCatalysts && !hasTalismans)
@@ -737,9 +872,9 @@ export function useStartingClassOptimizer() {
 
   // Check if two-handed mode should be locked due to required two-handed items
   const isTwoHandedLocked = computed(() => {
-    const weapons = baseTool.state.selectedItems.weapons;
-    const catalysts = baseTool.state.selectedItems.catalysts;
-    const talismans = baseTool.state.selectedItems.talismans;
+    const weapons = baseTool.state.selectedItems?.weapons || [];
+    const catalysts = baseTool.state.selectedItems?.catalysts || [];
+    const talismans = baseTool.state.selectedItems?.talismans || [];
 
     // Check if any weapon-like item requires two-handed mode
     const hasRequiredTwoHandedWeapon = weapons.some(
@@ -762,19 +897,19 @@ export function useStartingClassOptimizer() {
   const isShieldSelectionDisabled = computed(() => {
     // Shield selection should be disabled when the total number of weapon-like items reaches 4
     const totalWeaponLikeItems =
-      baseTool.state.selectedItems.weapons.length +
-      baseTool.state.selectedItems.shields.length +
-      baseTool.state.selectedItems.catalysts.length +
-      baseTool.state.selectedItems.talismans.length;
+      (baseTool.state.selectedItems?.weapons?.length || 0) +
+      (baseTool.state.selectedItems?.shields?.length || 0) +
+      (baseTool.state.selectedItems?.catalysts?.length || 0) +
+      (baseTool.state.selectedItems?.talismans?.length || 0);
 
     // If two-handed mode is enabled, only allow one weapon-like item
     if (baseTool.state.isTwoHanded) {
       // In two-handed mode, you can only have one weapon-like item
       return (
-        baseTool.state.selectedItems.weapons.length > 0 ||
-        baseTool.state.selectedItems.shields.length > 0 ||
-        baseTool.state.selectedItems.catalysts.length > 0 ||
-        baseTool.state.selectedItems.talismans.length > 0
+        (baseTool.state.selectedItems?.weapons?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.shields?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.catalysts?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.talismans?.length || 0) > 0
       );
     }
 
@@ -784,19 +919,19 @@ export function useStartingClassOptimizer() {
   const isWeaponSelectionDisabled = computed(() => {
     // Weapon selection should be disabled when the total number of weapon-like items reaches 4
     const totalWeaponLikeItems =
-      baseTool.state.selectedItems.weapons.length +
-      baseTool.state.selectedItems.shields.length +
-      baseTool.state.selectedItems.catalysts.length +
-      baseTool.state.selectedItems.talismans.length;
+      (baseTool.state.selectedItems?.weapons?.length || 0) +
+      (baseTool.state.selectedItems?.shields?.length || 0) +
+      (baseTool.state.selectedItems?.catalysts?.length || 0) +
+      (baseTool.state.selectedItems?.talismans?.length || 0);
 
     // If two-handed mode is enabled, only allow one weapon-like item
     if (baseTool.state.isTwoHanded) {
       // In two-handed mode, you can only have one weapon-like item
       return (
-        baseTool.state.selectedItems.shields.length > 0 ||
-        baseTool.state.selectedItems.weapons.length > 0 ||
-        baseTool.state.selectedItems.catalysts.length > 0 ||
-        baseTool.state.selectedItems.talismans.length > 0
+        (baseTool.state.selectedItems?.shields?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.weapons?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.catalysts?.length || 0) > 0 ||
+        (baseTool.state.selectedItems?.talismans?.length || 0) > 0
       );
     }
 
@@ -805,9 +940,9 @@ export function useStartingClassOptimizer() {
 
   const hasRequiredTwoHandedWeapon = computed(() => {
     // Check if any weapon-like item requires two-handed mode
-    const weapons = baseTool.state.selectedItems.weapons;
-    const catalysts = baseTool.state.selectedItems.catalysts;
-    const talismans = baseTool.state.selectedItems.talismans;
+    const weapons = baseTool.state.selectedItems?.weapons || [];
+    const catalysts = baseTool.state.selectedItems?.catalysts || [];
+    const talismans = baseTool.state.selectedItems?.talismans || [];
 
     const hasRequiredTwoHandedWeapon = weapons.some(
       (weapon) => weapon.requiredTwoHanded === true
