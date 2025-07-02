@@ -19,25 +19,44 @@
       <div
         v-for="(item, index) in selectedItems"
         :key="`${item.name}-${index}`"
-        class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+        class="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
       >
         <div class="flex items-start justify-between">
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex flex-col gap-2 mb-2">
               <p class="font-medium text-gray-900 dark:text-white truncate">
                 {{ item.name }}
               </p>
-              <span
-                class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 flex-shrink-0"
-              >
-                {{ getItemCategory(item) }}
-              </span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span
+                  class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300 flex-shrink-0"
+                >
+                  {{ getItemCategory(item) }}
+                </span>
+                <!-- Two-Handed Checkbox for weapons, shields, catalysts, talismans -->
+                <template
+                  v-if="
+                    showTwoHandedCheckbox &&
+                    isWeaponOrShieldOrCatalystOrTalisman(item)
+                  "
+                >
+                  <UCheckbox
+                    :model-value="twoHanded[index]"
+                    @update:model-value="$emit('toggleTwoHanded', index)"
+                    size="md"
+                    class="ml-2"
+                    label="2H"
+                  />
+                </template>
+              </div>
             </div>
 
             <!-- Stat Requirements -->
             <div
-              v-if="!isRing(item) || hasRequirements(item)"
-              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+              v-if="
+                (!isRing(item) && !isPyromancy(item)) || hasRequirements(item)
+              "
+              class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 sm:mb-2"
             >
               <span class="font-medium">Requirements:</span>
               {{ formatRequirements(item) }}
@@ -46,7 +65,7 @@
             <!-- Weight for weapons and shields -->
             <div
               v-if="isWeaponOrShield(item)"
-              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+              class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 sm:mb-2"
             >
               {{ (item as Weapon | Shield).weight }} weight
             </div>
@@ -54,7 +73,7 @@
             <!-- Weight for armor -->
             <div
               v-if="isArmor(item)"
-              class="text-sm text-gray-600 dark:text-gray-400 mb-2"
+              class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 sm:mb-2"
             >
               {{ (item as Armor).weight }} weight
             </div>
@@ -62,18 +81,20 @@
             <!-- Additional Info for Spells -->
             <div
               v-if="isSpell(item)"
-              class="text-xs text-gray-500 dark:text-gray-400 mb-2"
+              class="text-xs text-gray-500 dark:text-gray-400 mb-1 sm:mb-2"
             >
-              {{ (item as Sorcery | Miracle).attunementSlots }} attunement
-              slot{{
-                (item as Sorcery | Miracle).attunementSlots !== 1 ? "s" : ""
+              {{ (item as Sorcery | Miracle | Pyromancy).attunementSlots }}
+              attunement slot{{
+                (item as Sorcery | Miracle | Pyromancy).attunementSlots !== 1
+                  ? "s"
+                  : ""
               }}
             </div>
 
             <!-- Description for rings -->
             <div
               v-if="isRing(item)"
-              class="text-xs text-gray-500 dark:text-gray-400 mb-2"
+              class="text-xs text-blue-600 dark:text-blue-400 mb-1 sm:mb-2"
             >
               {{ (item as Ring).description }}
             </div>
@@ -84,7 +105,7 @@
             variant="ghost"
             color="error"
             @click="$emit('remove', index)"
-            class="text-red-600 hover:text-red-700 ml-3 flex-shrink-0"
+            class="text-red-600 hover:text-red-700 ml-2 sm:ml-3 flex-shrink-0 p-1 sm:p-2"
           >
             <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
           </UButton>
@@ -134,6 +155,7 @@ import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
 import type { Miracle } from "~/types/game/ds1/miracles";
+import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 import type { Ring } from "~/types/game/ds1/rings";
 import type { Armor } from "~/types/game/ds1/armor";
 import SelectField from "../../../Common/forms/SelectField.vue";
@@ -151,24 +173,39 @@ interface Props {
     value: string;
     label: string;
     category: string;
-    item: Weapon | Shield | Sorcery | Miracle | Ring | Armor;
+    item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor;
   }>;
-  selectedItems: (Weapon | Shield | Sorcery | Miracle | Ring | Armor)[];
+  selectedItems: (
+    | Weapon
+    | Shield
+    | Sorcery
+    | Miracle
+    | Pyromancy
+    | Ring
+    | Armor
+  )[];
   maxItems?: number;
   disabled?: boolean;
   currentAttunement?: number;
+  selectedRings?: Ring[];
+  twoHanded?: boolean[];
+  showTwoHandedCheckbox?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxItems: 2,
   disabled: false,
   currentAttunement: 1,
+  selectedRings: () => [],
+  twoHanded: () => [],
+  showTwoHandedCheckbox: true,
 });
 
 const emit = defineEmits<{
-  add: [item: Weapon | Shield | Sorcery | Miracle | Ring | Armor];
+  add: [item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor];
   remove: [index: number];
   increaseAttunement: [level: number];
+  toggleTwoHanded: [index: number];
 }>();
 
 const selectedValue = ref<string>("");
@@ -178,37 +215,55 @@ const isMaxSelected = computed(() => {
   return props.selectedItems.length >= props.maxItems;
 });
 
-// Check if an item is a spell (sorcery or miracle)
+// Check if an item is a spell (sorcery, miracle, or pyromancy)
 const isSpell = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
-  return "sorceryType" in item || "miracleType" in item;
+  return (
+    "sorceryType" in item || "miracleType" in item || "pyromancyType" in item
+  );
 };
 
 // Check if an item is a weapon or shield
 const isWeaponOrShield = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
   return "weaponType" in item || "shieldType" in item;
 };
 
 // Check if an item is a ring
 const isRing = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
   return "ringType" in item;
 };
 
 // Check if an item is armor
 const isArmor = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
   return "slot" in item && "armorType" in item;
 };
 
+// Check if an item is a pyromancy
+const isPyromancy = (
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+): boolean => {
+  return "pyromancyType" in item;
+};
+
+// Check if an item is a catalyst or talisman
+const isWeaponOrShieldOrCatalystOrTalisman = (
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+): boolean => {
+  return (
+    isWeaponOrShield(item) || "catalystType" in item || "talismanType" in item
+  );
+};
+
 // Check if an item has requirements
 const hasRequirements = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
   // Armor doesn't have requirements
   if (isArmor(item)) {
@@ -216,7 +271,8 @@ const hasRequirements = (
   }
 
   // Type assertion for items with requirements
-  const req = (item as Weapon | Shield | Sorcery | Miracle | Ring).requirements;
+  const req = (item as Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring)
+    .requirements;
 
   // Check based on item type
   if (isWeaponOrShield(item)) {
@@ -247,14 +303,29 @@ const hasRequirements = (
 // Calculate total attunement slots required by selected spells
 const requiredAttunementSlots = computed(() => {
   return props.selectedItems.filter(isSpell).reduce((total, item) => {
-    const spell = item as Sorcery | Miracle;
+    const spell = item as Sorcery | Miracle | Pyromancy;
     return total + (spell.attunementSlots || 1);
   }, 0);
 });
 
-// Get available attunement slots
+// Calculate attunement slot bonus from rings
+const attunementSlotBonusFromRings = computed(() => {
+  return props.selectedRings.reduce((sum, ring) => {
+    // Check both attunementSlots and statBonus.attunement
+    let bonus = 0;
+    if (ring.effect?.attunementSlots) bonus += ring.effect.attunementSlots;
+    if (ring.effect?.statBonus?.attunement)
+      bonus += ring.effect.statBonus.attunement;
+    return sum + bonus;
+  }, 0);
+});
+
+// Get available attunement slots (base + ring bonus)
 const availableAttunementSlots = computed(() => {
-  return getAttunementSlots(props.currentAttunement);
+  return (
+    getAttunementSlots(props.currentAttunement) +
+    attunementSlotBonusFromRings.value
+  );
 });
 
 // Check if attunement is limiting spell selection
@@ -291,10 +362,16 @@ const selectOptions = computed(() => {
   const grouped: Record<string, typeof props.options> = {};
 
   props.options.forEach((option) => {
-    if (!grouped[option.category]) {
-      grouped[option.category] = [];
+    // For pyromancies, use the pyromancyType field instead of the hardcoded category
+    let category = option.category;
+    if (isPyromancy(option.item)) {
+      category = (option.item as Pyromancy).pyromancyType;
     }
-    grouped[option.category].push(option);
+
+    if (!grouped[category]) {
+      grouped[category] = [];
+    }
+    grouped[category].push(option);
   });
 
   // Add category headers and items
@@ -306,13 +383,18 @@ const selectOptions = computed(() => {
       disabled: true,
     });
 
+    // Sort items in this category alphabetically by name
+    const sortedCategoryOptions = categoryOptions.sort((a, b) =>
+      a.item.name.localeCompare(b.item.name)
+    );
+
     // Add items in this category
-    categoryOptions.forEach((option) => {
+    sortedCategoryOptions.forEach((option) => {
       if (!isItemSelected(option.value)) {
         let itemLabel = option.item.name;
 
-        // Add requirements info for non-ring items
-        if (!isRing(option.item)) {
+        // Add requirements info for non-ring and non-pyromancy items
+        if (!isRing(option.item) && !isPyromancy(option.item)) {
           const requirements = formatRequirements(option.item);
           if (requirements !== "No requirements") {
             itemLabel += ` (${requirements})`;
@@ -331,7 +413,7 @@ const selectOptions = computed(() => {
 
         // Add attunement slot info for spells
         if (isSpell(option.item)) {
-          itemLabel += ` - ${(option.item as Sorcery | Miracle).attunementSlots || 1} slot${((option.item as Sorcery | Miracle).attunementSlots || 1) !== 1 ? "s" : ""}`;
+          itemLabel += ` - ${(option.item as Sorcery | Miracle | Pyromancy).attunementSlots || 1} slot${((option.item as Sorcery | Miracle | Pyromancy).attunementSlots || 1) !== 1 ? "s" : ""}`;
         }
 
         options.push({
@@ -363,8 +445,13 @@ const handleSelection = (value: string) => {
 
 // Get item category for display
 const getItemCategory = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ) => {
+  // For pyromancies, use the pyromancyType field instead of the hardcoded category
+  if (isPyromancy(item)) {
+    return formatCategoryName((item as Pyromancy).pyromancyType);
+  }
+
   const option = props.options.find((opt) => opt.item.name === item.name);
   const category = option?.category || "Unknown";
   return formatCategoryName(category);
@@ -380,7 +467,7 @@ const formatCategoryName = (category: string) => {
 
 // Format requirements for display
 const formatRequirements = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ) => {
   // Armor doesn't have requirements
   if (isArmor(item)) {
@@ -388,7 +475,8 @@ const formatRequirements = (
   }
 
   // Type assertion for items with requirements
-  const req = (item as Weapon | Shield | Sorcery | Miracle | Ring).requirements;
+  const req = (item as Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring)
+    .requirements;
   const requirements = [];
 
   // Handle different requirement types
@@ -406,18 +494,22 @@ const formatRequirements = (
 
 // Check if an item has a description
 const hasDescription = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): boolean => {
-  return isSpell(item) && (item as Sorcery | Miracle).description !== undefined;
+  return (
+    isSpell(item) &&
+    (item as Sorcery | Miracle | Pyromancy).description !== undefined
+  );
 };
 
 // Get the description of an item
 const getDescription = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
 ): string => {
   if (isSpell(item)) {
     return (
-      (item as Sorcery | Miracle).description || "No description available."
+      (item as Sorcery | Miracle | Pyromancy).description ||
+      "No description available."
     );
   }
   return "No description available.";

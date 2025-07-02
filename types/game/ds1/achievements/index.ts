@@ -12,6 +12,7 @@ export interface AchievementRequirement {
   dropRate?: string;
   ascendsFrom?: string[];
   bossSoul?: string;
+  newGamePlus?: number;
   description?: string;
   location?: string | string[];
   tail?: string;

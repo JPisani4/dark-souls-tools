@@ -2,7 +2,7 @@
   <div class="flex justify-center mb-8 px-4">
     <div class="flex flex-col items-center gap-3 text-center">
       <div
-        class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
+        class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br rounded-full flex-shrink-0 overflow-hidden"
         :class="safeTheme.bg"
       >
         <Icon
@@ -82,6 +82,7 @@
         <p
           :class="[
             'text-base sm:text-lg text-center',
+            'max-w-xl',
             variant === 'homepage'
               ? 'text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]'
               : 'text-gray-700 dark:text-white/80 drop-shadow-sm',

@@ -170,7 +170,7 @@ export const defense: Ring[] = [
         defense: 50,
       },
     },
-    description: "Increases defense by 50% when HP is below 50%.",
+    description: "Increases defense by 50% when HP is below 20%.",
     location: "Sen's Fortress",
     weight: 0,
   },

@@ -5,7 +5,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/mask-of-the-father.png",
     name: "Mask of the Father",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 1.2,
     defense: {
@@ -30,7 +30,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/mask-of-the-mother.png",
     name: "Mask of the Mother",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 1.2,
     defense: {
@@ -55,7 +55,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/mask-of-the-child.png",
     name: "Mask of the Child",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 1.2,
     defense: {
@@ -106,7 +106,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/crown-of-the-dark-sun.png",
     name: "Crown of the Dark Sun",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 3.0,
     defense: {
@@ -131,7 +131,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/fang-boar-helm.png",
     name: "Fang Boar Helm",
-    armorType: "heavy-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 8.0,
     staminaRegenReduction: 1,
@@ -155,7 +155,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/gargoyle-helm.png",
     name: "Gargoyle Helm",
-    armorType: "medium-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 3.5,
     defense: {
@@ -178,7 +178,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/sunlight-maggot.png",
     name: "Sunlight Maggot",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 1.4,
     defense: {
@@ -201,7 +201,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/symbol-of-avarice.png",
     name: "Symbol of Avarice",
-    armorType: "heavy-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 10.0,
     staminaRegenReduction: 1,
@@ -227,7 +227,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/sack.png",
     name: "Sack",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 0.6,
     defense: {
@@ -250,7 +250,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/royal-helm.png",
     name: "Royal Helm",
-    armorType: "medium-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 4.5,
     defense: {
@@ -273,7 +273,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/bloated-head.png",
     name: "Bloated Head",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 2.5,
     defense: {
@@ -295,7 +295,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/bloated-sorcerer-head.png",
     name: "Bloated Sorcerer Head",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 2.2,
     defense: {
@@ -317,7 +317,7 @@ export const specialArmor: Armor[] = [
   {
     icon: "/armor/special-armor/eg-head.png",
     name: "Egg Head",
-    armorType: "light-armor",
+    armorType: "special-armor",
     slot: "head",
     weight: 0,
     defense: {

@@ -24,7 +24,7 @@ const knightsHonor: Achievement = {
       category: "boss",
       location: "Giant Blacksmith",
       ascendsFrom: ["Broken Straight Sword", "Straight Sword Hilt"],
-      bossSoul: "Soul of Artorias",
+      bossSoul: "Soul of Sif",
     },
     {
       id: "greatsword-of-artorias-cursed",
@@ -32,7 +32,8 @@ const knightsHonor: Achievement = {
       category: "boss",
       location: "Giant Blacksmith",
       ascendsFrom: ["Dagger", "Greatsword", "Straight Sword"],
-      bossSoul: "Soul of Artorias",
+      bossSoul: "Soul of Sif",
+      newGamePlus: 1,
     },
     {
       id: "greatshield-of-artorias",
@@ -40,7 +41,8 @@ const knightsHonor: Achievement = {
       category: "boss",
       location: "Giant Blacksmith",
       ascendsFrom: ["Shield"],
-      bossSoul: "Soul of Artorias",
+      bossSoul: "Soul of Sif",
+      newGamePlus: 2,
     },
     {
       id: "chaos-blade",
@@ -57,6 +59,7 @@ const knightsHonor: Achievement = {
       location: "Giant Blacksmith",
       ascendsFrom: ["Curved Sword"],
       bossSoul: "Soul of Quelaag",
+      newGamePlus: 1,
     },
     {
       id: "crystal-ring-shield",
@@ -73,6 +76,7 @@ const knightsHonor: Achievement = {
       location: "Giant Blacksmith",
       ascendsFrom: ["Spear", "Thrusting Sword"],
       bossSoul: "Soul of the Moonlight Butterfly",
+      newGamePlus: 1,
     },
     {
       id: "darkmoon-bow",
@@ -89,6 +93,7 @@ const knightsHonor: Achievement = {
       location: "Giant Blacksmith",
       ascendsFrom: ["Catalyst"],
       bossSoul: "Soul of Gwyndolin",
+      newGamePlus: 1,
     },
     {
       id: "dragon-bone-fist",
@@ -99,6 +104,15 @@ const knightsHonor: Achievement = {
       bossSoul: "Soul of an Iron Giant",
     },
     {
+      id: "golem-axe",
+      name: "Golem Axe",
+      category: "boss",
+      location: "Giant Blacksmith",
+      ascendsFrom: ["Axe"],
+      bossSoul: "Soul of an Iron Giant",
+      newGamePlus: 1,
+    },
+    {
       id: "dragonslayer-spear",
       name: "Dragonslayer Spear",
       category: "boss",
@@ -107,12 +121,13 @@ const knightsHonor: Achievement = {
       bossSoul: "Soul of Ornstein",
     },
     {
-      id: "golem-axe",
-      name: "Golem Axe",
+      id: "smoughs-hammer",
+      name: "Smough's Hammer",
       category: "boss",
       location: "Giant Blacksmith",
-      ascendsFrom: ["Axe"],
-      bossSoul: "Soul of an Iron Giant",
+      ascendsFrom: ["Greathammer", "Hammer"],
+      bossSoul: "Soul of Smough",
+      newGamePlus: 1,
     },
     {
       id: "great-lord-greatsword",
@@ -129,14 +144,6 @@ const knightsHonor: Achievement = {
       location: "Giant Blacksmith",
       ascendsFrom: ["Halberd", "Whip"],
       bossSoul: "Soul of Priscilla",
-    },
-    {
-      id: "smoughs-hammer",
-      name: "Smough's Hammer",
-      category: "boss",
-      location: "Giant Blacksmith",
-      ascendsFrom: ["Greathammer", "Hammer"],
-      bossSoul: "Soul of Smough",
     },
 
     // Loot
@@ -512,7 +519,6 @@ const wisdomOfASage: Achievement = {
       id: "white-dragon-breath",
       name: "White Dragon Breath",
       category: "quest",
-      logansQuest: true,
       location:
         "After completing Big Hat Logan's questline, Seath the Scaleless original boss room",
     },

@@ -293,7 +293,6 @@ const toggleStepCompleted = (
                           : step.location
                       "
                       size="sm"
-                      class="w-full max-w-full truncate"
                     />
                     <!-- Info icon for location: tooltip on hover/focus, popover on click -->
                     <SmartTooltip v-if="step.location.length > 40">

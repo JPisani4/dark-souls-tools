@@ -77,7 +77,8 @@ export const statBoost: Ring[] = [
         durability: 50,
       },
     },
-    description: "Decreases durability loss except for weapon arts.",
+    description:
+      "Slows loss of weapon durability by half except for weapon arts.",
     location: "Sen's Fortress",
     weight: 0,
   },
@@ -130,9 +131,7 @@ export const statBoost: Ring[] = [
       faith: 0,
     },
     effect: {
-      statBonus: {
-        attunement: 1,
-      },
+      attunementSlots: 1,
     },
     covenant: "blade-of-darkmoon",
     description:

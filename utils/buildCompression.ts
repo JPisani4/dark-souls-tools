@@ -17,11 +17,18 @@ export interface BuildData {
     shields: string[];
     sorceries: string[];
     miracles: string[];
+    pyromancies: string[];
     armor: string[];
     rings: string[];
   };
   settings: {
     isTwoHanded: boolean;
+    twoHanded: {
+      weapons: boolean[];
+      shields: boolean[];
+      catalysts: boolean[];
+      talismans: boolean[];
+    };
   };
 }
 
@@ -46,10 +53,12 @@ export const buildCompression = {
         sh: buildData.equipment.shields,
         so: buildData.equipment.sorceries,
         m: buildData.equipment.miracles,
+        p: buildData.equipment.pyromancies,
         ar: buildData.equipment.armor,
         ri: buildData.equipment.rings,
       },
       t: buildData.settings.isTwoHanded,
+      th: buildData.settings.twoHanded, // individual two-handed states
     };
 
     // Convert to JSON and encode
@@ -83,11 +92,18 @@ export const buildCompression = {
           shields: compact.e.sh,
           sorceries: compact.e.so,
           miracles: compact.e.m,
+          pyromancies: compact.e.p || [],
           armor: compact.e.ar,
           rings: compact.e.ri,
         },
         settings: {
           isTwoHanded: compact.t,
+          twoHanded: compact.th || {
+            weapons: [],
+            shields: [],
+            catalysts: [],
+            talismans: [],
+          },
         },
       };
     } catch (error) {

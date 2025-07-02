@@ -9,6 +9,7 @@ import FormSection from "../../../Common/forms/FormSection.vue";
 import NumberField from "../../../Common/forms/NumberField.vue";
 import SelectField from "../../../Common/forms/SelectField.vue";
 import HowToUse from "../../../Common/HowToUse.vue";
+import SmartTooltip from "../../../Common/SmartTooltip.vue";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
@@ -226,19 +227,6 @@ useToolLayout({
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <HeroSection
-    v-if="gameData"
-    :title="toolConfig?.title || 'Co-op Level Range Calculator'"
-    :description="
-      toolConfig?.description ||
-      'Calculate co-op and invasion soul and weapon level ranges for all multiplayer items'
-    "
-    :icon-path="toolConfig?.icon || 'i-heroicons-cube'"
-    :theme="sectionTheme"
-    :game-data="gameData"
-  />
-
   <!-- Tool Card (Form) -->
   <UCard
     :class="[
@@ -263,7 +251,8 @@ useToolLayout({
           :max="gameData.config.mechanics.maxLevel"
           :theme="safeTheme"
           @update:model-value="
-            (val) => (state.characterLevel = val?.toString() || '')
+            (val: number | undefined) =>
+              (state.characterLevel = val?.toString() || '')
           "
         />
         <!-- Multiplayer Item Dropdown -->
@@ -279,7 +268,11 @@ useToolLayout({
         <UCheckbox
           id="usePassword"
           :model-value="Boolean(state.usePassword)"
-          @update:model-value="(val) => (state.usePassword = Boolean(val))"
+          @update:model-value="
+            (val: boolean | 'indeterminate') => {
+              state.usePassword = Boolean(val);
+            }
+          "
           :label="
             String(terminology.usePassword || 'Use Password') +
             ' (bypass level/weapon restrictions for some items)'
@@ -289,8 +282,18 @@ useToolLayout({
         <div
           class="grid gap-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/30"
         >
-          <div class="font-semibold text-sm mb-1">
+          <div class="font-semibold text-sm mb-1 flex items-center gap-1">
             Weapon Level Range (optional)
+            <SmartTooltip>
+              <template #trigger>
+                <Icon
+                  name="i-heroicons-information-circle"
+                  class="w-4 h-4 text-blue-500 cursor-pointer align-middle"
+                />
+              </template>
+              Weapon Level is determined by the highest level weapon that has
+              been in your possession (past and present), not just equipped.
+            </SmartTooltip>
           </div>
           <!-- Weapon/Shield Dropdown -->
           <SelectField
@@ -431,8 +434,7 @@ useToolLayout({
           "
           class="mt-2 text-xs text-gray-600 dark:text-gray-400 italic"
         >
-          Weapon Level is determined by the highest level weapon that has been
-          in your possession (past and present), not just equipped.
+          <!-- Moved to tooltip above -->
         </div>
       </div>
     </UCard>
@@ -453,9 +455,14 @@ useToolLayout({
     </template>
     <div class="p-4 space-y-6">
       <div
-        v-for="ref in quickReference"
+        v-for="(ref, idx) in quickReference"
         :key="ref.title"
-        class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0"
+        :class="[
+          'pb-4',
+          idx !== quickReference.length - 1
+            ? 'border-b border-gray-200 dark:border-gray-700'
+            : '',
+        ]"
       >
         <div class="font-semibold mb-2">
           {{ ref.title }}

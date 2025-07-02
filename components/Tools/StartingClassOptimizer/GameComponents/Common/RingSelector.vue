@@ -1,21 +1,5 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-        Ring Selection
-      </h3>
-      <UButton
-        size="sm"
-        variant="solid"
-        color="success"
-        @click="clearRings"
-        class="font-medium shadow-sm hover:shadow-md transition-shadow"
-      >
-        <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-        Clear Rings
-      </UButton>
-    </div>
-
     <!-- Ring Selection using CategorizedItemSelector -->
     <CategorizedItemSelector
       id="rings"
@@ -36,37 +20,39 @@
       <h4 class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
         Ring Effects
       </h4>
-      <div class="space-y-1 text-sm text-blue-600 dark:text-blue-200">
-        <div v-if="totalHpBonus > 0">+{{ totalHpBonus }}% Max HP</div>
-        <div v-if="totalStaminaBonus > 0">
-          +{{ totalStaminaBonus }}% Max Stamina
-        </div>
-        <div v-if="totalStaminaRegenBonus > 0">
-          +{{ totalStaminaRegenBonus }} Stamina Regen
-        </div>
-        <div v-if="totalEquipLoadBonus > 0">
-          +{{ totalEquipLoadBonus }}% Equip Load
-        </div>
-        <div v-if="totalMiraclePower > 0">
-          +{{ totalMiraclePower }}% Miracle Power
-        </div>
-        <div v-if="totalMagicDamage > 0">
-          +{{ totalMagicDamage }}% Magic Damage
-        </div>
-        <div v-if="totalPoise > 0">+{{ totalPoise }} Poise</div>
-        <div v-if="totalItemDiscovery > 0">
-          +{{ totalItemDiscovery }}% Item Discovery
-        </div>
-        <div v-if="totalSoulGain > 0">+{{ totalSoulGain }}% Soul Gain</div>
-        <div v-if="hasDarkWoodGrainRing" class="font-medium">
-          Dark Wood Grain Ring: Enhanced dodge roll
-        </div>
-        <!-- Show special effects from rings -->
-        <div v-for="ring in selectedRings" :key="ring.name">
-          <div v-if="ring.effect?.special" class="font-medium">
-            {{ ring.name }}:
-            {{ getSpecialEffectDescription(ring.effect.special) }}
-          </div>
+      <ul class="space-y-1 mt-2">
+        <li
+          v-for="(value, key) in combinedEffects"
+          :key="key"
+          class="text-blue-600 dark:text-blue-400"
+        >
+          <span>
+            {{
+              EFFECT_DISPLAY_NAMES[String(key)] ||
+              (typeof key === "string"
+                ? key.charAt(0).toUpperCase() + key.slice(1)
+                : key)
+            }}
+            <template v-if="key === 'attunementSlots'"> +{{ value }} </template>
+            <template v-else-if="PERCENTAGE_KEYS.includes(String(key))">
+              <span v-if="value < 0">{{ value }}%</span
+              ><span v-else>+{{ value }}%</span>
+            </template>
+            <template v-else>
+              <span v-if="value < 0">{{ value }}</span
+              ><span v-else>+{{ value }}</span>
+            </template>
+          </span>
+        </li>
+      </ul>
+      <!-- Special/unique effects: list individually -->
+      <div v-for="ring in selectedRings" :key="ring.name + '-special'">
+        <div
+          v-if="ring.effect?.special"
+          class="font-medium text-blue-600 dark:text-blue-400"
+        >
+          {{ ring.name }}:
+          {{ getSpecialEffectDescription(ring.effect.special) }}
         </div>
       </div>
     </div>
@@ -79,9 +65,11 @@ import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
 import type { Miracle } from "~/types/game/ds1/miracles";
+import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 import type { Armor } from "~/types/game/ds1/armor";
 import Icon from "~/components/Common/Icon.vue";
 import CategorizedItemSelector from "./CategorizedItemSelector.vue";
+import { computed } from "vue";
 
 interface Props {
   selectedRings: Ring[];
@@ -257,7 +245,9 @@ const getSpecialEffectDescription = (specialKey: string): string => {
 };
 
 // Functions
-const addRing = (item: Weapon | Shield | Sorcery | Miracle | Ring | Armor) => {
+const addRing = (
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) => {
   if ("ringType" in item) {
     const ring = item as Ring;
     const updatedRings = [...props.selectedRings, ring];
@@ -274,4 +264,126 @@ const removeRing = (index: number) => {
 const clearRings = () => {
   emit("clearRings");
 };
+
+// Mapping from effect keys to user-friendly display names
+const EFFECT_DISPLAY_NAMES: Record<string, string> = {
+  vitality: "Vitality",
+  attunement: "Attunement",
+  endurance: "Endurance",
+  strength: "Strength",
+  dexterity: "Dexterity",
+  resistance: "Resistance",
+  intelligence: "Intelligence",
+  faith: "Faith",
+  phsyicalDefense: "Physical Defense", // handle typo
+  physicalDefense: "Physical Defense",
+  magicDefense: "Magic Defense",
+  fireDefense: "Fire Defense",
+  lightningDefense: "Lightning Defense",
+  bleedResist: "Bleed Resistance",
+  poisonResist: "Poison Resistance",
+  curseResist: "Curse Resistance",
+  attackPower: "Attack Power",
+  defense: "Defense",
+  magicEffectLength: "Magic Effect Length",
+  magicDamage: "Magic Damage",
+  miracleUses: "Miracle Uses",
+  maxHp: "Max HP",
+  miraclePower: "Miracle Power",
+  counterDamage: "Counter Damage",
+  poise: "Poise",
+  bowRange: "Bow Range",
+  criticalDamage: "Critical Damage",
+  durability: "Durability",
+  itemDiscovery: "Item Discovery",
+  soulGain: "Soul Gain",
+  staminaBonus: "Stamina Bonus",
+  staminaRegenBonus: "Stamina Regen Bonus",
+  equipLoadBonus: "Equip Load Bonus",
+  attunementSlots: "Attunement Slot",
+  hpBonus: "HP Bonus",
+  special: "Special",
+};
+
+// Keys that should always be displayed as percentages
+const PERCENTAGE_KEYS = [
+  "maxHp",
+  "staminaBonus",
+  "equipLoadBonus",
+  "soulGain",
+  "miraclePower",
+  "magicDamage",
+  "bleedResist",
+  "poisonResist",
+  "curseResist",
+  "bowRange",
+  "durability",
+  "defense",
+  "attackPower",
+  "counterDamage",
+  "criticalDamage",
+  "magicEffectLength",
+  "miracleSynergy",
+  // Add more if needed
+];
+
+// Utility to extract and combine all displayable effects from selected rings
+function getCombinedRingEffects(rings: Ring[]): Record<string, number> {
+  // Define which effects are multiplicative percentages
+  const multiplicativeKeys = [
+    "maxHp",
+    "staminaBonus",
+    "equipLoadBonus",
+    "soulGain",
+    "miraclePower",
+    "magicDamage",
+    // Add more if needed
+  ];
+  // Sum for additive, multiply for multiplicative
+  const combined: Record<string, number> = {};
+  // For multiplicative, store as array of multipliers
+  const multipliers: Record<string, number[]> = {};
+
+  for (const ring of rings) {
+    // Top-level effect fields
+    if (ring.effect) {
+      for (const key of Object.keys(ring.effect)) {
+        const value = (ring.effect as any)[key];
+        if (typeof value === "number" && value !== 0) {
+          if (multiplicativeKeys.includes(key)) {
+            if (!multipliers[key]) multipliers[key] = [];
+            multipliers[key].push(1 + value / 100);
+          } else {
+            combined[key] = (combined[key] || 0) + value;
+          }
+        }
+      }
+      // Nested statBonus
+      if (ring.effect.statBonus) {
+        for (const [key, value] of Object.entries(ring.effect.statBonus)) {
+          if (typeof value === "number" && value !== 0) {
+            if (multiplicativeKeys.includes(key)) {
+              if (!multipliers[key]) multipliers[key] = [];
+              multipliers[key].push(1 + value / 100);
+            } else {
+              combined[key] = (combined[key] || 0) + value;
+            }
+          }
+        }
+      }
+    }
+  }
+  // Now combine multiplicative effects
+  for (const key of Object.keys(multipliers)) {
+    const totalMultiplier = multipliers[key].reduce((a, b) => a * b, 1);
+    // Convert back to percentage
+    combined[key] = Math.round((totalMultiplier - 1) * 100);
+  }
+  return combined;
+}
+
+// Compute combined effects for the selected rings
+const combinedEffects = computed(() =>
+  getCombinedRingEffects(props.selectedRings)
+);
 </script>

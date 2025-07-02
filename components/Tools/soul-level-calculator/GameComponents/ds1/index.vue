@@ -125,19 +125,6 @@ const howToUseSteps = [
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <HeroSection
-    v-if="gameData"
-    :title="toolConfig?.title || 'Soul Level Calculator'"
-    :description="
-      toolConfig?.description ||
-      'Calculate the souls required to level up your character'
-    "
-    :icon-path="toolConfig?.icon || 'public/soul-level-calculator-icon.png'"
-    :theme="safeTheme"
-    :game-data="gameData"
-  />
-
   <!-- Calculator Card -->
   <UCard :class="`border-l-4 ${safeTheme.border}`">
     <div class="space-y-6">

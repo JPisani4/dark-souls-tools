@@ -36,6 +36,7 @@ import {
 } from "~/utils/games/ds1/stats/characterStats";
 import { buildCompression, type BuildData } from "~/utils/buildCompression";
 import Icon from "~/components/Common/Icon.vue";
+import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 
 interface Props {
   gameData: GameData;
@@ -100,27 +101,27 @@ const {
   removeArmor,
   addRing,
   removeRing,
+  addCatalyst,
+  removeCatalyst,
+  addTalisman,
+  removeTalisman,
+  catalystOptions,
+  talismanOptions,
+  toggleTwoHandedFor,
   updateStat,
   updateStatsFromRequirements,
   resetForm,
   toggleTwoHanded,
   clearAllItems,
   setState,
+  derivedStats,
+  pyromancyOptions,
+  addPyromancy,
+  removePyromancy,
 } = useStartingClassOptimizer();
 
 // Add reset trigger counter
 const resetTrigger = ref(0);
-
-// Calculate derived stats with equipment
-const derivedStats = computed(() => {
-  return calculateAllDerivedStats(
-    state.characterStats,
-    state.selectedItems.weapons || [],
-    state.selectedItems.shields || [],
-    state.selectedItems.armor || [],
-    state.selectedItems.rings || []
-  );
-});
 
 // Computed values
 const hasSelectedItems = computed(() => {
@@ -129,6 +130,7 @@ const hasSelectedItems = computed(() => {
     (state.selectedItems.shields?.length || 0) > 0 ||
     (state.selectedItems.sorceries?.length || 0) > 0 ||
     (state.selectedItems.miracles?.length || 0) > 0 ||
+    (state.selectedItems.pyromancies?.length || 0) > 0 ||
     (state.selectedItems.armor?.length || 0) > 0 ||
     (state.selectedItems.rings?.length || 0) > 0
   );
@@ -149,7 +151,8 @@ const showResults = computed(() => {
     (state.selectedItems.weapons?.length || 0) > 0 ||
     (state.selectedItems.shields?.length || 0) > 0 ||
     (state.selectedItems.sorceries?.length || 0) > 0 ||
-    (state.selectedItems.miracles?.length || 0) > 0;
+    (state.selectedItems.miracles?.length || 0) > 0 ||
+    (state.selectedItems.pyromancies?.length || 0) > 0;
 
   // Check if user has modified any character stats from default values
   const hasModifiedStats = Object.entries(state.characterStats).some(
@@ -198,34 +201,6 @@ const statValidation = computed(() => {
   return validation.value.errors;
 });
 
-// Transform minimumRequirements to include level and derived stats
-const minimumRequirementsWithLevel = computed(() => {
-  const minReqs = minimumRequirements.value;
-  return {
-    level: state.characterStats.level, // Keep current level
-    vitality: minReqs.vitality,
-    attunement: minReqs.attunement,
-    endurance: minReqs.endurance,
-    strength: minReqs.strength,
-    dexterity: minReqs.dexterity,
-    resistance: minReqs.resistance,
-    intelligence: minReqs.intelligence,
-    faith: minReqs.faith,
-    // Derived stats will be calculated
-    hp: derivedStats.value.hp,
-    stamina: derivedStats.value.stamina,
-    equipLoad: derivedStats.value.equipLoad,
-    maxHp: derivedStats.value.maxHp,
-    maxStamina: derivedStats.value.maxStamina,
-    staminaRegen: derivedStats.value.staminaRegen,
-    dodgeRoll: derivedStats.value.dodgeRoll,
-    equippedWeight: derivedStats.value.equippedWeight,
-    equipLoadPercentage: derivedStats.value.equipLoadPercentage,
-    movementSpeed: derivedStats.value.movementSpeed,
-    weightClass: derivedStats.value.weightClass,
-  };
-});
-
 // Share functionality
 const shareUrl = ref<string>("");
 const showShareConfirmation = ref(false);
@@ -248,11 +223,18 @@ const currentBuildData = computed((): BuildData => {
       shields: state.selectedItems.shields?.map((s) => s.name) || [],
       sorceries: state.selectedItems.sorceries?.map((s) => s.name) || [],
       miracles: state.selectedItems.miracles?.map((m) => m.name) || [],
+      pyromancies: state.selectedItems.pyromancies?.map((p) => p.name) || [],
       armor: state.selectedItems.armor?.map((a) => a.name) || [],
       rings: state.selectedItems.rings?.map((r) => r.name) || [],
     },
     settings: {
       isTwoHanded: state.isTwoHanded,
+      twoHanded: {
+        weapons: state.selectedItems.twoHanded.weapons,
+        shields: state.selectedItems.twoHanded.shields,
+        catalysts: state.selectedItems.twoHanded.catalysts,
+        talismans: state.selectedItems.twoHanded.talismans,
+      },
     },
   };
 });
@@ -316,7 +298,93 @@ const loadFromUrl = async () => {
   if (buildParam) {
     const buildData = buildCompression.decode(buildParam);
     if (buildData) {
-      // Load stats - update all at once to avoid timing issues
+      // 1. Clear all items and reset state
+      clearAllItems();
+      await nextTick();
+
+      // 2. Deduplicate and map names to objects for each equipment type
+      const unique = (arr: string[]) => Array.from(new Set(arr));
+      const weapons = unique(buildData.equipment.weapons)
+        .map(
+          (weaponName) =>
+            weaponOptions.value.find((w) => w.item.name === weaponName)?.item
+        )
+        .filter((x): x is (typeof weaponOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Weapon[];
+      const shields = unique(buildData.equipment.shields)
+        .map(
+          (shieldName) =>
+            shieldOptions.value.find((s) => s.item.name === shieldName)?.item
+        )
+        .filter((x): x is (typeof shieldOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Shield[];
+      const sorceries = unique(buildData.equipment.sorceries)
+        .map(
+          (sorceryName) =>
+            sorceryOptions.value.find((s) => s.item.name === sorceryName)?.item
+        )
+        .filter((x): x is (typeof sorceryOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Sorcery[];
+      const miracles = unique(buildData.equipment.miracles)
+        .map(
+          (miracleName) =>
+            miracleOptions.value.find((m) => m.item.name === miracleName)?.item
+        )
+        .filter((x): x is (typeof miracleOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Miracle[];
+      const pyromancies = unique(buildData.equipment.pyromancies || [])
+        .map(
+          (pyromancyName) =>
+            pyromancyOptions.value.find((p) => p.item.name === pyromancyName)
+              ?.item
+        )
+        .filter((x): x is (typeof pyromancyOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Pyromancy[];
+      const armor = unique(buildData.equipment.armor)
+        .map(
+          (armorName) =>
+            armorOptions.value.find((a) => a.item.name === armorName)?.item
+        )
+        .filter((x): x is (typeof armorOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Armor[];
+      const rings = unique(buildData.equipment.rings)
+        .map(
+          (ringName) =>
+            ringOptions.value.find((r) => r.item.name === ringName)?.item
+        )
+        .filter((x): x is (typeof ringOptions.value)[number]["item"] =>
+          Boolean(x)
+        ) as Ring[];
+
+      // 3. Set all selected items at once (no duplicates)
+      setState({
+        selectedItems: {
+          weapons,
+          shields,
+          catalysts: [],
+          talismans: [],
+          sorceries,
+          miracles,
+          pyromancies,
+          armor,
+          rings,
+          twoHanded: {
+            weapons: buildData.settings.twoHanded?.weapons || [],
+            shields: buildData.settings.twoHanded?.shields || [],
+            catalysts: buildData.settings.twoHanded?.catalysts || [],
+            talismans: buildData.settings.twoHanded?.talismans || [],
+          },
+        },
+      });
+      await nextTick();
+
+      // 4. Load stats - update all at once to avoid timing issues
       const newCharacterStats = {
         ...state.characterStats,
         vitality: buildData.stats.vitality,
@@ -328,54 +396,10 @@ const loadFromUrl = async () => {
         intelligence: buildData.stats.intelligence,
         faith: buildData.stats.faith,
       };
-      // Use the composable's setState to update all stats at once
       setState({ characterStats: newCharacterStats });
-
-      // Wait for next tick to ensure state is updated
       await nextTick();
 
-      // Load equipment
-      buildData.equipment.weapons.forEach((weaponName) => {
-        const weapon = weaponOptions.value.find(
-          (w) => w.item.name === weaponName
-        );
-        if (weapon) addWeapon(weaponName);
-      });
-
-      buildData.equipment.shields.forEach((shieldName) => {
-        const shield = shieldOptions.value.find(
-          (s) => s.item.name === shieldName
-        );
-        if (shield) addShield(shieldName);
-      });
-
-      buildData.equipment.sorceries.forEach((sorceryName) => {
-        const sorcery = sorceryOptions.value.find(
-          (s) => s.item.name === sorceryName
-        );
-        if (sorcery) addSorcery(sorceryName);
-      });
-
-      buildData.equipment.miracles.forEach((miracleName) => {
-        const miracle = miracleOptions.value.find(
-          (m) => m.item.name === miracleName
-        );
-        if (miracle) addMiracle(miracleName);
-      });
-
-      // Load armor
-      buildData.equipment.armor.forEach((armorName) => {
-        const armor = armorOptions.value.find((a) => a.item.name === armorName);
-        if (armor) addArmor(armorName);
-      });
-
-      // Load rings
-      buildData.equipment.rings.forEach((ringName) => {
-        const ring = ringOptions.value.find((r) => r.item.name === ringName);
-        if (ring) addRing(ringName);
-      });
-
-      // Load settings - set two-handed state directly to avoid overwriting loaded stats
+      // 5. Load settings - set two-handed state directly to avoid overwriting loaded stats
       if (buildData.settings.isTwoHanded !== state.isTwoHanded) {
         setState({ isTwoHanded: buildData.settings.isTwoHanded });
       }
@@ -399,55 +423,46 @@ const handleTwoHandedToggle = () => {
   toggleTwoHanded();
 };
 
-// Handle item additions
-const handleAddWeapon = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
-) => {
-  if ("weaponType" in item) {
+// Handler wrappers for CategorizedItemSelector (item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor) => void
+function handleAddWeaponSelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if (
+    "weaponType" in item &&
+    item.weaponType !== "catalyst" &&
+    item.weaponType !== "talisman"
+  )
     addWeapon(item.name);
+}
+function handleAddShieldSelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("shieldType" in item) addShield(item.name);
+}
+function handleAddCatalystSelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("weaponType" in item && item.weaponType === "catalyst") {
+    addCatalyst(item.name);
   }
-};
-
-const handleAddShield = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
-) => {
-  if ("shieldType" in item) {
-    addShield(item.name);
+}
+function handleAddTalismanSelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("weaponType" in item && item.weaponType === "talisman") {
+    addTalisman(item.name);
   }
-};
-
-const handleAddSorcery = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
-) => {
-  if ("sorceryType" in item) {
-    addSorcery(item.name);
-  }
-};
-
-const handleAddMiracle = (
-  item: Weapon | Shield | Sorcery | Miracle | Ring | Armor
-) => {
-  if ("miracleType" in item) {
-    addMiracle(item.name);
-  }
-};
-
-// Handle item removals
-const handleRemoveWeapon = (index: number) => {
-  removeWeapon(index);
-};
-
-const handleRemoveShield = (index: number) => {
-  removeShield(index);
-};
-
-const handleRemoveSorcery = (index: number) => {
-  removeSorcery(index);
-};
-
-const handleRemoveMiracle = (index: number) => {
-  removeMiracle(index);
-};
+}
+function handleAddSorcerySelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("sorceryType" in item) addSorcery(item.name);
+}
+function handleAddMiracleSelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("miracleType" in item) addMiracle(item.name);
+}
 
 // Handle attunement increase requests
 const handleIncreaseAttunement = (level: number) => {
@@ -527,7 +542,8 @@ const handleReset = () => {
     // Calculate required attunement for spells
     const requiredAttunementSlots = calculateRequiredAttunementSlots(
       state.selectedItems.sorceries || [],
-      state.selectedItems.miracles || []
+      state.selectedItems.miracles || [],
+      state.selectedItems.pyromancies || []
     );
     const requiredAttunement = getAttunementLevelForSlots(
       requiredAttunementSlots
@@ -629,201 +645,503 @@ const canImproveDodgeRoll = computed(() => {
   // Check if next endurance is greater than current endurance and not null
   return nextEndurance !== null && nextEndurance > currentEndurance;
 });
+
+const sectionOpen = ref({
+  weapons: true,
+  spells: true,
+  armor: true,
+  rings: true,
+});
+function toggleSection(section: "weapons" | "spells" | "armor" | "rings") {
+  sectionOpen.value[section] = !sectionOpen.value[section];
+}
+
+function handleClearWeapons() {
+  setState({
+    selectedItems: {
+      ...state.selectedItems,
+      weapons: [],
+      shields: [],
+      catalysts: [],
+      talismans: [],
+      twoHanded: {
+        weapons: [],
+        shields: [],
+        catalysts: [],
+        talismans: [],
+      },
+      sorceries: state.selectedItems.sorceries,
+      miracles: state.selectedItems.miracles,
+      armor: state.selectedItems.armor,
+      rings: state.selectedItems.rings,
+    },
+  });
+}
+function handleClearSpells() {
+  setState({
+    selectedItems: {
+      ...state.selectedItems,
+      sorceries: [],
+      miracles: [],
+      pyromancies: [],
+      weapons: state.selectedItems.weapons,
+      shields: state.selectedItems.shields,
+      catalysts: state.selectedItems.catalysts,
+      talismans: state.selectedItems.talismans,
+      armor: state.selectedItems.armor,
+      rings: state.selectedItems.rings,
+      twoHanded: state.selectedItems.twoHanded,
+    },
+  });
+}
+
+// Handler wrappers for remove
+function handleRemoveWeapon(index: number) {
+  removeWeapon(index);
+}
+function handleRemoveShield(index: number) {
+  removeShield(index);
+}
+function handleRemoveCatalyst(index: number) {
+  removeCatalyst(index);
+}
+function handleRemoveTalisman(index: number) {
+  removeTalisman(index);
+}
+function handleRemoveSorcery(index: number) {
+  removeSorcery(index);
+}
+function handleRemoveMiracle(index: number) {
+  removeMiracle(index);
+}
+
+// For ArmorSelector and RingSelector, filter and cast options to only Armor and Ring
+const armorOnlyOptions = computed(
+  () =>
+    armorOptions.value.filter((opt) => "armorType" in opt.item) as {
+      value: string;
+      label: string;
+      category: string;
+      item: Armor;
+    }[]
+);
+const ringOnlyOptions = computed(
+  () =>
+    ringOptions.value.filter((opt) => "ringType" in opt.item) as {
+      value: string;
+      label: string;
+      category: string;
+      item: Ring;
+    }[]
+);
+
+function handleAddPyromancySelector(
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Ring | Armor
+) {
+  if ("pyromancyType" in item) addPyromancy(item.name);
+}
+function handleRemovePyromancy(index: number) {
+  removePyromancy(index);
+}
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <HeroSection
-    v-if="gameData"
-    :title="toolConfig?.title || 'Starting Class Optimizer'"
-    :description="
-      toolConfig?.description ||
-      'Find the optimal starting class for your desired character stats and equipment'
-    "
-    :icon-path="toolConfig?.icon || 'i-heroicons-user-group'"
-    :theme="safeTheme"
-    :game-data="gameData"
-    :icon-zoom="2"
-  />
-
-  <!-- Main Tool Content -->
   <div class="space-y-8">
-    <!-- Item Selection Section -->
-    <UCard :class="`border-l-4 ${randomTheme.border}`">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">Equipment Selection</h2>
-          <UButton
-            size="sm"
-            variant="solid"
-            :color="
-              randomTheme.icon.includes('blue')
-                ? 'info'
-                : randomTheme.icon.includes('green')
-                  ? 'success'
-                  : randomTheme.icon.includes('orange')
-                    ? 'warning'
-                    : randomTheme.icon.includes('red')
-                      ? 'error'
-                      : 'primary'
-            "
-            @click="handleClearAll"
-            class="font-medium shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-            Clear All
-          </UButton>
-        </div>
-      </template>
-
-      <div class="space-y-6">
-        <!-- Two-handed toggle -->
-        <div
-          class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+    <!-- Top Bar with Reset, Share -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex gap-2">
+        <UButton
+          size="sm"
+          variant="solid"
+          :color="
+            randomTheme.icon.includes('blue')
+              ? 'info'
+              : randomTheme.icon.includes('green')
+                ? 'success'
+                : randomTheme.icon.includes('orange')
+                  ? 'warning'
+                  : randomTheme.icon.includes('red')
+                    ? 'error'
+                    : 'primary'
+          "
+          @click="handleClearAll"
         >
-          <button
-            @click="handleTwoHandedToggle"
-            :disabled="isTwoHandedDisabled || isTwoHandedLocked"
-            class="flex items-center gap-3 w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg p-2 -m-2"
-            :class="
-              isTwoHandedDisabled || isTwoHandedLocked
-                ? 'cursor-not-allowed opacity-50'
-                : 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
+          <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
+          Reset
+        </UButton>
+        <UButton
+          size="sm"
+          variant="outline"
+          :color="showShareConfirmation ? 'success' : 'secondary'"
+          @click="copyShareUrl"
+          :disabled="showShareConfirmation"
+        >
+          <Icon
+            :name="
+              showShareConfirmation ? 'i-heroicons-check' : 'i-heroicons-link'
             "
-          >
-            <UCheckbox
-              :model-value="state.isTwoHanded"
-              :disabled="isTwoHandedDisabled || isTwoHandedLocked"
-              @update:model-value="handleTwoHandedToggle"
-              @click.stop
-            />
-            <div>
-              <label
-                class="text-sm font-medium cursor-pointer"
-                :class="
-                  isTwoHandedDisabled || isTwoHandedLocked
-                    ? 'text-gray-400 dark:text-gray-500'
-                    : 'text-gray-900 dark:text-white'
-                "
-              >
-                Two-Handed
-                <span
-                  v-if="isTwoHandedLocked"
-                  class="text-xs text-amber-600 dark:text-amber-400 ml-1"
-                >
-                  (Required)
-                </span>
-              </label>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span v-if="isTwoHandedLocked">
-                  Required for selected weapon(s)
-                </span>
-                <span v-else> Reduces Strength requirement by ~33% </span>
-              </p>
-            </div>
-          </button>
+            class="w-4 h-4 mr-1"
+          />
+          {{ showShareConfirmation ? "Copied!" : "Share Build" }}
+        </UButton>
+      </div>
+    </div>
+    <!-- Custom Accordion for Equipment/Spell/Armor/Ring Selection -->
+    <!-- Weapon/Shield Selection -->
+    <div
+      :class="[
+        'mb-4',
+        'rounded-lg',
+        'overflow-hidden',
+        'pl-4',
+        randomTheme.border,
+        'border-l-4',
+        'bg-white',
+        'dark:bg-gray-900',
+        'shadow',
+      ]"
+    >
+      <div
+        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+        @click="toggleSection('weapons')"
+      >
+        <div class="flex items-center gap-2">
+          <Icon
+            :name="
+              sectionOpen.weapons
+                ? 'i-heroicons-chevron-down'
+                : 'i-heroicons-chevron-right'
+            "
+            class="w-5 h-5 text-gray-500"
+          />
+          <h2 class="text-lg font-semibold">
+            Weapons/Shields Selection
+            <span class="text-gray-500">(optional)</span>
+          </h2>
         </div>
-
-        <!-- Equipment Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UButton
+          v-if="
+            state.selectedItems.weapons.length ||
+            state.selectedItems.shields.length ||
+            state.selectedItems.catalysts.length ||
+            state.selectedItems.talismans.length
+          "
+          type="button"
+          size="xs"
+          variant="solid"
+          color="success"
+          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+          @click.stop="handleClearWeapons"
+        >
+          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+          Clear
+        </UButton>
+      </div>
+      <div v-if="sectionOpen.weapons" class="p-4 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Weapons -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <CategorizedItemSelector
-              id="weapons"
-              label="Weapons (optional)"
-              placeholder="Select weapons..."
-              :options="weaponOptions as any"
-              :selected-items="state.selectedItems.weapons || []"
-              :max-items="2"
-              :disabled="isWeaponSelectionDisabled"
-              @add="handleAddWeapon"
-              @remove="handleRemoveWeapon"
-            />
-          </FormSection>
-
+          <CategorizedItemSelector
+            id="weapons"
+            label="Weapons"
+            placeholder="Select weapons..."
+            :options="weaponOptions"
+            :selected-items="state.selectedItems.weapons"
+            :max-items="
+              4 -
+              (state.selectedItems.shields.length +
+                state.selectedItems.catalysts.length +
+                state.selectedItems.talismans.length)
+            "
+            :two-handed="state.selectedItems.twoHanded.weapons"
+            @add="handleAddWeaponSelector"
+            @remove="handleRemoveWeapon"
+            @toggle-two-handed="
+              (index) => {
+                toggleTwoHandedFor('weapons', index);
+              }
+            "
+          />
           <!-- Shields -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <CategorizedItemSelector
-              id="shields"
-              label="Shields (optional)"
-              placeholder="Select shields..."
-              :options="shieldOptions as any"
-              :selected-items="state.selectedItems.shields || []"
-              :max-items="2"
-              :disabled="isShieldSelectionDisabled"
-              @add="handleAddShield"
-              @remove="handleRemoveShield"
-            />
-          </FormSection>
-
-          <!-- Sorceries -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <CategorizedItemSelector
-              id="sorceries"
-              label="Sorceries (optional)"
-              placeholder="Select sorceries..."
-              :options="sorceryOptions as any"
-              :selected-items="state.selectedItems.sorceries || []"
-              :max-items="10"
-              :current-attunement="state.characterStats.attunement"
-              @add="handleAddSorcery"
-              @remove="handleRemoveSorcery"
-              @increase-attunement="handleIncreaseAttunement"
-            />
-          </FormSection>
-
-          <!-- Miracles -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <CategorizedItemSelector
-              id="miracles"
-              label="Miracles (optional)"
-              placeholder="Select miracles..."
-              :options="miracleOptions as any"
-              :selected-items="state.selectedItems.miracles || []"
-              :max-items="10"
-              :current-attunement="state.characterStats.attunement"
-              @add="handleAddMiracle"
-              @remove="handleRemoveMiracle"
-              @increase-attunement="handleIncreaseAttunement"
-            />
-          </FormSection>
+          <CategorizedItemSelector
+            id="shields"
+            label="Shields"
+            placeholder="Select shields..."
+            :options="shieldOptions"
+            :selected-items="state.selectedItems.shields"
+            :max-items="
+              4 -
+              (state.selectedItems.weapons.length +
+                state.selectedItems.catalysts.length +
+                state.selectedItems.talismans.length)
+            "
+            :two-handed="state.selectedItems.twoHanded.shields"
+            @add="handleAddShieldSelector"
+            @remove="handleRemoveShield"
+            @toggle-two-handed="
+              (index) => {
+                toggleTwoHandedFor('shields', index);
+              }
+            "
+          />
         </div>
-
-        <!-- Armor and Rings Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Armor Selection -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <ArmorSelector
-              :selected-armor="{
-                head: state.selectedItems.armor?.find((a) => a.slot === 'head'),
-                chest: state.selectedItems.armor?.find(
-                  (a) => a.slot === 'chest'
-                ),
-                hands: state.selectedItems.armor?.find(
-                  (a) => a.slot === 'hands'
-                ),
-                legs: state.selectedItems.armor?.find((a) => a.slot === 'legs'),
-              }"
-              :armor-options="armorOptions as any"
-              :reset-trigger="resetTrigger"
-              @update-armor="handleArmorUpdate"
-              @clear-armor="handleClearArmor"
-            />
-          </FormSection>
-
-          <!-- Ring Selection -->
-          <FormSection title="" :theme="safeTheme" layout="stack">
-            <RingSelector
-              :selected-rings="state.selectedItems.rings || []"
-              :ring-options="ringOptions as any"
-              @update-rings="handleRingsUpdate"
-              @clear-rings="handleClearRings"
-            />
-          </FormSection>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Catalysts -->
+          <CategorizedItemSelector
+            id="catalysts"
+            label="Catalysts"
+            placeholder="Select catalysts..."
+            :options="catalystOptions"
+            :selected-items="state.selectedItems.catalysts"
+            :max-items="
+              4 -
+              (state.selectedItems.weapons.length +
+                state.selectedItems.shields.length +
+                state.selectedItems.talismans.length)
+            "
+            :two-handed="state.selectedItems.twoHanded.catalysts"
+            show-special-effects
+            @add="handleAddCatalystSelector"
+            @remove="handleRemoveCatalyst"
+            @toggle-two-handed="
+              (index) => {
+                toggleTwoHandedFor('catalysts', index);
+              }
+            "
+          />
+          <!-- Talismans -->
+          <CategorizedItemSelector
+            id="talismans"
+            label="Talismans"
+            placeholder="Select talismans..."
+            :options="talismanOptions"
+            :selected-items="state.selectedItems.talismans"
+            :max-items="
+              4 -
+              (state.selectedItems.weapons.length +
+                state.selectedItems.shields.length +
+                state.selectedItems.catalysts.length)
+            "
+            :two-handed="state.selectedItems.twoHanded.talismans"
+            show-special-effects
+            @add="handleAddTalismanSelector"
+            @remove="handleRemoveTalisman"
+            @toggle-two-handed="
+              (index) => {
+                toggleTwoHandedFor('talismans', index);
+              }
+            "
+          />
         </div>
       </div>
-    </UCard>
-
+    </div>
+    <!-- Spell Selection -->
+    <div
+      :class="[
+        'mb-4',
+        'rounded-lg',
+        'overflow-hidden',
+        'pl-4',
+        randomTheme.border,
+        'border-l-4',
+        'bg-white',
+        'dark:bg-gray-900',
+        'shadow',
+      ]"
+    >
+      <div
+        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+        @click="toggleSection('spells')"
+      >
+        <div class="flex items-center gap-2">
+          <Icon
+            :name="
+              sectionOpen.spells
+                ? 'i-heroicons-chevron-down'
+                : 'i-heroicons-chevron-right'
+            "
+            class="w-5 h-5 text-gray-500"
+          />
+          <h2 class="text-lg font-semibold">
+            Spell Selection <span class="text-gray-500">(optional)</span>
+          </h2>
+        </div>
+        <UButton
+          v-if="
+            state.selectedItems.sorceries.length ||
+            state.selectedItems.miracles.length ||
+            state.selectedItems.pyromancies.length
+          "
+          type="button"
+          size="xs"
+          variant="solid"
+          color="success"
+          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+          @click.stop="handleClearSpells"
+        >
+          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+          Clear
+        </UButton>
+      </div>
+      <div
+        v-if="sectionOpen.spells"
+        class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4"
+      >
+        <!-- Sorceries -->
+        <CategorizedItemSelector
+          id="sorceries"
+          label="Sorceries"
+          placeholder="Select sorceries..."
+          :options="sorceryOptions"
+          :selected-items="state.selectedItems.sorceries"
+          :max-items="10"
+          :current-attunement="state.characterStats.attunement"
+          :selected-rings="state.selectedItems.rings"
+          @add="handleAddSorcerySelector"
+          @remove="handleRemoveSorcery"
+          @increase-attunement="handleIncreaseAttunement"
+        />
+        <!-- Miracles -->
+        <CategorizedItemSelector
+          id="miracles"
+          label="Miracles"
+          placeholder="Select miracles..."
+          :options="miracleOptions"
+          :selected-items="state.selectedItems.miracles"
+          :max-items="10"
+          :current-attunement="state.characterStats.attunement"
+          :selected-rings="state.selectedItems.rings"
+          @add="handleAddMiracleSelector"
+          @remove="handleRemoveMiracle"
+          @increase-attunement="handleIncreaseAttunement"
+        />
+        <!-- Pyromancies -->
+        <CategorizedItemSelector
+          id="pyromancies"
+          label="Pyromancies"
+          placeholder="Select pyromancies..."
+          :options="pyromancyOptions"
+          :selected-items="state.selectedItems.pyromancies"
+          :max-items="10"
+          :current-attunement="state.characterStats.attunement"
+          :selected-rings="state.selectedItems.rings"
+          @add="handleAddPyromancySelector"
+          @remove="handleRemovePyromancy"
+          @increase-attunement="handleIncreaseAttunement"
+        />
+      </div>
+    </div>
+    <!-- Armor Selection -->
+    <div
+      :class="[
+        'mb-4',
+        'rounded-lg',
+        'overflow-hidden',
+        'pl-4',
+        randomTheme.border,
+        'border-l-4',
+        'bg-white',
+        'dark:bg-gray-900',
+        'shadow',
+      ]"
+    >
+      <div
+        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+        @click="toggleSection('armor')"
+      >
+        <div class="flex items-center gap-2">
+          <Icon
+            :name="
+              sectionOpen.armor
+                ? 'i-heroicons-chevron-down'
+                : 'i-heroicons-chevron-right'
+            "
+            class="w-5 h-5 text-gray-500"
+          />
+          <h2 class="text-lg font-semibold">
+            Armor Selection <span class="text-gray-500">(optional)</span>
+          </h2>
+        </div>
+        <UButton
+          v-if="state.selectedItems.armor.length > 0"
+          type="button"
+          size="xs"
+          variant="solid"
+          color="success"
+          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+          @click.stop="handleClearArmor"
+        >
+          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+          Clear
+        </UButton>
+      </div>
+      <div v-if="sectionOpen.armor" class="p-4">
+        <ArmorSelector
+          :selected-armor="{
+            head: state.selectedItems.armor?.find((a) => a.slot === 'head'),
+            chest: state.selectedItems.armor?.find((a) => a.slot === 'chest'),
+            hands: state.selectedItems.armor?.find((a) => a.slot === 'hands'),
+            legs: state.selectedItems.armor?.find((a) => a.slot === 'legs'),
+          }"
+          :armor-options="armorOnlyOptions"
+          :reset-trigger="resetTrigger"
+          @update-armor="handleArmorUpdate"
+          @clear-armor="handleClearArmor"
+        />
+      </div>
+    </div>
+    <!-- Ring Selection -->
+    <div
+      :class="[
+        'mb-4',
+        'rounded-lg',
+        'overflow-hidden',
+        'pl-4',
+        randomTheme.border,
+        'border-l-4',
+        'bg-white',
+        'dark:bg-gray-900',
+        'shadow',
+      ]"
+    >
+      <div
+        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+        @click="toggleSection('rings')"
+      >
+        <div class="flex items-center gap-2">
+          <Icon
+            :name="
+              sectionOpen.rings
+                ? 'i-heroicons-chevron-down'
+                : 'i-heroicons-chevron-right'
+            "
+            class="w-5 h-5 text-gray-500"
+          />
+          <h2 class="text-lg font-semibold">
+            Ring Selection <span class="text-gray-500">(optional)</span>
+          </h2>
+        </div>
+        <UButton
+          v-if="state.selectedItems.rings.length > 0"
+          type="button"
+          size="xs"
+          variant="solid"
+          color="success"
+          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+          @click.stop="handleClearRings"
+        >
+          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
+          Clear
+        </UButton>
+      </div>
+      <div v-if="sectionOpen.rings" class="p-4">
+        <RingSelector
+          :selected-rings="state.selectedItems.rings"
+          :ring-options="ringOnlyOptions"
+          @update-rings="handleRingsUpdate"
+          @clear-rings="handleClearRings"
+        />
+      </div>
+    </div>
     <!-- Character Stats and Results Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Character Stats Section -->
@@ -831,53 +1149,26 @@ const canImproveDodgeRoll = computed(() => {
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold">Character Stats</h2>
-            <div class="flex gap-2">
-              <UButton
-                size="sm"
-                variant="outline"
-                :color="showShareConfirmation ? 'success' : 'secondary'"
-                @click="copyShareUrl"
-                class="font-medium shadow-sm hover:shadow-md transition-shadow"
-                :disabled="showShareConfirmation"
-              >
-                <Icon
-                  :name="
-                    showShareConfirmation
-                      ? 'i-heroicons-check'
-                      : 'i-heroicons-link'
-                  "
-                  class="w-4 h-4 mr-1"
-                />
-                {{ showShareConfirmation ? "Copied!" : "Share Build" }}
-              </UButton>
-              <UButton
-                size="sm"
-                variant="solid"
-                :color="
-                  randomTheme.icon.includes('blue')
-                    ? 'info'
-                    : randomTheme.icon.includes('green')
-                      ? 'success'
-                      : randomTheme.icon.includes('orange')
-                        ? 'warning'
-                        : randomTheme.icon.includes('red')
-                          ? 'error'
-                          : 'primary'
-                "
-                @click="handleReset"
-                class="font-medium shadow-sm hover:shadow-md transition-shadow"
-              >
-                <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
-                Reset
-              </UButton>
-            </div>
+            <UButton
+              size="xs"
+              variant="solid"
+              color="primary"
+              class="ml-2"
+              @click="handleReset"
+            >
+              <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
+              Reset
+            </UButton>
           </div>
         </template>
 
         <StatTable
           :stats="derivedStats"
           :is-two-handed="state.isTwoHanded"
-          :minimum-requirements="minimumRequirementsWithLevel"
+          :minimum-requirements="{
+            ...state.characterStats,
+            ...minimumRequirements,
+          }"
           :stat-validation="statValidation"
           @update:stat="handleStatUpdate"
         />
@@ -900,7 +1191,7 @@ const canImproveDodgeRoll = computed(() => {
       </template>
 
       <DerivedStatsDisplay
-        :stats="derivedStats"
+        :stats="derivedStats || {}"
         :can-improve-dodge-roll="canImproveDodgeRoll"
         @improve-dodge-roll="improveDodgeRoll"
       />

@@ -230,7 +230,7 @@ const solaireQuest: QuestState = {
     },
     {
       id: "meet-solaire-sunlight-altar",
-      name: "Meet Solaire in Anor Londo",
+      name: "Meet Solaire at the Sunlight Altar",
       description: "Exhaust his dialogue",
       type: "step",
       isCompleted: false,
@@ -366,7 +366,7 @@ const reahQuest: QuestState = {
 const lautrecQuest: QuestState = {
   id: "knight-lautrec",
   name: "Knight Lautrec",
-  description: "Help knight Lautrec throughout his journey",
+  description: "Help Knight Lautrec throughout his journey",
   npcName: "Knight Lautrec",
   npcLocation: "Undead Parish",
   status: "not-started",
@@ -425,7 +425,7 @@ const lautrecQuest: QuestState = {
       description: "Return the Firekeeper Soul to Firelink Shrine",
       type: "step",
       isCompleted: false,
-      location: "Grand hall outside of the Ornstein and Smough boss room.",
+      location: "Below Firelink Shrine",
       prerequisites: ["invade-lautrec-anor-londo"],
       order: 4,
     },

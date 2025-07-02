@@ -137,3 +137,6 @@ export { vitalityHp };
 
 // Export endurance stamina utilities
 export { enduranceStamina };
+
+// Export pyromancy utilities
+export * as pyromancies from "./pyromancies";

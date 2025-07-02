@@ -5,6 +5,11 @@
       <slot name="hero" />
     </div>
 
+    <!-- Below Hero Slot -->
+    <div>
+      <slot name="below-hero" />
+    </div>
+
     <!-- Mobile Sidebar Overlays - Backdrop for mobile sidebars -->
     <div
       v-if="$slots.sidebar && isLeftSidebarOpen"

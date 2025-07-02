@@ -1,6 +1,6 @@
 <template>
   <UBadge :color="badgeColor" variant="soft" :size="size" class="!px-2">
-    <span class="whitespace-nowrap">
+    <span class="truncate max-w-[120px] inline-block align-middle">
       {{ displayName }}
     </span>
   </UBadge>

@@ -1,122 +1,37 @@
 # Gold Phantom
 
-A set of simple web tools for planning and optimizing your _Dark Souls_ playthrough.
+A set of simple, modular web tools for planning and optimizing your _Dark Souls_ playthrough.
 
-## 🚀 **Quick Start**
-
-### **For New Developers**
-
-1. **Clone and install:**
-
-   ```bash
-   git clone <repository-url>
-   cd dark-souls-tools
-   npm install
-   ```
-
-2. **Start development:**
-
-   ```bash
-   npm run dev
-   ```
-
-3. **Create your first tool:**
-
-   ```bash
-   npm run create:tool -- "My New Tool" ds1
-   ```
-
-4. **Visit your tool:**
-   ```
-   http://localhost:3000/tools/ds1/my-new-tool
-   ```
-
-### **Project Structure**
-
-```
-dark-souls-tools/
-├── components/          # Vue components
-│   ├── Tools/          # Tool components
-│   │   ├── Common/     # Shared components
-│   │   │   ├── forms/  # Standardized form components
-│   │   │   ├── display/# Display components
-│   │   │   └── ui/     # UI components
-│   │   └── [ToolName]/ # Individual tools
-├── composables/        # Business logic
-├── utils/
-│   └── themes/         # Centralized theme system
-├── docs/              # Documentation
-├── types/             # TypeScript types
-└── scripts/           # Build scripts
-```
-
-### **Key Documentation**
-
-- **[Contributing Guide](CONTRIBUTING.md)** - Complete guide to adding new tools
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development patterns and best practices
-- **[Component Catalog](docs/COMPONENT_CATALOG.md)** - Available shared components
-- **[Usage Examples](docs/USAGE_EXAMPLES.md)** - Practical examples of component usage
-- **[Import Standards](docs/IMPORT_AND_STRUCTURE_STANDARDS.md)** - Code organization guidelines
-
-## 🛠️ **Features**
-
-- **Soul level and weapon upgrade calculators**
-- **Fast, responsive, and theme-aware UI**
-- **Modular architecture with standardized components**
-- **Comprehensive form component library**
-- **Centralized theme system**
-- **Plugin system for extensibility**
-- **Comprehensive TypeScript support**
-- **Automated tool creation and validation**
-
-## 🏗️ **Architecture**
-
-### **Component System**
-
-- **Form Components**: Standardized form fields (`NumberField`, `SelectField`, `FormSection`)
-- **Display Components**: Consistent data presentation (`SummaryCard`, `ResultsTable`)
-- **UI Components**: Reusable UI elements (`GameBadge`, `CategoryChip`)
-- **Layout System**: Consistent theming and structure via `ToolLayout`
-
-### **Theme System**
-
-- **Centralized Colors**: Single source of truth for all styling
-- **Consistent Theming**: Automatic theme assignment and management
-- **Easy Extension**: Simple to add new themes and colors
-
-### **Business Logic**
-
-- **Base Composables**: Common functionality via `useBaseTool`
-- **Tool-Specific Logic**: Dedicated composables for each tool
-- **Plugin System**: Extensible functionality without core modifications
-
-### **Development Tools**
-
-- **CLI Scaffolding**: Automated tool creation with standardized components
-- **Type Safety**: Comprehensive TypeScript support
-- **Validation**: Built-in tool validation and testing
-
-## 🧩 **Available Tools**
-
-- **Soul Level Calculator**: Calculate souls needed to reach specific levels
-- **Weapon Upgrade Calculator**: Plan weapon upgrade paths and costs
-
-## 🛠️ **Development**
-
-### **Creating a New Tool**
+## 🚀 Quick Start
 
 ```bash
-# Simple tool creation
-npm run create:tool -- "Tool Name" ds1
-
-# Complex tool with advanced features
-npm run create:tool -- "Complex Tool" ds1 --complex
-
-# Multi-game tool
-npm run create:tool -- "Multi-Game Tool" ds1 --multi-game
+git clone <repository-url>
+cd dark-souls-tools
+npm install
+npm run dev
 ```
 
-### **Using Standardized Components**
+Visit: http://localhost:3000
+
+## 🗂️ Project Structure
+
+```
+components/         # Vue components (shared & tool-specific)
+composables/        # Business logic (Vue composables)
+utils/              # Utility functions & themes
+docs/               # (Removed, see this README)
+types/              # TypeScript types
+scripts/            # CLI/build scripts
+```
+
+## 🛠️ Creating a Tool
+
+```bash
+npm run create:tool -- "Tool Name" ds1
+# Visit: http://localhost:3000/tools/ds1/tool-name
+```
+
+## 🧩 Using Shared Components
 
 ```vue
 <script setup>
@@ -127,9 +42,8 @@ import {
   SummaryCard,
 } from "~/components";
 </script>
-
 <template>
-  <FormSection title="Calculator" description="Enter your values">
+  <FormSection title="Calculator">
     <NumberField
       label="Level"
       id="level"
@@ -142,11 +56,10 @@ import {
       label="Category"
       id="category"
       :model-value="state.category"
-      :items="categoryOptions"
+      :options="categoryOptions"
       @update:model-value="(val) => (state.category = val)"
     />
   </FormSection>
-
   <SummaryCard
     label="Total Cost"
     :value="totalCost"
@@ -156,62 +69,54 @@ import {
 </template>
 ```
 
-### **Available Scripts**
+## 📜 Available Scripts
 
 ```bash
-npm run dev              # Start development server
+npm run dev              # Start dev server
 npm run build            # Build for production
+npm run create:tool      # Scaffold a new tool
 npm run generate:tools   # Update tools manifest
 npm run validate:tools   # Validate tool structure
-npm run test             # Run tests
 npm run lint             # Lint code
 npm run format           # Format code
 ```
 
-## 🎨 **Technologies**
+## 🧑‍💻 Technologies
 
-- **Frontend**: Nuxt 3, Vue 3, Tailwind CSS 4, Nuxt UI 3
-- **Language**: TypeScript
-- **Build Tools**: Vite, PostCSS
-- **Testing**: Vitest
-- **Linting**: ESLint, Prettier
+- Nuxt 3, Vue 3, Tailwind CSS 4, Nuxt UI 3
+- TypeScript, Vite, PostCSS
+- Vitest (testing), ESLint, Prettier
 
-## 🤝 **Contributing**
+## 🤝 Contributing
 
-Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-### **Development Workflow**
+### Workflow
 
-1. **Fork the repository**
-2. **Create a feature branch**
-3. **Make your changes using standardized components**
-4. **Add tests if applicable**
-5. **Run validation**: `npm run validate:tools`
-6. **Submit a pull request**
+1. Fork & branch
+2. Use shared components & follow code style
+3. Add tests if needed
+4. Run `npm run validate:tools`
+5. Submit a pull request
 
-### **Code Style**
+### Code Style
 
-- **Components**: PascalCase naming
-- **Composables**: camelCase with `use` prefix
-- **Types**: camelCase
-- **Files**: Follow established patterns
-- **Use standardized components**: Prefer `NumberField` over custom form fields
+- Components: PascalCase
+- Composables: camelCase with `use` prefix
+- Types: camelCase
+- Use shared components (e.g. `NumberField`)
 
-## 📚 **Documentation**
+## 🌐 SEO & Social Sharing
 
-- **[Contributing Guide](CONTRIBUTING.md)** - Complete guide to adding new tools
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development patterns and best practices
-- **[Component Catalog](docs/COMPONENT_CATALOG.md)** - Available shared components
-- **[Usage Examples](docs/USAGE_EXAMPLES.md)** - Practical examples of component usage
-- **[Import Standards](docs/IMPORT_AND_STRUCTURE_STANDARDS.md)** - Code organization guidelines
+- Each tool/page sets a unique title, description, and Open Graph/Twitter meta tags for rich previews.
+- Tool icons: square, min 1200x1200px, PNG preferred.
+- See tool config for SEO fields.
 
-## 🆘 **Getting Help**
+## 📱 Mobile Performance
 
-- **Check existing tools** for examples and patterns
-- **Review the Component Catalog** for available shared components
-- **Look at the Development Guide** for best practices
-- **Ask questions in issues** - the community is helpful!
+- Large dropdowns use native `<select>` on mobile for speed.
+- Option caching is used for fast search/filtering.
 
-## ⚖️ **Legal**
+---
 
-_Dark Souls_ is a registered trademark of BANDAI NAMCO ENTERTAINMENT INC. This project is not affiliated with or endorsed by BANDAI NAMCO.
+For advanced details, see CONTRIBUTING.md.

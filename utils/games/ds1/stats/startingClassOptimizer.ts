@@ -3,6 +3,7 @@ import type { Weapon } from "~/types/game/ds1/weapons";
 import type { Shield } from "~/types/game/ds1/shields";
 import type { Sorcery } from "~/types/game/ds1/sorceries";
 import type { Miracle } from "~/types/game/ds1/miracles";
+import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 import {
   STAT_MIN_VALUE,
   STAT_MAX_VALUE,
@@ -43,7 +44,9 @@ export function calculateMinimumRequirements(
   shields: Shield[],
   sorceries: Sorcery[],
   miracles: Miracle[],
-  isTwoHanded: boolean
+  pyromancies: Pyromancy[],
+  isTwoHanded: boolean,
+  rings: { effect?: { attunementSlots?: number } }[] = []
 ): MinimumRequirements {
   const requirements: MinimumRequirements = {
     vitality: STAT_MIN_VALUE,
@@ -147,6 +150,28 @@ export function calculateMinimumRequirements(
     }
   });
 
+  // Calculate pyromancy requirements
+  pyromancies.forEach((pyromancy) => {
+    if (pyromancy.requirements) {
+      // Pyromancies only have attunement requirements, no intelligence or faith
+      // The attunement requirement will be handled by the attunement slot calculation
+    }
+  });
+
+  // Calculate required attunement slots for spells
+  const requiredSlots = calculateRequiredAttunementSlots(
+    sorceries,
+    miracles,
+    pyromancies
+  );
+  const ringSlots = getAttunementSlotsFromRings(rings);
+  const slotsNeededFromStat = Math.max(0, requiredSlots - ringSlots);
+  // Find the minimum attunement stat that provides enough slots
+  requirements.attunement =
+    slotsNeededFromStat > 0
+      ? getAttunementLevelForSlots(slotsNeededFromStat) || STAT_MIN_VALUE
+      : STAT_MIN_VALUE;
+
   return requirements;
 }
 
@@ -157,6 +182,19 @@ export function validateCharacterStats(
   stats: CharacterStats,
   requirements: MinimumRequirements
 ): CharacterValidation {
+  // Only validate the base stats that have requirements
+  const baseStats = [
+    "level",
+    "vitality",
+    "attunement",
+    "endurance",
+    "strength",
+    "dexterity",
+    "resistance",
+    "intelligence",
+    "faith",
+  ] as const;
+
   const errors: Record<
     keyof CharacterStats,
     { isValid: boolean; error?: string }
@@ -170,6 +208,18 @@ export function validateCharacterStats(
     resistance: { isValid: true },
     intelligence: { isValid: true },
     faith: { isValid: true },
+    // Add derived stats with default valid state
+    hp: { isValid: true },
+    stamina: { isValid: true },
+    equipLoad: { isValid: true },
+    maxHp: { isValid: true },
+    maxStamina: { isValid: true },
+    staminaRegen: { isValid: true },
+    dodgeRoll: { isValid: true },
+    equippedWeight: { isValid: true },
+    equipLoadPercentage: { isValid: true },
+    movementSpeed: { isValid: true },
+    weightClass: { isValid: true },
   };
 
   const warnings: string[] = [];
@@ -461,7 +511,8 @@ export function findAllStartingClasses(
  */
 export function calculateRequiredAttunementSlots(
   sorceries: Sorcery[],
-  miracles: Miracle[]
+  miracles: Miracle[],
+  pyromancies: Pyromancy[] = []
 ): number {
   const sorcerySlots = sorceries.reduce(
     (total, sorcery) => total + sorcery.attunementSlots,
@@ -471,7 +522,11 @@ export function calculateRequiredAttunementSlots(
     (total, miracle) => total + miracle.attunementSlots,
     0
   );
-  const totalSlots = sorcerySlots + miracleSlots;
+  const pyromancySlots = pyromancies.reduce(
+    (total, pyromancy) => total + pyromancy.attunementSlots,
+    0
+  );
+  const totalSlots = sorcerySlots + miracleSlots + pyromancySlots;
   return Math.min(totalSlots, 10); // Maximum 10 slots
 }
 
@@ -507,7 +562,7 @@ function getAttunementSlots(attunement: number): number {
  * Calculate requirements for a specific item
  */
 export function calculateItemRequirements(
-  item: Weapon | Shield | Sorcery | Miracle,
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy,
   isTwoHanded: boolean,
   weapons: Weapon[] = []
 ): Partial<MinimumRequirements> {
@@ -533,7 +588,9 @@ export function calculateItemRequirements(
   } else if ("shieldType" in item) {
     // Shield
     if (item.requirements) {
-      const shouldApplyTwoHanded = isTwoHanded && weapons.length === 0;
+      // Apply two-handed strength reduction if the shield is marked as two-handed
+      // This works regardless of whether weapons are selected or not
+      const shouldApplyTwoHanded = isTwoHanded;
       requirements.strength = shouldApplyTwoHanded
         ? Math.ceil(
             (item.requirements.strength || 0) / TWO_HANDED_STRENGTH_MULTIPLIER
@@ -561,6 +618,15 @@ export function calculateItemRequirements(
     // Add attunement requirement
     requirements.attunement =
       getAttunementLevelForSlots(item.attunementSlots) || 1;
+  } else if ("pyromancyType" in item) {
+    // Pyromancy
+    if (item.requirements) {
+      // Pyromancies don't have intelligence or faith requirements
+      // Only attunement requirements
+    }
+    // Add attunement requirement
+    requirements.attunement =
+      getAttunementLevelForSlots(item.attunementSlots) || 1;
   }
 
   return requirements;
@@ -570,7 +636,7 @@ export function calculateItemRequirements(
  * Calculate requirements for a collection of items
  */
 export function calculateItemsRequirements(
-  items: (Weapon | Shield | Sorcery | Miracle)[],
+  items: (Weapon | Shield | Sorcery | Miracle | Pyromancy)[],
   isTwoHanded: boolean,
   weapons: Weapon[] = []
 ): MinimumRequirements {
@@ -604,12 +670,13 @@ export function calculateItemsRequirements(
  */
 export function resetStatsForRemovedItem(
   currentStats: CharacterStats,
-  removedItem: Weapon | Shield | Sorcery | Miracle,
+  removedItem: Weapon | Shield | Sorcery | Miracle | Pyromancy,
   remainingItems: {
     weapons: Weapon[];
     shields: Shield[];
     sorceries: Sorcery[];
     miracles: Miracle[];
+    pyromancies: Pyromancy[];
   },
   isTwoHanded: boolean
 ): CharacterStats {
@@ -626,6 +693,7 @@ export function resetStatsForRemovedItem(
     ...remainingItems.shields,
     ...remainingItems.sorceries,
     ...remainingItems.miracles,
+    ...remainingItems.pyromancies,
   ];
   const remainingReqs = calculateItemsRequirements(
     allRemainingItems,
@@ -649,10 +717,15 @@ export function resetStatsForRemovedItem(
   });
 
   // Special handling for attunement - recalculate based on remaining spells
-  if ("sorceryType" in removedItem || "miracleType" in removedItem) {
+  if (
+    "sorceryType" in removedItem ||
+    "miracleType" in removedItem ||
+    "pyromancyType" in removedItem
+  ) {
     const requiredSlots = calculateRequiredAttunementSlots(
       remainingItems.sorceries,
-      remainingItems.miracles
+      remainingItems.miracles,
+      remainingItems.pyromancies
     );
     const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
 
@@ -662,4 +735,14 @@ export function resetStatsForRemovedItem(
   }
 
   return updatedStats;
+}
+
+// Utility to sum attunement slots from equipped rings
+export function getAttunementSlotsFromRings(
+  rings: { effect?: { attunementSlots?: number } }[] = []
+): number {
+  return rings.reduce(
+    (sum, ring) => sum + (ring.effect?.attunementSlots || 0),
+    0
+  );
 }

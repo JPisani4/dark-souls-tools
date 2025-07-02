@@ -12,7 +12,7 @@
       class="absolute z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4 text-sm max-w-2xl whitespace-normal break-words"
       :class="
         isMobile
-          ? 'fixed inset-4 m-auto max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto'
+          ? 'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[90vw] max-h-[60vh] w-auto h-auto overflow-y-auto'
           : 'top-full left-0 mt-2 min-w-[280px] max-w-[calc(100vw-1rem)]'
       "
       :style="computedStyles"

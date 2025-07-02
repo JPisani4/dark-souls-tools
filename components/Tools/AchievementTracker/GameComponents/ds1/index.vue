@@ -35,7 +35,7 @@ const initialState: AchievementTrackerState = {
 
 const { state, setState, reset, error, setError, clearError } = useBaseTool<
   AchievementTrackerState,
-  {}
+  { timestamp: Date }
 >(
   {
     initialState,
@@ -431,7 +431,6 @@ const getQuestProgressionNote = (
               getAchievementProgressData(achievement).total
             "
             :subtitle="achievement.description"
-            :format="'text'"
             :icon="achievement.icon"
             :theme="achievementThemes[achievement.id]"
           />
@@ -459,42 +458,35 @@ const getQuestProgressionNote = (
               class="space-y-3"
             >
               <!-- Category Header with Progress -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="toggleCategory(achievement.id, category)"
-                    class="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition-colors"
-                  >
-                    <Icon
-                      :name="
-                        isCategoryExpanded(achievement.id, category)
-                          ? 'i-heroicons-chevron-down'
-                          : 'i-heroicons-chevron-right'
-                      "
-                      class="w-4 h-4 text-gray-600 dark:text-gray-400"
-                    />
-                    <h4
-                      class="text-lg font-semibold text-gray-900 dark:text-white"
+              <div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <button
+                      @click="toggleCategory(achievement.id, category)"
+                      class="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition-colors"
                     >
-                      {{ getCategoryDisplayName(category) }}
-                    </h4>
-                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                      ({{
-                        getCategoryProgress(achievement, category).completed
-                      }}/{{ getCategoryProgress(achievement, category).total }})
-                    </span>
-                  </button>
-                </div>
-                <div class="flex items-center gap-2">
-                  <!-- Total cost for categories with prices -->
-                  <span
-                    v-if="getCategoryTotalCost(achievement, category).total > 0"
-                    class="text-sm bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-2 py-1 rounded"
-                  >
-                    Total:
-                    {{ getCategoryTotalCost(achievement, category).display }}
-                    Souls
-                  </span>
+                      <Icon
+                        :name="
+                          isCategoryExpanded(achievement.id, category)
+                            ? 'i-heroicons-chevron-down'
+                            : 'i-heroicons-chevron-right'
+                        "
+                        class="w-4 h-4 text-gray-600 dark:text-gray-400"
+                      />
+                      <h4
+                        class="text-lg font-semibold text-gray-900 dark:text-white"
+                      >
+                        {{ getCategoryDisplayName(category) }}
+                      </h4>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">
+                        ({{
+                          getCategoryProgress(achievement, category).completed
+                        }}/{{
+                          getCategoryProgress(achievement, category).total
+                        }})
+                      </span>
+                    </button>
+                  </div>
                   <UButton
                     @click="resetCategoryProgress(achievement.id, category)"
                     size="sm"
@@ -505,6 +497,14 @@ const getQuestProgressionNote = (
                     Reset Category
                   </UButton>
                 </div>
+                <span
+                  v-if="getCategoryTotalCost(achievement, category).total > 0"
+                  class="inline-block mt-2 text-sm bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-2 py-1 rounded"
+                >
+                  Total:
+                  {{ getCategoryTotalCost(achievement, category).display }}
+                  Souls
+                </span>
               </div>
 
               <!-- Category Progress Bar -->
@@ -582,9 +582,35 @@ const getQuestProgressionNote = (
                     <div class="flex items-start justify-between gap-2">
                       <div class="flex-1 min-w-0">
                         <h5
-                          class="font-medium text-gray-900 dark:text-white mb-1"
+                          class="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2"
                         >
                           {{ requirement.name }}
+                          <!-- NG+ badge and info icon with tooltip -->
+                          <template
+                            v-if="
+                              requirement.newGamePlus !== undefined &&
+                              requirement.newGamePlus > 0
+                            "
+                          >
+                            <span
+                              class="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 px-2 py-1 rounded font-semibold ml-2"
+                              style="display: inline-block"
+                            >
+                              NG+{{ requirement.newGamePlus }}
+                            </span>
+                            <SmartTooltip placement="top">
+                              <template #trigger>
+                                <Icon
+                                  name="i-heroicons-information-circle"
+                                  class="w-4 h-4 text-orange-500 dark:text-orange-300 ml-1 cursor-pointer align-middle"
+                                  style="vertical-align: middle"
+                                />
+                              </template>
+                              NG+{{ requirement.newGamePlus }} is required as
+                              this soul can only be obtained once per cycle
+                              unless another player drops it for you.
+                            </SmartTooltip>
+                          </template>
                         </h5>
 
                         <!-- AscendsFrom information for boss weapons -->
@@ -600,10 +626,16 @@ const getQuestProgressionNote = (
                             class="w-4 h-4 flex-shrink-0 mt-0.5"
                           />
                           <div class="flex-1 min-w-0">
-                            <span class="block"> Ascends from: </span>
-                            <span class="block break-words">
-                              {{ formatAscendsFrom(requirement.ascendsFrom) }}
-                            </span>
+                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                              <span class="font-medium">Ascends from:</span>
+                              <span
+                                v-for="weapon in requirement.ascendsFrom ?? []"
+                                :key="weapon"
+                                class="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs font-medium"
+                              >
+                                +10 {{ weapon }}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -632,38 +664,52 @@ const getQuestProgressionNote = (
                             Drop rate: {{ requirement.dropRate }}
                           </span>
                           <span
-                            v-if="requirement.price || requirement.cost"
-                            class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
+                            v-if="
+                              (requirement.price || requirement.cost) &&
+                              category === 'purchase'
+                            "
+                            class="block sm:inline text-xs mt-1 sm:mt-0 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 font-semibold px-2 py-1 rounded"
                           >
                             <template
                               v-if="
                                 typeof (
                                   requirement.price || requirement.cost
-                                ) === 'object'
+                                ) === 'object' &&
+                                (requirement.price || requirement.cost)
                               "
                             >
                               {{
                                 Math.min(
                                   ...Object.values(
-                                    requirement.price || requirement.cost
-                                  ).filter((v) => typeof v === "number")
+                                    (requirement.price || requirement.cost) ??
+                                      {}
+                                  ).filter(
+                                    (v): v is number => typeof v === "number"
+                                  )
                                 ).toLocaleString()
                               }}
                               -
                               {{
                                 Math.max(
                                   ...Object.values(
-                                    requirement.price || requirement.cost
-                                  ).filter((v) => typeof v === "number")
+                                    (requirement.price || requirement.cost) ??
+                                      {}
+                                  ).filter(
+                                    (v): v is number => typeof v === "number"
+                                  )
                                 ).toLocaleString()
                               }}
                               Souls
                             </template>
                             <template v-else>
                               {{
-                                (
+                                typeof (
                                   requirement.price || requirement.cost
-                                ).toLocaleString()
+                                ) === "number"
+                                  ? (
+                                      requirement.price || requirement.cost
+                                    ).toLocaleString()
+                                  : ""
                               }}
                               Souls
                             </template>

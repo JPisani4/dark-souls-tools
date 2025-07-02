@@ -133,19 +133,6 @@ const howToUseSteps = [
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <HeroSection
-    v-if="gameData"
-    :title="toolConfig?.title || 'Weapon Upgrade Calculator'"
-    :description="
-      toolConfig?.description ||
-      'Calculate the souls and materials needed to upgrade weapons'
-    "
-    :icon-path="toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'"
-    :theme="safeTheme"
-    :game-data="gameData"
-  />
-
   <ErrorBoundary
     :on-retry="clearForm"
     :on-reset="clearForm"

@@ -40,7 +40,7 @@ import {
   hasSufficientAttunementSlots,
 } from "~/utils/games/ds1/stats/startingClassOptimizer";
 import {
-  DEFAULT_CHARACTER_STATS,
+  DEFAULT_CHARACTER_STATS as RAW_DEFAULT_CHARACTER_STATS,
   AUTO_SAVE_KEYS,
   DEBOUNCE_DELAYS,
   VALIDATION_MESSAGES,
@@ -50,13 +50,28 @@ import {
   STARTING_LEVEL_MAX,
   TWO_HANDED_STRENGTH_MULTIPLIER,
 } from "~/utils/constants";
+import type { Pyromancy } from "~/types/game/ds1/pyromancies";
+import {
+  getAllPyromancies,
+  getPyromancyByName,
+} from "~/utils/games/ds1/pyromancies";
+
+// Ensure DEFAULT_CHARACTER_STATS has all required properties for CharacterStats
+export const DEFAULT_CHARACTER_STATS: CharacterStats = {
+  ...RAW_DEFAULT_CHARACTER_STATS,
+  movementSpeed: (RAW_DEFAULT_CHARACTER_STATS as any).movementSpeed || "Normal",
+  weightClass: (RAW_DEFAULT_CHARACTER_STATS as any).weightClass || "Normal",
+};
 
 // Cache for precomputed options to improve mobile performance
 interface OptionsCache {
   weapons: ItemOption[];
   shields: ItemOption[];
+  catalysts: ItemOption[];
+  talismans: ItemOption[];
   sorceries: ItemOption[];
   miracles: ItemOption[];
+  pyromancies: ItemOption[];
   armor: ItemOption[];
   rings: ItemOption[];
   isInitialized: boolean;
@@ -66,8 +81,11 @@ interface OptionsCache {
 const optionsCache: OptionsCache = {
   weapons: [],
   shields: [],
+  catalysts: [],
+  talismans: [],
   sorceries: [],
   miracles: [],
+  pyromancies: [],
   armor: [],
   rings: [],
   isInitialized: false,
@@ -94,6 +112,18 @@ const initializeOptionsCache = () => {
     Object.values(allShields).flat(),
     "shield"
   );
+  optionsCache.catalysts = createItemOptions(
+    Object.values(allWeapons)
+      .flat()
+      .filter((item) => item.weaponType === "catalyst"),
+    "catalyst"
+  );
+  optionsCache.talismans = createItemOptions(
+    Object.values(allWeapons)
+      .flat()
+      .filter((item) => item.weaponType === "talisman"),
+    "talisman"
+  );
   optionsCache.sorceries = createItemOptions(
     Object.values(allSorceries).flat(),
     "sorcery"
@@ -110,13 +140,17 @@ const initializeOptionsCache = () => {
     Object.values(allRings).flat(),
     "ring"
   );
+  optionsCache.pyromancies = createItemOptions(
+    Object.values(getAllPyromancies()).flat(),
+    "pyromancy"
+  );
 
   optionsCache.isInitialized = true;
 };
 
 // Helper function to create item options (moved outside the composable for caching)
 const createItemOptions = (
-  items: (Weapon | Shield | Sorcery | Miracle | Armor | Ring)[],
+  items: (Weapon | Shield | Sorcery | Miracle | Armor | Ring | Pyromancy)[],
   category: string
 ): ItemOption[] => {
   return items.map((item) => {
@@ -180,7 +214,9 @@ const optimizedSearch = (
   // Limit cache size to prevent memory leaks
   if (searchCache.size > 100) {
     const firstKey = searchCache.keys().next().value;
-    searchCache.delete(firstKey);
+    if (typeof firstKey === "string") {
+      searchCache.delete(firstKey);
+    }
   }
 
   return results;
@@ -190,18 +226,30 @@ export interface StartingClassOptimizerState {
   selectedItems: {
     weapons: Weapon[];
     shields: Shield[];
+    catalysts: Weapon[];
+    talismans: Weapon[];
     sorceries: Sorcery[];
     miracles: Miracle[];
+    pyromancies: Pyromancy[];
     armor: Armor[];
     rings: Ring[];
+    twoHanded: {
+      weapons: boolean[];
+      shields: boolean[];
+      catalysts: boolean[];
+      talismans: boolean[];
+    };
   };
   characterStats: CharacterStats;
   isTwoHanded: boolean;
   searchQueries: {
     weapons: string;
     shields: string;
+    catalysts: string;
+    talismans: string;
     sorceries: string;
     miracles: string;
+    pyromancies: string;
     armor: string;
     rings: string;
   };
@@ -223,7 +271,7 @@ export interface ItemOption {
   value: string;
   label: string;
   category: string;
-  item: Weapon | Shield | Sorcery | Miracle | Armor | Ring;
+  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Armor | Ring;
 }
 
 export interface StartingClassOptimizerValidation {
@@ -241,18 +289,30 @@ export function useStartingClassOptimizer() {
     selectedItems: {
       weapons: [],
       shields: [],
+      catalysts: [],
+      talismans: [],
       sorceries: [],
       miracles: [],
+      pyromancies: [],
       armor: [],
       rings: [],
+      twoHanded: {
+        weapons: [],
+        shields: [],
+        catalysts: [],
+        talismans: [],
+      },
     },
     characterStats: { ...DEFAULT_CHARACTER_STATS },
     isTwoHanded: false,
     searchQueries: {
       weapons: "",
       shields: "",
+      catalysts: "",
+      talismans: "",
       sorceries: "",
       miracles: "",
+      pyromancies: "",
       armor: "",
       rings: "",
     },
@@ -281,16 +341,19 @@ export function useStartingClassOptimizer() {
   const calculateOptimalStartingClass = async (
     state: StartingClassOptimizerState
   ): Promise<StartingClassResults> => {
-    const { selectedItems, characterStats, isTwoHanded } = state;
+    const { selectedItems, characterStats } = state;
 
-    // Calculate minimum requirements
-    const minimumRequirements = calculateMinimumRequirements(
-      selectedItems.weapons,
-      selectedItems.shields,
-      selectedItems.sorceries,
-      selectedItems.miracles,
-      isTwoHanded
-    );
+    // Calculate minimum requirements using per-item two-handed states
+    const minimumRequirements =
+      calculateMinimumRequirementsWithPerItemTwoHanded(
+        selectedItems.weapons,
+        selectedItems.shields,
+        selectedItems.sorceries,
+        selectedItems.miracles,
+        selectedItems.pyromancies,
+        selectedItems.twoHanded,
+        selectedItems.rings
+      );
 
     // Validate current stats
     const validation = validateCharacterStats(
@@ -352,7 +415,10 @@ export function useStartingClassOptimizer() {
     [
       () => baseTool.state.selectedItems,
       () => baseTool.state.characterStats,
-      () => baseTool.state.isTwoHanded,
+      () => baseTool.state.selectedItems.twoHanded.weapons,
+      () => baseTool.state.selectedItems.twoHanded.shields,
+      () => baseTool.state.selectedItems.twoHanded.catalysts,
+      () => baseTool.state.selectedItems.twoHanded.talismans,
     ],
     async () => {
       // Only calculate if there are items selected or stats have been modified
@@ -376,7 +442,6 @@ export function useStartingClassOptimizer() {
           await baseTool.calculate();
         } catch (error) {
           // Silently handle calculation errors - they'll be shown in the UI
-          console.warn("Calculation failed:", error);
         }
       } else {
         // Clear result if no items or modified stats
@@ -386,16 +451,241 @@ export function useStartingClassOptimizer() {
     { deep: true }
   );
 
+  // Helper: Apply per-item two-handed logic to weapons/catalysts/talismans
+  function applyPerItemTwoHanded(
+    items: Weapon[],
+    twoHanded: boolean[]
+  ): Weapon[] {
+    return items.map((item, idx) => {
+      if (twoHanded[idx]) {
+        // Clone the item and reduce strength requirement by 33%
+        const newReq = { ...item.requirements };
+        newReq.strength = Math.ceil((newReq.strength * 2) / 3); // ~33% reduction
+        return { ...item, requirements: newReq };
+      }
+      return item;
+    });
+  }
+
+  // Helper: Calculate minimum requirements using per-item two-handed states
+  function calculateMinimumRequirementsWithPerItemTwoHanded(
+    weapons: Weapon[],
+    shields: Shield[],
+    sorceries: Sorcery[],
+    miracles: Miracle[],
+    pyromancies: Pyromancy[],
+    twoHanded: {
+      weapons: boolean[];
+      shields: boolean[];
+      catalysts: boolean[];
+      talismans: boolean[];
+    },
+    rings: Ring[]
+  ): MinimumRequirements {
+    let minReqs = {
+      vitality: STAT_MIN_VALUE,
+      attunement: STAT_MIN_VALUE,
+      endurance: STAT_MIN_VALUE,
+      strength: STAT_MIN_VALUE,
+      dexterity: STAT_MIN_VALUE,
+      resistance: STAT_MIN_VALUE,
+      intelligence: STAT_MIN_VALUE,
+      faith: STAT_MIN_VALUE,
+    };
+
+    // Weapons
+    weapons.forEach((item, idx) => {
+      const is2H = twoHanded.weapons[idx];
+      const reqs = calculateItemRequirements(item, is2H, weapons);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Shields
+    shields.forEach((item, idx) => {
+      const is2H = twoHanded.shields[idx];
+      const reqs = calculateItemRequirements(item, is2H, weapons);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Spells
+    sorceries.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+    miracles.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+    pyromancies.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Attunement slots from rings
+    const requiredSlots = calculateRequiredAttunementSlots(
+      sorceries,
+      miracles,
+      pyromancies
+    );
+    const ringSlots = getAttunementSlotsFromRings(rings);
+    const slotsNeededFromStat = Math.max(0, requiredSlots - ringSlots);
+    minReqs.attunement =
+      slotsNeededFromStat > 0
+        ? getAttunementLevelForSlots(slotsNeededFromStat) || STAT_MIN_VALUE
+        : STAT_MIN_VALUE;
+
+    return minReqs;
+  }
+
   // Computed properties
-  const minimumRequirements = computed(() =>
-    calculateMinimumRequirements(
-      baseTool.state.selectedItems.weapons,
-      baseTool.state.selectedItems.shields,
+  const allEquippedWeaponLikes = computed(() => [
+    ...baseTool.state.selectedItems.weapons,
+    ...baseTool.state.selectedItems.catalysts,
+    ...baseTool.state.selectedItems.talismans,
+  ]);
+  const allTwoHandedStates = computed(() => [
+    ...baseTool.state.selectedItems.twoHanded.weapons,
+    ...baseTool.state.selectedItems.twoHanded.catalysts,
+    ...baseTool.state.selectedItems.twoHanded.talismans,
+  ]);
+
+  const minimumRequirements = computed(() => {
+    // For each weapon-like, use its twoHanded state
+    let minReqs = {
+      vitality: STAT_MIN_VALUE,
+      attunement: STAT_MIN_VALUE,
+      endurance: STAT_MIN_VALUE,
+      strength: STAT_MIN_VALUE,
+      dexterity: STAT_MIN_VALUE,
+      resistance: STAT_MIN_VALUE,
+      intelligence: STAT_MIN_VALUE,
+      faith: STAT_MIN_VALUE,
+    };
+
+    // Explicitly reference the twoHanded arrays to ensure reactivity
+    const weaponTwoHanded = baseTool.state.selectedItems.twoHanded.weapons;
+    const catalystTwoHanded = baseTool.state.selectedItems.twoHanded.catalysts;
+    const talismanTwoHanded = baseTool.state.selectedItems.twoHanded.talismans;
+    const shieldTwoHanded = baseTool.state.selectedItems.twoHanded.shields;
+
+    // Weapons
+    baseTool.state.selectedItems.weapons.forEach((item, idx) => {
+      const is2H = weaponTwoHanded[idx];
+      const reqs = calculateItemRequirements(
+        item,
+        is2H,
+        baseTool.state.selectedItems.weapons
+      );
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Catalysts
+    baseTool.state.selectedItems.catalysts.forEach((item, idx) => {
+      const is2H = catalystTwoHanded[idx];
+      const reqs = calculateItemRequirements(
+        item,
+        is2H,
+        baseTool.state.selectedItems.weapons
+      );
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Talismans
+    baseTool.state.selectedItems.talismans.forEach((item, idx) => {
+      const is2H = talismanTwoHanded[idx];
+      const reqs = calculateItemRequirements(
+        item,
+        is2H,
+        baseTool.state.selectedItems.weapons
+      );
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Shields
+    baseTool.state.selectedItems.shields.forEach((item, idx) => {
+      const is2H = shieldTwoHanded[idx];
+      const reqs = calculateItemRequirements(
+        item,
+        is2H,
+        baseTool.state.selectedItems.weapons
+      );
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Spells
+    baseTool.state.selectedItems.sorceries.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+    baseTool.state.selectedItems.miracles.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+    baseTool.state.selectedItems.pyromancies.forEach((item) => {
+      const reqs = calculateItemRequirements(item, false, []);
+      Object.keys(reqs).forEach((key) => {
+        const statKey = key as keyof typeof minReqs;
+        minReqs[statKey] = Math.max(minReqs[statKey], reqs[statKey] || 0);
+      });
+    });
+
+    // Attunement slots from rings
+    const requiredSlots = calculateRequiredAttunementSlots(
       baseTool.state.selectedItems.sorceries,
       baseTool.state.selectedItems.miracles,
-      baseTool.state.isTwoHanded
-    )
-  );
+      baseTool.state.selectedItems.pyromancies
+    );
+    const ringSlots = getAttunementSlotsFromRings(
+      baseTool.state.selectedItems.rings
+    );
+    const slotsNeededFromStat = Math.max(0, requiredSlots - ringSlots);
+    minReqs.attunement =
+      slotsNeededFromStat > 0
+        ? getAttunementLevelForSlots(slotsNeededFromStat) || STAT_MIN_VALUE
+        : STAT_MIN_VALUE;
+
+    // Force reactivity by explicitly referencing the twoHanded arrays
+    // This ensures the computed property re-evaluates when any twoHanded state changes
+    weaponTwoHanded.length;
+    catalystTwoHanded.length;
+    talismanTwoHanded.length;
+    shieldTwoHanded.length;
+
+    return minReqs;
+  });
 
   const validation = computed(() =>
     validateCharacterStats(
@@ -411,81 +701,130 @@ export function useStartingClassOptimizer() {
   const isTwoHandedDisabled = computed(() => {
     const hasWeapons = baseTool.state.selectedItems.weapons.length > 0;
     const hasShields = baseTool.state.selectedItems.shields.length > 0;
+    const hasCatalysts = baseTool.state.selectedItems.catalysts.length > 0;
+    const hasTalismans = baseTool.state.selectedItems.talismans.length > 0;
     const weaponCount = baseTool.state.selectedItems.weapons.length;
     const shieldCount = baseTool.state.selectedItems.shields.length;
+    const catalystCount = baseTool.state.selectedItems.catalysts.length;
+    const talismanCount = baseTool.state.selectedItems.talismans.length;
 
-    // Two-handed mode should be disabled when no weapons or shields are selected
-    if (!hasWeapons && !hasShields) return true;
+    // Two-handed mode should be disabled when no weapon-like items are selected
+    if (!hasWeapons && !hasShields && !hasCatalysts && !hasTalismans)
+      return true;
 
-    // Two-handed mode should be disabled when both weapons and shields are selected
-    // (can't use both weapons and shields in two-handed mode)
-    if (hasWeapons && hasShields) return true;
+    // Two-handed mode should be disabled when multiple types of weapon-like items are selected
+    // (can't use both weapons and shields in two-handed mode, etc.)
+    const weaponLikeTypes = [
+      hasWeapons,
+      hasShields,
+      hasCatalysts,
+      hasTalismans,
+    ].filter(Boolean).length;
+    if (weaponLikeTypes > 1) return true;
 
-    // Two-handed mode should be disabled when multiple weapons are selected
-    if (weaponCount > 1) return true;
+    // Two-handed mode should be disabled when multiple items of the same type are selected
+    if (
+      weaponCount > 1 ||
+      shieldCount > 1 ||
+      catalystCount > 1 ||
+      talismanCount > 1
+    )
+      return true;
 
-    // Two-handed mode should be disabled when multiple shields are selected
-    if (shieldCount > 1) return true;
-
-    // Two-handed mode should be enabled when exactly one weapon OR exactly one shield is selected
+    // Two-handed mode should be enabled when exactly one weapon-like item is selected
     return false;
   });
 
   // Check if two-handed mode should be locked due to required two-handed items
   const isTwoHandedLocked = computed(() => {
     const weapons = baseTool.state.selectedItems.weapons;
+    const catalysts = baseTool.state.selectedItems.catalysts;
+    const talismans = baseTool.state.selectedItems.talismans;
 
-    // Check if any weapon requires two-handed mode
+    // Check if any weapon-like item requires two-handed mode
     const hasRequiredTwoHandedWeapon = weapons.some(
       (weapon) => weapon.requiredTwoHanded === true
     );
+    const hasRequiredTwoHandedCatalyst = catalysts.some(
+      (catalyst) => catalyst.requiredTwoHanded === true
+    );
+    const hasRequiredTwoHandedTalisman = talismans.some(
+      (talisman) => talisman.requiredTwoHanded === true
+    );
 
-    return hasRequiredTwoHandedWeapon;
+    return (
+      hasRequiredTwoHandedWeapon ||
+      hasRequiredTwoHandedCatalyst ||
+      hasRequiredTwoHandedTalisman
+    );
   });
 
   const isShieldSelectionDisabled = computed(() => {
-    // Shield selection should be disabled when the total number of weapons + shields reaches 2
-    const totalWeaponsAndShields =
+    // Shield selection should be disabled when the total number of weapon-like items reaches 4
+    const totalWeaponLikeItems =
       baseTool.state.selectedItems.weapons.length +
-      baseTool.state.selectedItems.shields.length;
+      baseTool.state.selectedItems.shields.length +
+      baseTool.state.selectedItems.catalysts.length +
+      baseTool.state.selectedItems.talismans.length;
 
-    // If two-handed mode is enabled, only allow one weapon OR one shield, not both
+    // If two-handed mode is enabled, only allow one weapon-like item
     if (baseTool.state.isTwoHanded) {
-      // In two-handed mode, you can only have one weapon OR one shield, not both
+      // In two-handed mode, you can only have one weapon-like item
       return (
         baseTool.state.selectedItems.weapons.length > 0 ||
-        baseTool.state.selectedItems.shields.length > 0
+        baseTool.state.selectedItems.shields.length > 0 ||
+        baseTool.state.selectedItems.catalysts.length > 0 ||
+        baseTool.state.selectedItems.talismans.length > 0
       );
     }
 
-    return totalWeaponsAndShields >= 2;
+    return totalWeaponLikeItems >= 4;
   });
 
   const isWeaponSelectionDisabled = computed(() => {
-    // Weapon selection should be disabled when the total number of weapons + shields reaches 2
-    const totalWeaponsAndShields =
+    // Weapon selection should be disabled when the total number of weapon-like items reaches 4
+    const totalWeaponLikeItems =
       baseTool.state.selectedItems.weapons.length +
-      baseTool.state.selectedItems.shields.length;
+      baseTool.state.selectedItems.shields.length +
+      baseTool.state.selectedItems.catalysts.length +
+      baseTool.state.selectedItems.talismans.length;
 
-    // If two-handed mode is enabled, only allow one weapon OR one shield, not both
+    // If two-handed mode is enabled, only allow one weapon-like item
     if (baseTool.state.isTwoHanded) {
-      // In two-handed mode, you can only have one weapon OR one shield, not both
+      // In two-handed mode, you can only have one weapon-like item
       return (
         baseTool.state.selectedItems.shields.length > 0 ||
-        baseTool.state.selectedItems.weapons.length > 0
+        baseTool.state.selectedItems.weapons.length > 0 ||
+        baseTool.state.selectedItems.catalysts.length > 0 ||
+        baseTool.state.selectedItems.talismans.length > 0
       );
     }
 
-    return totalWeaponsAndShields >= 2;
+    return totalWeaponLikeItems >= 4;
   });
 
-  const hasRequiredTwoHandedWeapon = computed(() =>
-    hasRequiredTwoHandedWeaponUtil(
-      baseTool.state.selectedItems.weapons,
-      baseTool.state.selectedItems.shields,
-      baseTool.state.characterStats
-    )
-  );
+  const hasRequiredTwoHandedWeapon = computed(() => {
+    // Check if any weapon-like item requires two-handed mode
+    const weapons = baseTool.state.selectedItems.weapons;
+    const catalysts = baseTool.state.selectedItems.catalysts;
+    const talismans = baseTool.state.selectedItems.talismans;
+
+    const hasRequiredTwoHandedWeapon = weapons.some(
+      (weapon) => weapon.requiredTwoHanded === true
+    );
+    const hasRequiredTwoHandedCatalyst = catalysts.some(
+      (catalyst) => catalyst.requiredTwoHanded === true
+    );
+    const hasRequiredTwoHandedTalisman = talismans.some(
+      (talisman) => talisman.requiredTwoHanded === true
+    );
+
+    return (
+      hasRequiredTwoHandedWeapon ||
+      hasRequiredTwoHandedCatalyst ||
+      hasRequiredTwoHandedTalisman
+    );
+  });
 
   const currentAttunementSlots = computed(() =>
     getAttunementSlots(baseTool.state.characterStats.attunement)
@@ -494,7 +833,8 @@ export function useStartingClassOptimizer() {
   const totalRequiredAttunementSlots = computed(() =>
     calculateRequiredAttunementSlots(
       baseTool.state.selectedItems.sorceries,
-      baseTool.state.selectedItems.miracles
+      baseTool.state.selectedItems.miracles,
+      baseTool.state.selectedItems.pyromancies
     )
   );
 
@@ -506,6 +846,25 @@ export function useStartingClassOptimizer() {
       return VALIDATION_MESSAGES.INSUFFICIENT_ATTUNEMENT(current, required);
     }
     return null;
+  });
+
+  // Computed: total attunement slots (stat + rings)
+  const getAttunementSlotsFromRings = (
+    rings: { effect?: { attunementSlots?: number } }[] = []
+  ) =>
+    (rings || []).reduce(
+      (sum: number, ring) => sum + (Number(ring.effect?.attunementSlots) || 0),
+      0
+    );
+
+  const totalAttunementSlots = computed(() => {
+    const statSlots = getAttunementSlots(
+      Number(baseTool.state.characterStats.attunement) || 0
+    );
+    const ringSlots = getAttunementSlotsFromRings(
+      baseTool.state.selectedItems.rings || []
+    );
+    return statSlots + ringSlots;
   });
 
   // Filtered item options based on search queries (now using cached and optimized search)
@@ -523,6 +882,20 @@ export function useStartingClassOptimizer() {
     )
   );
 
+  const catalystOptions = computed(() =>
+    optimizedSearch(
+      baseTool.state.searchQueries?.catalysts || "",
+      optionsCache.catalysts
+    )
+  );
+
+  const talismanOptions = computed(() =>
+    optimizedSearch(
+      baseTool.state.searchQueries?.talismans || "",
+      optionsCache.talismans
+    )
+  );
+
   const sorceryOptions = computed(() =>
     optimizedSearch(
       baseTool.state.searchQueries?.sorceries || "",
@@ -534,6 +907,13 @@ export function useStartingClassOptimizer() {
     optimizedSearch(
       baseTool.state.searchQueries?.miracles || "",
       optionsCache.miracles
+    )
+  );
+
+  const pyromancyOptions = computed(() =>
+    optimizedSearch(
+      baseTool.state.searchQueries?.pyromancies || "",
+      optionsCache.pyromancies
     )
   );
 
@@ -552,13 +932,18 @@ export function useStartingClassOptimizer() {
   );
 
   // Item management actions
-  const addWeapon = (weaponName: string) => {
+  const addWeapon = (weaponName: string | undefined) => {
+    if (!weaponName || typeof weaponName !== "string") return;
     const weapon = getWeaponByName(weaponName);
-    if (weapon && baseTool.state.selectedItems.weapons.length < 2) {
+    if (weapon && baseTool.state.selectedItems.weapons.length < 4) {
       baseTool.setState({
         selectedItems: {
           ...baseTool.state.selectedItems,
           weapons: [...baseTool.state.selectedItems.weapons, weapon],
+          twoHanded: {
+            ...baseTool.state.selectedItems.twoHanded,
+            weapons: [...baseTool.state.selectedItems.twoHanded.weapons, false],
+          },
         },
       });
 
@@ -585,6 +970,12 @@ export function useStartingClassOptimizer() {
       selectedItems: {
         ...baseTool.state.selectedItems,
         weapons: newWeapons,
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          weapons: baseTool.state.selectedItems.twoHanded.weapons.filter(
+            (_, i) => i !== index
+          ),
+        },
       },
     });
 
@@ -605,47 +996,24 @@ export function useStartingClassOptimizer() {
       });
     }
 
-    // Reset stats to minimum requirements after removing weapon
+    // Let the reactive minimumRequirements computed property handle stat updates
     nextTick(() => {
-      const updatedStats = resetStatsForRemovedItemUtil(
-        baseTool.state.characterStats,
-        removedWeapon,
-        {
-          weapons: newWeapons,
-          shields: baseTool.state.selectedItems.shields,
-          sorceries: baseTool.state.selectedItems.sorceries,
-          miracles: baseTool.state.selectedItems.miracles,
-        },
-        baseTool.state.isTwoHanded
-      );
-
-      // Ensure attunement is still sufficient for remaining spells
-      const requiredSlots = calculateRequiredAttunementSlots(
-        baseTool.state.selectedItems.sorceries,
-        baseTool.state.selectedItems.miracles
-      );
-      const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-      if (
-        requiredAttunement !== null &&
-        updatedStats.attunement < requiredAttunement
-      ) {
-        updatedStats.attunement = requiredAttunement;
-      }
-
-      baseTool.setState({
-        characterStats: updatedStats,
-      });
+      updateStatsFromRequirements();
     });
   };
 
-  const addShield = (shieldName: string) => {
+  const addShield = (shieldName: string | undefined) => {
+    if (!shieldName || typeof shieldName !== "string") return;
     const shield = getShieldByName(shieldName);
-    if (shield && baseTool.state.selectedItems.shields.length < 2) {
+    if (shield && baseTool.state.selectedItems.shields.length < 4) {
       baseTool.setState({
         selectedItems: {
           ...baseTool.state.selectedItems,
           shields: [...baseTool.state.selectedItems.shields, shield],
+          twoHanded: {
+            ...baseTool.state.selectedItems.twoHanded,
+            shields: [...baseTool.state.selectedItems.twoHanded.shields, false],
+          },
         },
       });
 
@@ -665,44 +1033,64 @@ export function useStartingClassOptimizer() {
       selectedItems: {
         ...baseTool.state.selectedItems,
         shields: newShields,
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          shields: baseTool.state.selectedItems.twoHanded.shields.filter(
+            (_, i) => i !== index
+          ),
+        },
       },
     });
 
-    // Reset stats to minimum requirements after removing shield
+    // Let the reactive minimumRequirements computed property handle stat updates
     nextTick(() => {
-      const updatedStats = resetStatsForRemovedItemUtil(
-        baseTool.state.characterStats,
-        removedShield,
-        {
-          weapons: baseTool.state.selectedItems.weapons,
-          shields: newShields,
-          sorceries: baseTool.state.selectedItems.sorceries,
-          miracles: baseTool.state.selectedItems.miracles,
-        },
-        baseTool.state.isTwoHanded
-      );
-
-      // Ensure attunement is still sufficient for remaining spells
-      const requiredSlots = calculateRequiredAttunementSlots(
-        baseTool.state.selectedItems.sorceries,
-        baseTool.state.selectedItems.miracles
-      );
-      const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-      if (
-        requiredAttunement !== null &&
-        updatedStats.attunement < requiredAttunement
-      ) {
-        updatedStats.attunement = requiredAttunement;
-      }
-
-      baseTool.setState({
-        characterStats: updatedStats,
-      });
+      updateStatsFromRequirements();
     });
   };
 
-  const addSorcery = (sorceryName: string) => {
+  // Utility: Update attunement stat to minimum needed for current spells and rings
+  const updateAttunementStatForSlots = () => {
+    const requiredSlots = calculateRequiredAttunementSlots(
+      baseTool.state.selectedItems.sorceries,
+      baseTool.state.selectedItems.miracles,
+      baseTool.state.selectedItems.pyromancies
+    );
+    const ringSlots = getAttunementSlotsFromRings(
+      baseTool.state.selectedItems.rings || []
+    );
+    const slotsNeededFromStat = Math.max(0, requiredSlots - ringSlots);
+    const minAttunement =
+      slotsNeededFromStat > 0
+        ? getAttunementLevelForSlots(slotsNeededFromStat) || STAT_MIN_VALUE
+        : STAT_MIN_VALUE;
+    // Only update if different
+    if (baseTool.state.characterStats.attunement !== minAttunement) {
+      baseTool.setState({
+        characterStats: {
+          ...baseTool.state.characterStats,
+          attunement: minAttunement,
+        },
+      });
+    }
+  };
+
+  // --- NEW: Watcher to keep attunement stat in sync with spells and rings ---
+  watch(
+    [
+      () => baseTool.state.selectedItems.sorceries,
+      () => baseTool.state.selectedItems.miracles,
+      () => baseTool.state.selectedItems.pyromancies,
+      () => baseTool.state.selectedItems.rings,
+      () => baseTool.state.characterStats.attunement,
+    ],
+    () => {
+      updateAttunementStatForSlots();
+    },
+    { deep: true }
+  );
+
+  const addSorcery = (sorceryName: string | undefined) => {
+    if (!sorceryName || typeof sorceryName !== "string") return;
     const sorcery = getSorceryByName(sorceryName);
     if (sorcery && baseTool.state.selectedItems.sorceries.length < 10) {
       baseTool.setState({
@@ -711,30 +1099,9 @@ export function useStartingClassOptimizer() {
           sorceries: [...baseTool.state.selectedItems.sorceries, sorcery],
         },
       });
-
-      // Auto-update stats from requirements after adding sorcery
       nextTick(() => {
-        // First update stats to meet minimum requirements
         updateStatsFromRequirements();
-
-        // Then ensure attunement provides enough slots for all spells
-        const requiredSlots = calculateRequiredAttunementSlots(
-          baseTool.state.selectedItems.sorceries,
-          baseTool.state.selectedItems.miracles
-        );
-        const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-        if (
-          requiredAttunement !== null &&
-          baseTool.state.characterStats.attunement < requiredAttunement
-        ) {
-          baseTool.setState({
-            characterStats: {
-              ...baseTool.state.characterStats,
-              attunement: requiredAttunement,
-            },
-          });
-        }
+        updateAttunementStatForSlots();
       });
     }
   };
@@ -750,42 +1117,14 @@ export function useStartingClassOptimizer() {
         sorceries: newSorceries,
       },
     });
-
-    // Reset stats to minimum requirements after removing sorcery
     nextTick(() => {
-      const updatedStats = resetStatsForRemovedItemUtil(
-        baseTool.state.characterStats,
-        removedSorcery,
-        {
-          weapons: baseTool.state.selectedItems.weapons,
-          shields: baseTool.state.selectedItems.shields,
-          sorceries: newSorceries,
-          miracles: baseTool.state.selectedItems.miracles,
-        },
-        baseTool.state.isTwoHanded
-      );
-
-      // Ensure attunement is still sufficient for remaining spells
-      const requiredSlots = calculateRequiredAttunementSlots(
-        newSorceries,
-        baseTool.state.selectedItems.miracles
-      );
-      const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-      if (
-        requiredAttunement !== null &&
-        updatedStats.attunement < requiredAttunement
-      ) {
-        updatedStats.attunement = requiredAttunement;
-      }
-
-      baseTool.setState({
-        characterStats: updatedStats,
-      });
+      updateStatsFromRequirements();
+      updateAttunementStatForSlots();
     });
   };
 
-  const addMiracle = (miracleName: string) => {
+  const addMiracle = (miracleName: string | undefined) => {
+    if (!miracleName || typeof miracleName !== "string") return;
     const miracle = getMiracleByName(miracleName);
     if (miracle && baseTool.state.selectedItems.miracles.length < 10) {
       baseTool.setState({
@@ -794,30 +1133,9 @@ export function useStartingClassOptimizer() {
           miracles: [...baseTool.state.selectedItems.miracles, miracle],
         },
       });
-
-      // Auto-update stats from requirements after adding miracle
       nextTick(() => {
-        // First update stats to meet minimum requirements
         updateStatsFromRequirements();
-
-        // Then ensure attunement provides enough slots for all spells
-        const requiredSlots = calculateRequiredAttunementSlots(
-          baseTool.state.selectedItems.sorceries,
-          baseTool.state.selectedItems.miracles
-        );
-        const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-        if (
-          requiredAttunement !== null &&
-          baseTool.state.characterStats.attunement < requiredAttunement
-        ) {
-          baseTool.setState({
-            characterStats: {
-              ...baseTool.state.characterStats,
-              attunement: requiredAttunement,
-            },
-          });
-        }
+        updateAttunementStatForSlots();
       });
     }
   };
@@ -833,43 +1151,15 @@ export function useStartingClassOptimizer() {
         miracles: newMiracles,
       },
     });
-
-    // Reset stats to minimum requirements after removing miracle
     nextTick(() => {
-      const updatedStats = resetStatsForRemovedItemUtil(
-        baseTool.state.characterStats,
-        removedMiracle,
-        {
-          weapons: baseTool.state.selectedItems.weapons,
-          shields: baseTool.state.selectedItems.shields,
-          sorceries: baseTool.state.selectedItems.sorceries,
-          miracles: newMiracles,
-        },
-        baseTool.state.isTwoHanded
-      );
-
-      // Ensure attunement is still sufficient for remaining spells
-      const requiredSlots = calculateRequiredAttunementSlots(
-        baseTool.state.selectedItems.sorceries,
-        newMiracles
-      );
-      const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
-
-      if (
-        requiredAttunement !== null &&
-        updatedStats.attunement < requiredAttunement
-      ) {
-        updatedStats.attunement = requiredAttunement;
-      }
-
-      baseTool.setState({
-        characterStats: updatedStats,
-      });
+      updateStatsFromRequirements();
+      updateAttunementStatForSlots();
     });
   };
 
   // Armor management actions
-  const addArmor = (armorName: string) => {
+  const addArmor = (armorName: string | undefined) => {
+    if (!armorName || typeof armorName !== "string") return;
     const armor = getArmorByName(armorName);
     if (armor) {
       baseTool.setState({
@@ -894,7 +1184,8 @@ export function useStartingClassOptimizer() {
   };
 
   // Ring management actions
-  const addRing = (ringName: string) => {
+  const addRing = (ringName: string | undefined) => {
+    if (!ringName || typeof ringName !== "string") return;
     const ring = getRingByName(ringName);
     if (ring && baseTool.state.selectedItems.rings.length < 2) {
       baseTool.setState({
@@ -902,6 +1193,9 @@ export function useStartingClassOptimizer() {
           ...baseTool.state.selectedItems,
           rings: [...baseTool.state.selectedItems.rings, ring],
         },
+      });
+      nextTick(() => {
+        updateAttunementStatForSlots();
       });
     }
   };
@@ -915,6 +1209,9 @@ export function useStartingClassOptimizer() {
         ...baseTool.state.selectedItems,
         rings: newRings,
       },
+    });
+    nextTick(() => {
+      updateAttunementStatForSlots();
     });
   };
 
@@ -933,10 +1230,22 @@ export function useStartingClassOptimizer() {
   };
 
   const updateStatsFromRequirements = () => {
-    const updatedStats = updateStatsFromRequirementsUtil(
-      baseTool.state.characterStats,
-      minimumRequirements.value
-    );
+    const updatedStats = { ...baseTool.state.characterStats };
+    const minReqs = minimumRequirements.value;
+    const statKeys: (keyof CharacterStats & keyof typeof minReqs)[] = [
+      "vitality",
+      "attunement",
+      "endurance",
+      "strength",
+      "dexterity",
+      "resistance",
+      "intelligence",
+      "faith",
+    ];
+    for (const stat of statKeys) {
+      // Always ensure stats meet minimum requirements (both raising and lowering)
+      updatedStats[stat] = minReqs[stat];
+    }
     baseTool.setState({
       characterStats: updatedStats,
     });
@@ -951,18 +1260,30 @@ export function useStartingClassOptimizer() {
       selectedItems: {
         weapons: [],
         shields: [],
+        catalysts: [],
+        talismans: [],
         sorceries: [],
         miracles: [],
+        pyromancies: [],
         armor: [],
         rings: [],
+        twoHanded: {
+          weapons: [],
+          shields: [],
+          catalysts: [],
+          talismans: [],
+        },
       },
       characterStats: { ...DEFAULT_CHARACTER_STATS },
       isTwoHanded: false,
       searchQueries: {
         weapons: "",
         shields: "",
+        catalysts: "",
+        talismans: "",
         sorceries: "",
         miracles: "",
+        pyromancies: "",
         armor: "",
         rings: "",
       },
@@ -991,7 +1312,8 @@ export function useStartingClassOptimizer() {
         // Ensure attunement is still sufficient for remaining spells
         const requiredSlots = calculateRequiredAttunementSlots(
           baseTool.state.selectedItems.sorceries,
-          baseTool.state.selectedItems.miracles
+          baseTool.state.selectedItems.miracles,
+          baseTool.state.selectedItems.pyromancies
         );
         const requiredAttunement = getAttunementLevelForSlots(requiredSlots);
 
@@ -1060,6 +1382,231 @@ export function useStartingClassOptimizer() {
     }
   };
 
+  const addCatalyst = (catalystName: string | undefined) => {
+    if (!catalystName) return;
+    const catalyst = optionsCache.catalysts.find(
+      (c) => c.value === catalystName
+    )?.item as Weapon | undefined;
+    if (!catalyst) return;
+    if (
+      baseTool.state.selectedItems.weapons.length +
+        baseTool.state.selectedItems.shields.length +
+        baseTool.state.selectedItems.catalysts.length >=
+      4
+    )
+      return;
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        catalysts: [...baseTool.state.selectedItems.catalysts, catalyst],
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          catalysts: [
+            ...baseTool.state.selectedItems.twoHanded.catalysts,
+            false,
+          ],
+        },
+      },
+    });
+
+    // Auto-enable two-handed mode if the catalyst requires it
+    if (catalyst.requiredTwoHanded === true && !baseTool.state.isTwoHanded) {
+      baseTool.setState({
+        isTwoHanded: true,
+      });
+    }
+
+    nextTick(() => {
+      updateStatsFromRequirements();
+    });
+  };
+
+  const removeCatalyst = (index: number) => {
+    const removedCatalyst = baseTool.state.selectedItems.catalysts[index];
+    const newCatalysts = baseTool.state.selectedItems.catalysts.filter(
+      (_, i) => i !== index
+    );
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        catalysts: newCatalysts,
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          catalysts: baseTool.state.selectedItems.twoHanded.catalysts.filter(
+            (_, i) => i !== index
+          ),
+        },
+      },
+    });
+
+    // Check if we need to reset two-handed mode after removing the catalyst
+    const hasRemainingRequiredTwoHandedCatalysts = newCatalysts.some(
+      (catalyst) => catalyst.requiredTwoHanded === true
+    );
+
+    // If the removed catalyst required two-handed mode and no other catalysts require it,
+    // reset the two-handed state to false
+    if (
+      removedCatalyst.requiredTwoHanded === true &&
+      !hasRemainingRequiredTwoHandedCatalysts &&
+      baseTool.state.isTwoHanded
+    ) {
+      baseTool.setState({
+        isTwoHanded: false,
+      });
+    }
+
+    nextTick(() => {
+      updateStatsFromRequirements();
+    });
+  };
+
+  const addTalisman = (talismanName: string | undefined) => {
+    if (!talismanName) return;
+    const talisman = optionsCache.talismans.find(
+      (t) => t.value === talismanName
+    )?.item as Weapon | undefined;
+    if (!talisman) return;
+    if (
+      baseTool.state.selectedItems.weapons.length +
+        baseTool.state.selectedItems.shields.length +
+        baseTool.state.selectedItems.talismans.length >=
+      4
+    )
+      return;
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        talismans: [...baseTool.state.selectedItems.talismans, talisman],
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          talismans: [
+            ...baseTool.state.selectedItems.twoHanded.talismans,
+            false,
+          ],
+        },
+      },
+    });
+
+    // Auto-enable two-handed mode if the talisman requires it
+    if (talisman.requiredTwoHanded === true && !baseTool.state.isTwoHanded) {
+      baseTool.setState({
+        isTwoHanded: true,
+      });
+    }
+
+    nextTick(() => {
+      updateStatsFromRequirements();
+    });
+  };
+
+  const removeTalisman = (index: number) => {
+    const removedTalisman = baseTool.state.selectedItems.talismans[index];
+    const newTalismans = baseTool.state.selectedItems.talismans.filter(
+      (_, i) => i !== index
+    );
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        talismans: newTalismans,
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          talismans: baseTool.state.selectedItems.twoHanded.talismans.filter(
+            (_, i) => i !== index
+          ),
+        },
+      },
+    });
+
+    // Check if we need to reset two-handed mode after removing the talisman
+    const hasRemainingRequiredTwoHandedTalismans = newTalismans.some(
+      (talisman) => talisman.requiredTwoHanded === true
+    );
+
+    // If the removed talisman required two-handed mode and no other talismans require it,
+    // reset the two-handed state to false
+    if (
+      removedTalisman.requiredTwoHanded === true &&
+      !hasRemainingRequiredTwoHandedTalismans &&
+      baseTool.state.isTwoHanded
+    ) {
+      baseTool.setState({
+        isTwoHanded: false,
+      });
+    }
+
+    nextTick(() => {
+      updateStatsFromRequirements();
+    });
+  };
+
+  const toggleTwoHandedFor = (
+    type: "weapons" | "shields" | "catalysts" | "talismans",
+    index: number
+  ) => {
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        twoHanded: {
+          ...baseTool.state.selectedItems.twoHanded,
+          [type]: baseTool.state.selectedItems.twoHanded[type].map(
+            (value, i) => (i === index ? !value : value)
+          ),
+        },
+      },
+    });
+    // Update stats from requirements after state has been updated
+    nextTick(() => {
+      updateStatsFromRequirements();
+    });
+  };
+
+  // Patch: When calling calculateAllDerivedStats, use all weapon-like items (including catalysts/talismans)
+  const derivedStats = computed(() => {
+    const stats = calculateAllDerivedStats(
+      baseTool.state.characterStats,
+      allEquippedWeaponLikes.value,
+      baseTool.state.selectedItems.shields,
+      baseTool.state.selectedItems.armor,
+      baseTool.state.selectedItems.rings
+    );
+    return stats || { ...DEFAULT_CHARACTER_STATS };
+  });
+
+  // Add pyromancy
+  const addPyromancy = (pyromancyName: string | undefined) => {
+    if (!pyromancyName || typeof pyromancyName !== "string") return;
+    const pyromancy = getPyromancyByName(pyromancyName);
+    if (pyromancy && baseTool.state.selectedItems.pyromancies.length < 10) {
+      baseTool.setState({
+        selectedItems: {
+          ...baseTool.state.selectedItems,
+          pyromancies: [...baseTool.state.selectedItems.pyromancies, pyromancy],
+        },
+      });
+      nextTick(() => {
+        updateStatsFromRequirements();
+        updateAttunementStatForSlots();
+      });
+    }
+  };
+
+  const removePyromancy = (index: number) => {
+    const newPyromancies = baseTool.state.selectedItems.pyromancies.filter(
+      (_, i) => i !== index
+    );
+    baseTool.setState({
+      selectedItems: {
+        ...baseTool.state.selectedItems,
+        pyromancies: newPyromancies,
+      },
+    });
+    nextTick(() => {
+      updateStatsFromRequirements();
+      updateAttunementStatForSlots();
+    });
+  };
+
   return {
     // State from base tool
     state: baseTool.state,
@@ -1083,10 +1630,14 @@ export function useStartingClassOptimizer() {
     attunementWarning,
     weaponOptions,
     shieldOptions,
+    catalystOptions,
+    talismanOptions,
     sorceryOptions,
     miracleOptions,
+    pyromancyOptions,
     armorOptions,
     ringOptions,
+    totalAttunementSlots,
 
     // Actions from base tool
     calculate: baseTool.calculate,
@@ -1122,5 +1673,13 @@ export function useStartingClassOptimizer() {
     removeArmor,
     addRing,
     removeRing,
+    addCatalyst,
+    removeCatalyst,
+    addTalisman,
+    removeTalisman,
+    toggleTwoHandedFor,
+    derivedStats,
+    addPyromancy,
+    removePyromancy,
   };
 }

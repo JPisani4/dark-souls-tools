@@ -1,21 +1,5 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-        Armor Selection
-      </h3>
-      <UButton
-        size="sm"
-        variant="solid"
-        color="success"
-        @click="clearArmor"
-        class="font-medium shadow-sm hover:shadow-md transition-shadow"
-      >
-        <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-        Clear Armor
-      </UButton>
-    </div>
-
     <!-- Armor Set Selection -->
     <div class="space-y-4">
       <SelectField
@@ -38,7 +22,7 @@
           :model-value="selectedArmor.head?.name"
           :options="headArmorOptions"
           placeholder="Select head armor"
-          @update:model-value="(value) => selectArmor('head', value)"
+          @update:model-value="(value: string) => selectArmor('head', value)"
         />
         <div
           v-if="selectedArmor.head"
@@ -53,6 +37,12 @@
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 {{ selectedArmor.head.weight }} weight
+              </p>
+              <p
+                v-if="selectedArmor.head.effect?.poise"
+                class="text-xs text-gray-600 dark:text-gray-400"
+              >
+                +{{ selectedArmor.head.effect.poise }} poise
               </p>
               <div
                 v-if="
@@ -78,23 +68,22 @@
                     getSpecialArmorEffectDescription(selectedArmor.head.name)
                   }}
                 </p>
-                <p v-if="selectedArmor.head.effect?.equipLoadBonus">
-                  +{{ selectedArmor.head.effect.equipLoadBonus }}% Equip Load
-                </p>
-                <p v-if="selectedArmor.head.effect?.staminaRegenBonus">
-                  +{{ selectedArmor.head.effect.staminaRegenBonus }} Stamina
-                  Regen
-                </p>
-                <p v-if="selectedArmor.head.effect?.poise">
-                  +{{ selectedArmor.head.effect.poise }} Poise
-                </p>
                 <p
                   v-if="
-                    selectedArmor.head.effect?.special &&
+                    selectedArmor.head.effect?.equipLoadBonus &&
                     !selectedArmor.head.effect?.description
                   "
                 >
-                  {{ selectedArmor.head.effect.special }}
+                  +{{ selectedArmor.head.effect.equipLoadBonus }}% Equip Load
+                </p>
+                <p
+                  v-if="
+                    selectedArmor.head.effect?.staminaRegenBonus &&
+                    !selectedArmor.head.effect?.description
+                  "
+                >
+                  +{{ selectedArmor.head.effect.staminaRegenBonus }} Stamina
+                  Regen
                 </p>
               </div>
             </div>
@@ -119,7 +108,7 @@
           :model-value="selectedArmor.chest?.name"
           :options="chestArmorOptions"
           placeholder="Select chest armor"
-          @update:model-value="(value) => selectArmor('chest', value)"
+          @update:model-value="(value: string) => selectArmor('chest', value)"
         />
         <div
           v-if="selectedArmor.chest"
@@ -134,6 +123,12 @@
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 {{ selectedArmor.chest.weight }} weight
+              </p>
+              <p
+                v-if="selectedArmor.chest.effect?.poise"
+                class="text-xs text-gray-600 dark:text-gray-400"
+              >
+                +{{ selectedArmor.chest.effect.poise }} poise
               </p>
               <div
                 v-if="
@@ -159,23 +154,22 @@
                     getSpecialArmorEffectDescription(selectedArmor.chest.name)
                   }}
                 </p>
-                <p v-if="selectedArmor.chest.effect?.equipLoadBonus">
-                  +{{ selectedArmor.chest.effect.equipLoadBonus }}% Equip Load
-                </p>
-                <p v-if="selectedArmor.chest.effect?.staminaRegenBonus">
-                  +{{ selectedArmor.chest.effect.staminaRegenBonus }} Stamina
-                  Regen
-                </p>
-                <p v-if="selectedArmor.chest.effect?.poise">
-                  +{{ selectedArmor.chest.effect.poise }} Poise
-                </p>
                 <p
                   v-if="
-                    selectedArmor.chest.effect?.special &&
+                    selectedArmor.chest.effect?.equipLoadBonus &&
                     !selectedArmor.chest.effect?.description
                   "
                 >
-                  {{ selectedArmor.chest.effect.special }}
+                  +{{ selectedArmor.chest.effect.equipLoadBonus }}% Equip Load
+                </p>
+                <p
+                  v-if="
+                    selectedArmor.chest.effect?.staminaRegenBonus &&
+                    !selectedArmor.chest.effect?.description
+                  "
+                >
+                  +{{ selectedArmor.chest.effect.staminaRegenBonus }} Stamina
+                  Regen
                 </p>
               </div>
             </div>
@@ -200,7 +194,7 @@
           :model-value="selectedArmor.hands?.name"
           :options="handsArmorOptions"
           placeholder="Select hand armor"
-          @update:model-value="(value) => selectArmor('hands', value)"
+          @update:model-value="(value: string) => selectArmor('hands', value)"
         />
         <div
           v-if="selectedArmor.hands"
@@ -215,6 +209,12 @@
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 {{ selectedArmor.hands.weight }} weight
+              </p>
+              <p
+                v-if="selectedArmor.hands.effect?.poise"
+                class="text-xs text-gray-600 dark:text-gray-400"
+              >
+                +{{ selectedArmor.hands.effect.poise }} poise
               </p>
               <div
                 v-if="
@@ -240,23 +240,22 @@
                     getSpecialArmorEffectDescription(selectedArmor.hands.name)
                   }}
                 </p>
-                <p v-if="selectedArmor.hands.effect?.equipLoadBonus">
-                  +{{ selectedArmor.hands.effect.equipLoadBonus }}% Equip Load
-                </p>
-                <p v-if="selectedArmor.hands.effect?.staminaRegenBonus">
-                  +{{ selectedArmor.hands.effect.staminaRegenBonus }} Stamina
-                  Regen
-                </p>
-                <p v-if="selectedArmor.hands.effect?.poise">
-                  +{{ selectedArmor.hands.effect.poise }} Poise
-                </p>
                 <p
                   v-if="
-                    selectedArmor.hands.effect?.special &&
+                    selectedArmor.hands.effect?.equipLoadBonus &&
                     !selectedArmor.hands.effect?.description
                   "
                 >
-                  {{ selectedArmor.hands.effect.special }}
+                  +{{ selectedArmor.hands.effect.equipLoadBonus }}% Equip Load
+                </p>
+                <p
+                  v-if="
+                    selectedArmor.hands.effect?.staminaRegenBonus &&
+                    !selectedArmor.hands.effect?.description
+                  "
+                >
+                  +{{ selectedArmor.hands.effect.staminaRegenBonus }} Stamina
+                  Regen
                 </p>
               </div>
             </div>
@@ -281,7 +280,7 @@
           :model-value="selectedArmor.legs?.name"
           :options="legsArmorOptions"
           placeholder="Select leg armor"
-          @update:model-value="(value) => selectArmor('legs', value)"
+          @update:model-value="(value: string) => selectArmor('legs', value)"
         />
         <div
           v-if="selectedArmor.legs"
@@ -296,6 +295,12 @@
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 {{ selectedArmor.legs.weight }} weight
+              </p>
+              <p
+                v-if="selectedArmor.legs.effect?.poise"
+                class="text-xs text-gray-600 dark:text-gray-400"
+              >
+                +{{ selectedArmor.legs.effect.poise }} poise
               </p>
               <div
                 v-if="
@@ -321,23 +326,22 @@
                     getSpecialArmorEffectDescription(selectedArmor.legs.name)
                   }}
                 </p>
-                <p v-if="selectedArmor.legs.effect?.equipLoadBonus">
-                  +{{ selectedArmor.legs.effect.equipLoadBonus }}% Equip Load
-                </p>
-                <p v-if="selectedArmor.legs.effect?.staminaRegenBonus">
-                  +{{ selectedArmor.legs.effect.staminaRegenBonus }} Stamina
-                  Regen
-                </p>
-                <p v-if="selectedArmor.legs.effect?.poise">
-                  +{{ selectedArmor.legs.effect.poise }} Poise
-                </p>
                 <p
                   v-if="
-                    selectedArmor.legs.effect?.special &&
+                    selectedArmor.legs.effect?.equipLoadBonus &&
                     !selectedArmor.legs.effect?.description
                   "
                 >
-                  {{ selectedArmor.legs.effect.special }}
+                  +{{ selectedArmor.legs.effect.equipLoadBonus }}% Equip Load
+                </p>
+                <p
+                  v-if="
+                    selectedArmor.legs.effect?.staminaRegenBonus &&
+                    !selectedArmor.legs.effect?.description
+                  "
+                >
+                  +{{ selectedArmor.legs.effect.staminaRegenBonus }} Stamina
+                  Regen
                 </p>
               </div>
             </div>
@@ -381,24 +385,19 @@
 
       <!-- Armor Effects Display -->
       <div
-        v-if="hasAnyArmor"
+        v-if="hasAnyArmor && dedupedArmorEffects.length > 0"
         class="border-t border-blue-200 dark:border-blue-800 pt-3"
       >
         <h4 class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
           Armor Effects
         </h4>
         <div class="space-y-1">
-          <template v-if="dedupedArmorEffects.length > 0">
-            <p
-              v-for="effect in dedupedArmorEffects"
-              :key="effect"
-              class="text-xs text-blue-600 dark:text-blue-400"
-            >
-              {{ effect }}
-            </p>
-          </template>
-          <p v-else class="text-xs text-blue-400 dark:text-blue-500 italic">
-            No special effects from equipped armor.
+          <p
+            v-for="effect in dedupedArmorEffects"
+            :key="effect"
+            class="text-xs text-blue-600 dark:text-blue-400"
+          >
+            {{ effect }}
           </p>
         </div>
       </div>
@@ -561,6 +560,37 @@ watch(
       newArmor.head || newArmor.chest || newArmor.hands || newArmor.legs;
     if (!hasAnyArmor) {
       selectedArmorSet.value = undefined;
+    } else {
+      // Try to find which armor set this armor belongs to
+      const armorNames = [
+        newArmor.head?.name,
+        newArmor.chest?.name,
+        newArmor.hands?.name,
+        newArmor.legs?.name,
+      ].filter(Boolean);
+
+      if (armorNames.length > 0) {
+        const matchingSet = Object.values(allArmorSets)
+          .flat()
+          .find((set) => {
+            const setArmorNames = [
+              set.pieces.head?.name,
+              set.pieces.chest?.name,
+              set.pieces.hands?.name,
+              set.pieces.legs?.name,
+            ].filter(Boolean);
+
+            // Check if all selected armor pieces match this set
+            return (
+              armorNames.every((name) => setArmorNames.includes(name)) &&
+              setArmorNames.every((name) => armorNames.includes(name))
+            );
+          });
+
+        if (matchingSet) {
+          selectedArmorSet.value = matchingSet.id;
+        }
+      }
     }
   },
   { deep: true }
@@ -611,14 +641,14 @@ const dedupedArmorEffects = computed(() => {
     else if (armor.effect?.special && !armor.effect?.description) {
       effects.push(`${armor.name}: ${armor.effect.special}`);
     }
-    // Equip Load Bonus
-    if (armor.effect?.equipLoadBonus) {
+    // Equip Load Bonus (only if no description)
+    if (armor.effect?.equipLoadBonus && !armor.effect?.description) {
       effects.push(
         `${armor.name}: +${armor.effect.equipLoadBonus}% Equip Load`
       );
     }
-    // Stamina Regen Bonus
-    if (armor.effect?.staminaRegenBonus) {
+    // Stamina Regen Bonus (only if no description)
+    if (armor.effect?.staminaRegenBonus && !armor.effect?.description) {
       effects.push(
         `${armor.name}: +${armor.effect.staminaRegenBonus} Stamina Regen`
       );

@@ -188,10 +188,9 @@ export function useBaseTool<
       if (serialized !== lastSavedState.value) {
         localStorage.setItem(options.autoSaveKey, serialized);
         lastSavedState.value = serialized;
-        console.log(`Auto-saved state for ${options.autoSaveKey}:`, data.state);
       }
     } catch (err) {
-      console.warn("Failed to save tool state:", err);
+      // Failed to save tool state
     }
   };
 
@@ -213,19 +212,15 @@ export function useBaseTool<
           Object.assign(state, data.state);
           result.value = data.result;
           lastSavedState.value = stored;
-          console.log(`Loaded state for ${options.autoSaveKey}:`, data.state);
         } else {
           // Clear old data
-          console.log(
-            `Clearing old data for ${options.autoSaveKey} (${hoursDiff.toFixed(1)} hours old)`
-          );
           clearStorage();
         }
       } else {
-        console.log(`No saved state found for ${options.autoSaveKey}`);
+        // No saved state found
       }
     } catch (err) {
-      console.warn("Failed to load tool state:", err);
+      // Failed to load tool state
       clearStorage();
     }
   };
@@ -237,7 +232,7 @@ export function useBaseTool<
       localStorage.removeItem(options.autoSaveKey);
       lastSavedState.value = "";
     } catch (err) {
-      console.warn("Failed to clear tool state:", err);
+      // Failed to clear tool state
     }
   };
 
