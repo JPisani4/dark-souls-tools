@@ -4,7 +4,7 @@ export const config: ToolConfig = {
   title: "Starting Class Optimizer",
   description:
     "Find the optimal starting class for your desired character stats and equipment",
-  icon: "public/weapons.png",
+  icon: "/weapons.png",
   category: "planner",
   order: 1,
   tags: ["starting-class-optimizer", "character-planner", "ds1", "planner"],
@@ -28,6 +28,6 @@ export const config: ToolConfig = {
       "dark souls remastered",
       "starting class comparison",
     ],
-    ogImage: "public/weapons.png",
+    ogImage: "/weapons.png",
   },
 };

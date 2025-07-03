@@ -31,13 +31,13 @@ export function useToolLayout(options: ToolLayoutOptions) {
     return `https://www.goldphantom.com${route.path}`;
   });
 
-  // Use enhanced SEO metadata from tool config if available
+  // Use strict SEO metadata for all tool pages
   const seoTitle = computed(() => {
-    return tool?.config?.seo?.title || title;
+    return (tool?.title || title) + " - Gold Phantom";
   });
 
   const seoDescription = computed(() => {
-    return tool?.config?.seo?.description || description;
+    return tool?.description || description;
   });
 
   const seoKeywords = computed(() => {
@@ -48,32 +48,9 @@ export function useToolLayout(options: ToolLayoutOptions) {
     );
   });
 
+  // Always use favicon.webp for OG image
   const seoImage = computed(() => {
-    const ogImage = tool?.config?.seo?.ogImage;
-    if (ogImage) {
-      // Convert relative paths to absolute URLs
-      if (ogImage.startsWith("/")) {
-        return `https://www.goldphantom.com${ogImage}`;
-      }
-      if (ogImage.startsWith("public/")) {
-        return `https://www.goldphantom.com/${ogImage.replace("public/", "")}`;
-      }
-      return ogImage;
-    }
-
-    // Fallback to icon path
-    if (iconPath) {
-      // Convert relative paths to absolute URLs
-      if (iconPath.startsWith("/")) {
-        return `https://www.goldphantom.com${iconPath}`;
-      }
-      if (iconPath.startsWith("public/")) {
-        return `https://www.goldphantom.com/${iconPath.replace("public/", "")}`;
-      }
-      return iconPath;
-    }
-    // Fallback to default hero image
-    return "https://www.goldphantom.com/soulsborne-tools-hero.png";
+    return "https://www.goldphantom.com/favicon.webp";
   });
 
   // Enhanced SEO metadata for social media embeds

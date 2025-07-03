@@ -3,7 +3,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 export const config: ToolConfig = {
   title: "Soul Level Calculator",
   description: "Calculate the souls required to level up your character",
-  icon: "public/soul-level-calculator-icon.png",
+  icon: "/soul-level-calculator-icon.png",
   category: "calculator",
   order: 1,
   tags: ["souls", "leveling", "calculator", "dark souls"],
@@ -29,6 +29,6 @@ export const config: ToolConfig = {
       "character building",
       "rpg calculator",
     ],
-    ogImage: "public/soul-level-calculator-icon.png",
+    ogImage: "/soul-level-calculator-icon.png",
   },
 };

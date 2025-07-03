@@ -73,80 +73,8 @@ const openRelatedSidebarMobile = () => {
   showRelatedSidebarMobile.value = true;
 };
 
-// Watch for tool changes and set meta tags dynamically
-watch(
-  () => tool.value,
-  (toolObj) => {
-    if (!toolObj) return;
-    const config: any = toolObj.config || {};
-    useHead({
-      title:
-        config.seo?.title ||
-        config.title ||
-        toolObj.title ||
-        "Gold Phantom Tool",
-      meta: [
-        {
-          name: "description",
-          content:
-            config.seo?.description ||
-            config.description ||
-            toolObj.description ||
-            "A helpful tool for Dark Souls Remastered and Soulsborne games.",
-        },
-        {
-          property: "og:title",
-          content:
-            config.seo?.title ||
-            config.title ||
-            toolObj.title ||
-            "Gold Phantom Tool",
-        },
-        {
-          property: "og:description",
-          content:
-            config.seo?.description ||
-            config.description ||
-            toolObj.description ||
-            "A helpful tool for Dark Souls Remastered and Soulsborne games.",
-        },
-        {
-          property: "og:image",
-          content:
-            config.seo?.ogImage ||
-            config.icon ||
-            toolObj.icon ||
-            "/soulsborne-tools-hero.webp",
-        },
-        {
-          property: "twitter:title",
-          content:
-            config.seo?.title ||
-            config.title ||
-            toolObj.title ||
-            "Gold Phantom Tool",
-        },
-        {
-          property: "twitter:description",
-          content:
-            config.seo?.description ||
-            config.description ||
-            toolObj.description ||
-            "A helpful tool for Dark Souls Remastered and Soulsborne games.",
-        },
-        {
-          property: "twitter:image",
-          content:
-            config.seo?.ogImage ||
-            config.icon ||
-            toolObj.icon ||
-            "/soulsborne-tools-hero.webp",
-        },
-      ],
-    });
-  },
-  { immediate: true }
-);
+// Meta tags are now handled by useToolLayout composable
+// No need to set them here as they're already being set in the ToolLayout component
 </script>
 
 <template>

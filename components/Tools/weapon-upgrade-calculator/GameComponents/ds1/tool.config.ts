@@ -3,7 +3,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 export const config: ToolConfig = {
   title: "Weapon Upgrade Calculator",
   description: "Calculate the souls and materials needed to upgrade weapons",
-  icon: "public/weapon-upgrade-calculator-icon.png",
+  icon: "/weapon-upgrade-calculator-icon.png",
   category: "calculator",
   order: 2,
   tags: ["weapons", "upgrades", "materials", "calculator", "dark souls"],
@@ -34,6 +34,6 @@ export const config: ToolConfig = {
       "merchant prices",
       "dark souls remastered",
     ],
-    ogImage: "public/weapon-upgrade-calculator-icon.png",
+    ogImage: "/weapon-upgrade-calculator-icon.png",
   },
 };

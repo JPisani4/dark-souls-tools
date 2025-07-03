@@ -4,7 +4,7 @@ export const config: ToolConfig = {
   title: "Co-op Level Range Calculator",
   description:
     "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
-  icon: "public/warrior-of-sunlight-covenant-dks.png",
+  icon: "/warrior-of-sunlight-covenant-dks.png",
   category: "calculator",
   order: 1,
   tags: [
@@ -42,6 +42,6 @@ export const config: ToolConfig = {
       "multiplayer calculator",
       "soul level range",
     ],
-    ogImage: "public/warrior-of-sunlight-covenant-dks.png",
+    ogImage: "/warrior-of-sunlight-covenant-dks.png",
   },
 };
