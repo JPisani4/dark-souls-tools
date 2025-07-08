@@ -13,12 +13,12 @@
     <!-- Mobile Sidebar Overlays - Backdrop for mobile sidebars -->
     <div
       v-if="$slots.sidebar && isLeftSidebarOpen"
-      class="xl:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+      class="2xl:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
       @click="closeLeftSidebar"
     />
     <div
       v-if="$slots['right-sidebar'] && isRightSidebarOpen"
-      class="xl:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+      class="2xl:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
       @click="closeRightSidebar"
     />
 
@@ -26,14 +26,14 @@
     <aside
       v-if="$slots.sidebar"
       :class="[
-        'xl:hidden fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-50 transform transition-transform duration-300 ease-in-out',
+        '2xl:hidden fixed left-0 top-0 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-900 overflow-y-auto overflow-x-hidden z-50 transform transition-transform duration-300 ease-in-out',
         isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full',
         'border-r border-gray-200 dark:border-gray-800',
       ]"
       aria-label="Mobile Left Sidebar"
     >
       <!-- Mobile Close Button -->
-      <div class="flex justify-end mb-4">
+      <div class="flex justify-end p-6 pb-4">
         <UButton
           size="sm"
           variant="ghost"
@@ -45,7 +45,7 @@
       </div>
 
       <!-- Sidebar Content -->
-      <div class="space-y-4">
+      <div class="px-6 pb-6 space-y-6">
         <slot name="sidebar" />
       </div>
     </aside>
@@ -54,14 +54,14 @@
     <aside
       v-if="$slots['right-sidebar']"
       :class="[
-        'xl:hidden fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-50 transform transition-transform duration-300 ease-in-out',
+        '2xl:hidden fixed right-0 top-0 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-900 overflow-y-auto overflow-x-hidden z-50 transform transition-transform duration-300 ease-in-out',
         isRightSidebarOpen ? 'translate-x-0' : 'translate-x-full',
         'border-l border-gray-200 dark:border-gray-800',
       ]"
       aria-label="Mobile Right Sidebar"
     >
       <!-- Mobile Close Button -->
-      <div class="flex justify-start mb-4">
+      <div class="flex justify-start p-6 pb-4">
         <UButton
           size="sm"
           variant="ghost"
@@ -73,71 +73,56 @@
       </div>
 
       <!-- Sidebar Content -->
-      <div class="space-y-4">
+      <div class="px-6 pb-6 space-y-6">
         <slot name="right-sidebar" />
       </div>
     </aside>
 
     <!-- Grid for sidebar and main content - Responsive layout system -->
-    <div
-      :class="[
-        'grid flex-1 w-full items-stretch',
-        // Dynamic grid layout based on which sidebars are present
-        $slots.sidebar && $slots['right-sidebar']
-          ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
-          : $slots.sidebar
-            ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
-            : $slots['right-sidebar']
-              ? 'grid-cols-1 xl:grid-cols-[18rem_minmax(0,1fr)_18rem]'
-              : 'grid-cols-1',
-      ]"
-    >
-      <!-- Desktop Left Sidebar - Always visible on xl+ screens -->
+    <div class="flex flex-1 w-full items-start">
+      <!-- Desktop Left Sidebar - Sticky on the left edge -->
       <aside
-        v-if="$slots.sidebar"
-        :class="[
-          'hidden xl:block bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-20',
-          $slots.sidebar && $slots.sidebar().length > 0
-            ? 'border-r border-gray-200 dark:border-gray-800'
-            : '',
-        ]"
+        class="hidden 2xl:block w-72 sticky top-14 bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-20"
         aria-label="Desktop Left Sidebar"
       >
-        <slot name="sidebar" />
+        <template v-if="$slots.sidebar">
+          <slot name="sidebar" />
+        </template>
+        <template v-else>
+          <div aria-hidden="true" class="w-full" />
+        </template>
       </aside>
 
-      <!-- Invisible Left Sidebar Placeholder - When only right sidebar exists -->
-      <aside
-        v-else-if="$slots['right-sidebar']"
-        class="hidden xl:block w-72"
-        aria-hidden="true"
-      ></aside>
+      <!-- Main Content - Full width for tools that need it -->
+      <main class="flex-1 w-full px-4">
+        <!-- Sidebar Toggle Button for viewports smaller than 1280px -->
+        <div v-if="$slots.sidebar" class="mb-4 2xl:hidden">
+          <UButton
+            @click="openLeftSidebar"
+            variant="outline"
+            size="sm"
+            class="flex items-center gap-2"
+          >
+            <Icon name="i-heroicons-bars-3" class="w-4 h-4" />
+            <span>Show Sidebar</span>
+          </UButton>
+        </div>
 
-      <!-- Main Content - Centered and constrained for optimal reading -->
-      <main class="w-full max-w-4xl mx-auto px-4">
         <slot />
       </main>
 
-      <!-- Desktop Right Sidebar - Always visible on xl+ screens -->
+      <!-- Desktop Right Sidebar - Sticky on the right edge -->
       <aside
-        v-if="$slots['right-sidebar']"
-        :class="[
-          'hidden xl:block bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-20',
-          $slots['right-sidebar'] && $slots['right-sidebar']().length > 0
-            ? 'border-l border-gray-200 dark:border-gray-800'
-            : '',
-        ]"
+        class="hidden 2xl:block w-72 sticky top-14 bg-white dark:bg-gray-900 p-6 overflow-y-auto overflow-x-hidden z-20"
         aria-label="Desktop Right Sidebar"
       >
-        <slot name="right-sidebar" />
+        <template v-if="$slots['right-sidebar']">
+          <slot name="right-sidebar" />
+        </template>
+        <template v-else>
+          <div aria-hidden="true" class="w-full" />
+        </template>
       </aside>
-
-      <!-- Invisible Right Sidebar Placeholder - When only left sidebar exists -->
-      <aside
-        v-else-if="$slots.sidebar"
-        class="hidden xl:block w-72"
-        aria-hidden="true"
-      ></aside>
     </div>
   </div>
 </template>
@@ -189,6 +174,7 @@ if (props.title && props.description) {
 const {
   isMobileSidebarOpen: isLeftSidebarOpen,
   closeSidebar: closeLeftSidebar,
+  openSidebar: openLeftSidebar,
 } = useMobileSidebar("left");
 const {
   isMobileSidebarOpen: isRightSidebarOpen,

@@ -105,7 +105,7 @@ const activeCount = computed(() => {
 
 <template>
   <div :class="['bg-white dark:bg-gray-800', isMobile ? 'w-full' : 'w-64']">
-    <div class="p-6 space-y-6">
+    <div :class="['space-y-6', isMobile ? 'space-y-8' : 'p-6 space-y-6']">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -117,7 +117,7 @@ const activeCount = computed(() => {
       <div>
         <label
           for="search"
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
         >
           Search
         </label>
@@ -136,11 +136,11 @@ const activeCount = computed(() => {
       <!-- Game Filter -->
       <div>
         <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
         >
           Game
         </label>
-        <div class="space-y-2">
+        <div class="space-y-3">
           <UButton
             v-for="game in availableGames"
             :key="game.id"
@@ -158,11 +158,11 @@ const activeCount = computed(() => {
       <!-- Category Filter -->
       <div>
         <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
         >
           Category
         </label>
-        <div class="space-y-2">
+        <div class="space-y-3">
           <UButton
             v-for="category in availableCategories"
             :key="category.id"
@@ -184,7 +184,7 @@ const activeCount = computed(() => {
       <!-- Active Filters Summary with prominent clear button -->
       <div
         v-if="activeCount > 0"
-        class="pt-4 border-t border-gray-200 dark:border-gray-700"
+        class="pt-6 border-t border-gray-200 dark:border-gray-700"
       >
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-500 dark:text-gray-400">
@@ -200,6 +200,19 @@ const activeCount = computed(() => {
             <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
             Clear All
           </UButton>
+        </div>
+      </div>
+
+      <!-- Empty state when no filters are active -->
+      <div v-else class="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-center py-4">
+          <Icon
+            name="i-heroicons-funnel"
+            class="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2"
+          />
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            No filters applied
+          </p>
         </div>
       </div>
     </div>

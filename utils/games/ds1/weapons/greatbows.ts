@@ -21,12 +21,6 @@ export const greatbows: Weapon[] = [
     },
     criticalDamage: 100,
     weight: 10.0,
-    damage: {
-      physical: 90,
-      magic: 0,
-      fire: 0,
-      lightning: 0,
-    },
     auxillaryDamage: {
       bleed: 0,
       poison: 0,
@@ -34,6 +28,20 @@ export const greatbows: Weapon[] = [
       curse: 0,
       occult: 0,
       divine: 0,
+    },
+    damageByPath: {
+      special: {
+        physical: 90,
+        magic: 0,
+        fire: 0,
+        lightning: 0,
+      },
+    },
+    scaling: {
+      special: {
+        strength: 0.64,
+        dexterity: 0.64,
+      },
     },
     upgradePath: "special",
   },
@@ -55,12 +63,6 @@ export const greatbows: Weapon[] = [
     weaponArt: true,
     criticalDamage: 100,
     weight: 13.0,
-    damage: {
-      physical: 85,
-      magic: 0,
-      fire: 0,
-      lightning: 0,
-    },
     auxillaryDamage: {
       bleed: 0,
       poison: 0,
@@ -68,6 +70,20 @@ export const greatbows: Weapon[] = [
       curse: 0,
       occult: 0,
       divine: 0,
+    },
+    damageByPath: {
+      special: {
+        physical: 85,
+        magic: 0,
+        fire: 0,
+        lightning: 0,
+      },
+    },
+    scaling: {
+      special: {
+        strength: 0.84,
+        dexterity: 0.64,
+      },
     },
     upgradePath: "special",
   },

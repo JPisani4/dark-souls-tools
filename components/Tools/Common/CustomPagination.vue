@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="flex items-center justify-center gap-x-4">
+    <div
+      class="flex items-center justify-center gap-x-1 sm:gap-x-4 overflow-x-auto"
+    >
       <!-- Pagination Controls -->
       <!-- Previous Button -->
       <div>
@@ -9,10 +11,10 @@
           size="sm"
           variant="outline"
           @click="goToPage(currentPage - 1)"
-          class="flex items-center gap-1"
+          class="flex items-center gap-1 text-xs sm:text-sm"
         >
-          <Icon name="i-heroicons-chevron-left" class="w-4 h-4" />
-          Previous
+          <Icon name="i-heroicons-chevron-left" class="w-3 h-3 sm:w-4 sm:h-4" />
+          <span class="hidden sm:inline">Previous</span>
         </UButton>
       </div>
 
@@ -24,11 +26,13 @@
             :variant="page === currentPage ? 'solid' : 'outline'"
             size="sm"
             @click="goToPage(page)"
-            class="min-w-[2.5rem]"
+            class="min-w-[2rem] sm:min-w-[2.5rem] text-xs sm:text-sm"
           >
             {{ page }}
           </UButton>
-          <span v-else class="px-2 text-gray-500">...</span>
+          <span v-else class="px-1 sm:px-2 text-gray-500 text-xs sm:text-sm"
+            >...</span
+          >
         </template>
       </div>
 
@@ -39,15 +43,18 @@
           size="sm"
           variant="outline"
           @click="goToPage(currentPage + 1)"
-          class="flex items-center gap-1"
+          class="flex items-center gap-1 text-xs sm:text-sm"
         >
-          Next
-          <Icon name="i-heroicons-chevron-right" class="w-4 h-4" />
+          <span class="hidden sm:inline">Next</span>
+          <Icon
+            name="i-heroicons-chevron-right"
+            class="w-3 h-3 sm:w-4 sm:h-4"
+          />
         </UButton>
       </div>
     </div>
     <div class="flex justify-center mt-2">
-      <span class="text-sm text-gray-700 dark:text-gray-300">
+      <span class="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
         Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} results
       </span>
     </div>

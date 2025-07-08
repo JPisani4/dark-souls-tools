@@ -33,11 +33,13 @@ export function useToolLayout(options: ToolLayoutOptions) {
 
   // Use strict SEO metadata for all tool pages
   const seoTitle = computed(() => {
-    return (tool?.title || title) + " - Gold Phantom";
+    return (
+      tool?.config?.seo?.title || (tool?.title || title) + " - Gold Phantom"
+    );
   });
 
   const seoDescription = computed(() => {
-    return tool?.description || description;
+    return tool?.config?.seo?.description || tool?.description || description;
   });
 
   const seoKeywords = computed(() => {
@@ -48,8 +50,11 @@ export function useToolLayout(options: ToolLayoutOptions) {
     );
   });
 
-  // Always use favicon.webp for OG image
+  // Use tool-specific OG image if available, otherwise fallback to favicon
   const seoImage = computed(() => {
+    if (tool?.config?.seo?.ogImage) {
+      return `https://www.goldphantom.com${tool.config.seo.ogImage}`;
+    }
     return "https://www.goldphantom.com/favicon.webp";
   });
 

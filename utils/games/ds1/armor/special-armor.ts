@@ -101,7 +101,6 @@ export const specialArmor: Armor[] = [
         "Boosts serceries, miracles, and pyromancies by 20%. Reduces magic defense by 30%.",
     },
     special: true,
-    set: "Antiquated Set",
   },
   {
     icon: "/armor/special-armor/crown-of-the-dark-sun.png",
@@ -126,7 +125,6 @@ export const specialArmor: Armor[] = [
       description: "Boosts serceries, miracles, and pyromancies by 10%.",
     },
     special: true,
-    set: "Gwyndolin Moonlight Set",
   },
   {
     icon: "/armor/special-armor/fang-boar-helm.png",

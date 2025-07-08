@@ -68,7 +68,7 @@ const getMerchantsForMaterial = (material: string) => {
       <!-- Purchaseable Materials Card -->
       <div v-if="Object.keys(purchaseableMaterials).length > 0" class="flex-1">
         <UCard
-          :class="`w-full h-full text-center py-8 px-6 text-2xl border-l-4 ${safeTheme?.border || 'border-l-green-500'}`"
+          :class="`w-full text-center py-8 px-6 text-2xl border-l-4 ${safeTheme?.border || 'border-l-green-500'}`"
         >
           <template #header>
             <div class="flex flex-col items-center w-full">
@@ -229,7 +229,7 @@ const getMerchantsForMaterial = (material: string) => {
       <!-- Findable Materials Card -->
       <div v-if="Object.keys(findableMaterials).length > 0" class="flex-1">
         <UCard
-          :class="`w-full h-full text-center py-8 px-6 text-2xl border-l-4 ${safeTheme?.border || 'border-l-orange-500'}`"
+          :class="`w-full text-center py-8 px-6 text-2xl border-l-4 ${safeTheme?.border || 'border-l-orange-500'}`"
         >
           <template #header>
             <div class="flex justify-center w-full">

@@ -35,7 +35,7 @@ const formatNumber = (value: number): string => {
     <div
       v-if="props.souls > 0"
       :class="[
-        props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? 'h-full' : 'flex-1',
+        props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'flex-1',
       ]"
     >
       <SummaryCard
@@ -46,7 +46,6 @@ const formatNumber = (value: number): string => {
         icon="i-heroicons-wrench-screwdriver"
         icon-size="w-10 h-10"
         :class="[
-          'h-full',
           props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'w-full',
         ]"
       />
@@ -56,7 +55,7 @@ const formatNumber = (value: number): string => {
     <div
       v-if="(props.purchaseCost ?? 0) > 0"
       :class="[
-        props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? 'h-full' : 'flex-1',
+        props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'flex-1',
       ]"
     >
       <SummaryCard
@@ -67,7 +66,6 @@ const formatNumber = (value: number): string => {
         icon="/weapon-upgrade-calculator-icon.webp"
         icon-size="w-10 h-10"
         :class="[
-          'h-full',
           props.souls > 0 && (props.purchaseCost ?? 0) > 0 ? '' : 'w-full',
         ]"
       />

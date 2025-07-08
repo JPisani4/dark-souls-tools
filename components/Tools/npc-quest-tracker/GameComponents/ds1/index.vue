@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useBaseTool } from "~/composables/useBaseTool";
+import { useToolLayout } from "~/composables/useToolLayout";
 import { getAllQuests } from "~/utils/games/ds1/quests";
 import type { QuestState } from "~/types/game/ds1/quests";
 import CheckboxField from "~/components/Tools/Common/forms/CheckboxField.vue";
@@ -11,6 +12,36 @@ import { useSafeTheme } from "~/composables/useSafeTheme";
 import Icon from "~/components/Common/Icon.vue";
 import SmartTooltip from "~/components/Tools/Common/SmartTooltip.vue";
 import Fuse from "fuse.js";
+import type { GameData } from "~/types/game";
+import type { Tool } from "~/types/tools/tool";
+import type { ColorTheme } from "~/utils/themes/colorSystem";
+
+interface Props {
+  gameData: GameData;
+  toolConfig?: Tool;
+  theme?: ColorTheme;
+  variant?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: "default",
+});
+
+// Tool layout setup
+useToolLayout({
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "NPC Quest Tracker",
+  description:
+    props.toolConfig?.config?.seo?.description ||
+    props.toolConfig?.description ||
+    "Track your progress through NPC questlines in Dark Souls Remastered",
+  iconPath: props.toolConfig?.icon || "i-heroicons-user-group",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
+});
 
 // Tool state: completedSteps is a map of questId -> array of completed step IDs
 interface NpcQuestTrackerState {

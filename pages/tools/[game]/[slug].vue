@@ -6,10 +6,11 @@ import ToolLayout from "~/components/Tools/Common/ToolLayout.vue";
 import { getRandomTheme } from "~/utils/constants";
 import type { GameId } from "~/types/game";
 import Icon from "~/components/Common/Icon.vue";
-import Sidebar from "~/components/Common/Sidebar.vue";
-import SidebarToggleButton from "~/components/Tools/Common/SidebarToggleButton.vue";
 import { tools } from "~/tools";
 import HeroSection from "~/components/Tools/Common/HeroSection.vue";
+import RelatedToolsSection from "~/components/Tools/Common/RelatedToolsSection.vue";
+import WeaponAttackRatingSidebar from "~/components/Tools/WeaponAttackRatingCalculator/GameComponents/Common/WeaponAttackRatingSidebar.vue";
+import ArmorOptimizerSidebar from "~/components/Tools/ArmorOptimizer/GameComponents/Common/ArmorOptimizerSidebar.vue";
 import { useHead } from "#imports";
 
 // Extract route parameters for game and tool identification
@@ -19,6 +20,11 @@ const slug = computed(() => route.params.slug as string);
 
 // Get a random theme for the tool to provide visual variety
 const selectedTheme = getRandomTheme();
+
+// Ref to access the tool component instance
+const toolComponentRef = ref();
+// Ref to access the sidebar component
+const sidebarRef = ref();
 
 // Initialize the game tool loader with all necessary state and actions
 const {
@@ -62,16 +68,8 @@ const relatedTools = computed(() => {
         (t.category === currentCategory ||
           t.tags.some((tag) => currentTags.includes(tag)))
     )
-    .slice(0, 5); // Limit to 5 related tools
+    .slice(0, 3); // Limit to 3 related tools
 });
-
-// Mobile sidebar open state (for Sidebar.vue)
-const showRelatedSidebarMobile = ref(false);
-
-// Function to open sidebar on mobile
-const openRelatedSidebarMobile = () => {
-  showRelatedSidebarMobile.value = true;
-};
 
 // Meta tags are now handled by useToolLayout composable
 // No need to set them here as they're already being set in the ToolLayout component
@@ -106,33 +104,47 @@ const openRelatedSidebarMobile = () => {
       />
     </template>
 
-    <!-- Related Tools Sidebar (desktop & mobile) -->
+    <!-- Sidebar content for weapon attack rating calculator -->
     <template #sidebar>
-      <RelatedToolsSidebar
-        :related-tools="relatedTools"
-        :current-tool-slug="slug"
+      <WeaponAttackRatingSidebar
+        v-if="
+          slug === 'weapon-attack-rating-calculator' &&
+          hasComponent &&
+          toolComponentRef
+        "
+        ref="sidebarRef"
+        :state="toolComponentRef.state"
+        :set-state="toolComponentRef.setState"
+        :reset-form="toolComponentRef.resetCharacterStats"
+        :theme="selectedTheme"
+        :show-weapon-level="toolComponentRef.hasWeaponsWithUpgradePaths"
+      />
+
+      <!-- Sidebar content for armor optimizer -->
+      <ArmorOptimizerSidebar
+        v-if="slug === 'armor-optimizer' && hasComponent && toolComponentRef"
+        ref="sidebarRef"
+        :state="toolComponentRef.state"
+        :set-state="toolComponentRef.setState"
+        :reset="toolComponentRef.reset"
+        :theme="selectedTheme"
+        :character-stats="toolComponentRef.characterStats"
       />
     </template>
 
     <!-- Main Content -->
     <template #default>
-      <div class="flex items-center justify-start mb-4 xl:hidden">
-        <SidebarToggleButton
-          side="left"
-          open-text="Related Tools"
-          close-text="Close Related Tools"
-          @click="openRelatedSidebarMobile"
-        />
-      </div>
       <!-- Main tool content -->
       <!-- Tool Component (Success State) - Renders the actual tool when loaded -->
-      <div v-if="hasComponent">
+      <div v-if="hasComponent && gameData && tool">
         <ErrorBoundary @error="(err: Error) => (error = err)">
           <component
             :is="ToolComponent"
+            ref="toolComponentRef"
             :game-data="gameData"
             :tool-config="tool"
             :theme="selectedTheme"
+            :sidebar-ref="sidebarRef"
           />
         </ErrorBoundary>
       </div>
@@ -188,6 +200,13 @@ const openRelatedSidebarMobile = () => {
           </UButton>
         </div>
       </div>
+
+      <!-- Related Tools Section at bottom of page -->
+      <RelatedToolsSection
+        v-if="relatedTools.length > 0"
+        :related-tools="relatedTools"
+        :current-tool-slug="slug"
+      />
     </template>
   </ToolLayout>
 </template>

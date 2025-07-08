@@ -12,6 +12,7 @@ import {
   MagnifyingGlassIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
+  ArrowDownIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ChevronRightIcon,
@@ -95,6 +96,7 @@ import {
   MagnifyingGlassIcon as MagnifyingGlassSolidIcon,
   ArrowRightIcon as ArrowRightSolidIcon,
   ArrowLeftIcon as ArrowLeftSolidIcon,
+  ArrowDownIcon as ArrowDownSolidIcon,
   ChevronDownIcon as ChevronDownSolidIcon,
   ChevronUpIcon as ChevronUpSolidIcon,
   ChevronRightIcon as ChevronRightSolidIcon,
@@ -191,6 +193,7 @@ const iconMap = {
   "i-heroicons-magnifying-glass": MagnifyingGlassIcon,
   "i-heroicons-arrow-right": ArrowRightIcon,
   "i-heroicons-arrow-left": ArrowLeftIcon,
+  "i-heroicons-arrow-down": ArrowDownIcon,
   "i-heroicons-chevron-down": ChevronDownIcon,
   "i-heroicons-chevron-up": ChevronUpIcon,
   "i-heroicons-chevron-right": ChevronRightIcon,
@@ -273,6 +276,7 @@ const iconMap = {
   "i-heroicons-magnifying-glass-solid": MagnifyingGlassSolidIcon,
   "i-heroicons-arrow-right-solid": ArrowRightSolidIcon,
   "i-heroicons-arrow-left-solid": ArrowLeftSolidIcon,
+  "i-heroicons-arrow-down-solid": ArrowDownSolidIcon,
   "i-heroicons-chevron-down-solid": ChevronDownSolidIcon,
   "i-heroicons-chevron-up-solid": ChevronUpSolidIcon,
   "i-heroicons-chevron-right-solid": ChevronRightSolidIcon,
@@ -350,6 +354,7 @@ const iconMap = {
   "i-heroicons-wrench-screwdriver-solid": WrenchScrewdriverSolidIcon,
   "i-heroicons-arrow-up-solid": ArrowUpSolidIcon,
   "i-heroicons-trophy-solid": TrophySolidIcon,
+  "i-heroicons-sword": BoltIcon,
 };
 
 const iconComponent = computed(() => {

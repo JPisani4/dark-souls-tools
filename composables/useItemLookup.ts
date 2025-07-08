@@ -62,11 +62,12 @@ export function useItemLookup<T extends Record<string, any>>(
 
   // Flat list of options with category headers (for dropdowns that support headers)
   const flatOptions = computed(() => {
-    const opts: { value: string; label: string }[] = [];
+    const opts: { value: string; label: string; disabled?: boolean }[] = [];
     groupedOptions.value.forEach((group) => {
       opts.push({
         value: `category-${group.category}`,
         label: `--- ${formatCategoryName(group.category)} ---`,
+        disabled: true,
       });
       group.options.forEach((option) => {
         opts.push({ value: option.value, label: option.label });

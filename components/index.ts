@@ -40,3 +40,4 @@ export { default as CustomPagination } from "./Tools/Common/CustomPagination.vue
 export { default as NumericInput } from "./Tools/Common/NumericInput.vue";
 export { default as ToolChips } from "./Common/ToolChips.vue";
 export { default as HowToUse } from "./Tools/Common/HowToUse.vue";
+export { default as RelatedToolsSection } from "./Tools/Common/RelatedToolsSection.vue";

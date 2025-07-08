@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'rounded-lg p-4 sm:p-6 border bg-gradient-to-r h-full flex flex-col',
+      'rounded-lg p-4 sm:p-6 border bg-gradient-to-r flex flex-col',
       safeTheme.gradient && safeTheme.darkGradient
         ? `${safeTheme.gradient} ${safeTheme.darkGradient}`
         : 'from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900',

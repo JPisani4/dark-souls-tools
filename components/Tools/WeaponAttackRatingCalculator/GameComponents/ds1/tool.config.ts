@@ -1,0 +1,55 @@
+import type { ToolConfig } from "~/types/tools/tool";
+
+export const config: ToolConfig = {
+  title: "Weapon Attack Rating Calculator",
+  description:
+    "Calculate and compare weapon attack ratings based on your character stats. View total attack power, individual damage types, scaling, and requirements for all weapons in Dark Souls Remastered.",
+  icon: "i-heroicons-sword",
+  category: "calculator",
+  order: 10,
+  tags: [
+    "weapon",
+    "attack",
+    "rating",
+    "calculator",
+    "scaling",
+    "damage",
+    "ds1",
+    "dark souls",
+    "remastered",
+  ],
+  version: "1.0.0",
+  author: "Gold Phantom",
+  lastUpdated: "2025-01-27",
+  gameCategory: "ds1",
+  seo: {
+    title:
+      "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
+    description:
+      "Calculate weapon attack ratings and compare damage output for all weapons in Dark Souls Remastered. View total attack power, individual damage types, scaling bonuses, and requirements based on your character stats. Perfect for optimizing your weapon choice and understanding damage calculations.",
+    keywords: [
+      "weapon attack rating",
+      "dark souls remastered",
+      "weapon damage calculator",
+      "weapon scaling",
+      "total attack power",
+      "weapon comparison",
+      "damage calculation",
+      "weapon requirements",
+      "ds1 weapons",
+      "weapon damage",
+      "attack rating",
+      "weapon damage output",
+      "character stats",
+      "weapon optimization",
+      "physical damage",
+      "magic damage",
+      "fire damage",
+      "lightning damage",
+      "scaling bonus",
+      "weapon damage calculator",
+      "gold phantom",
+    ],
+    ogImage: "/Weapons.webp",
+  },
+};

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useBaseTool } from "~/composables/useBaseTool";
+import { useToolLayout } from "~/composables/useToolLayout";
 import {
   getAllAchievements,
   getAchievementProgress,
@@ -17,6 +18,36 @@ import { useSafeTheme } from "~/composables/useSafeTheme";
 import Icon from "~/components/Common/Icon.vue";
 import SmartTooltip from "~/components/Tools/Common/SmartTooltip.vue";
 import Fuse from "fuse.js";
+import type { GameData } from "~/types/game";
+import type { Tool } from "~/types/tools/tool";
+import type { ColorTheme } from "~/utils/themes/colorSystem";
+
+interface Props {
+  gameData: GameData;
+  toolConfig?: Tool;
+  theme?: ColorTheme;
+  variant?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: "default",
+});
+
+// Tool layout setup
+useToolLayout({
+  title:
+    props.toolConfig?.config?.seo?.title ||
+    props.toolConfig?.title ||
+    "Achievement Tracker",
+  description:
+    props.toolConfig?.config?.seo?.description ||
+    props.toolConfig?.description ||
+    "Track your progress through Dark Souls Remastered achievements",
+  iconPath: props.toolConfig?.icon || "i-heroicons-trophy",
+  tool: props.toolConfig,
+  gameId: "ds1",
+  gameData: props.gameData,
+});
 
 // Tool state: completedRequirements is a map of achievementId -> array of completed requirement IDs
 interface AchievementTrackerState {

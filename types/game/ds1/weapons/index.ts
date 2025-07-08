@@ -32,6 +32,13 @@ export interface AuxillaryDamage {
   divine: number;
 }
 
+export interface WeaponScaling {
+  strength?: number;
+  dexterity?: number;
+  intelligence?: number;
+  faith?: number;
+}
+
 export interface Weapon {
   icon: string;
   name: string;
@@ -41,11 +48,21 @@ export interface Weapon {
   weaponArt?: boolean;
   criticalDamage: number;
   weight: number;
-  damage: WeaponDamage;
+  damage?: WeaponDamage;
+  damageByPath?: {
+    [upgradePath: string]: WeaponDamage;
+  };
   auxillaryDamage: AuxillaryDamage;
+  scaling?: {
+    [upgradePath: string]: WeaponScaling;
+  };
   upgradePath?: string;
   twoHanded?: boolean;
   requiredTwoHanded?: boolean;
+  humanityScaling?: {
+    physical?: number[];
+    fire?: number[];
+  };
 }
 
 // Weapon category types for organization
@@ -106,9 +123,11 @@ export const getWeaponWithDefaults = (weapon: Partial<Weapon>): Weapon => {
       occult: 0,
       divine: 0,
     },
+    scaling: weapon.scaling || {},
     upgradePath: weapon.upgradePath,
-    twoHanded: weapon.twoHanded ?? true, // Default to false if not specified
+    twoHanded: weapon.twoHanded ?? false,
     requiredTwoHanded: weapon.requiredTwoHanded ?? false,
+    humanityScaling: weapon.humanityScaling || {},
   };
 };
 

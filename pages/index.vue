@@ -12,9 +12,6 @@ import Home from "~/components/Home.vue";
   >
     <!-- Empty hero slot - hero content is handled by the Home component -->
     <template #hero />
-    <!-- Empty sidebar slots - no sidebars needed for homepage -->
-    <template #sidebar />
-    <template #right-sidebar />
     <!-- Main homepage content -->
     <Home />
   </ToolLayout>

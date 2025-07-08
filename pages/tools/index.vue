@@ -57,6 +57,7 @@ const {
         @clear="clearFilters"
       />
     </template>
+    <template #right-sidebar></template>
     <ToolList />
   </ToolLayout>
 </template>
