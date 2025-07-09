@@ -1,3 +1,5 @@
+import { tools } from "./tools";
+
 export default defineNuxtConfig({
   site: {
     url: "https://www.goldphantom.com",
@@ -173,6 +175,15 @@ export default defineNuxtConfig({
     minify: true,
     experimental: {
       wasm: true,
+    },
+    prerender: {
+      routes: [
+        "/",
+        "/tools",
+        ...tools.flatMap((tool) =>
+          tool.gameCategories.map((game) => `/tools/${game}/${tool.slug}`)
+        ),
+      ],
     },
   },
   // Experimental features for modern build optimizations
