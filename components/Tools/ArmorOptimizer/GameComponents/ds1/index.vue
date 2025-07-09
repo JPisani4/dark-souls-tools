@@ -1631,629 +1631,806 @@ watch(persistentSelectedMixMatchCombos, (val) => {
 </script>
 
 <template>
-  <!-- Main Content -->
-  <div class="space-y-6">
-    <!-- Equipment Configuration Section -->
-    <EquipmentConfiguration
-      :state="state"
-      :set-state="setState"
-      :theme="selectedTheme"
-    />
+  <main aria-labelledby="tool-title">
+    <div class="space-y-6">
+      <!-- Equipment Configuration Section -->
+      <section aria-labelledby="equipment-config-title">
+        <EquipmentConfiguration
+          :state="state"
+          :set-state="setState"
+          :theme="selectedTheme"
+        />
+      </section>
 
-    <!-- Search and Filter Section -->
-    <UCard class="w-full">
-      <template #header>
-        <div
-          class="flex items-center justify-between cursor-pointer select-none"
-          @click="searchFilterExpanded = !searchFilterExpanded"
-        >
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Search and Filter
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              Find and organize armor pieces
-            </p>
-          </div>
-          <div class="flex items-center gap-2">
-            <Icon
-              :name="
-                searchFilterExpanded
-                  ? 'i-heroicons-chevron-up'
-                  : 'i-heroicons-chevron-down'
-              "
-              class="w-5 h-5"
-            />
-            <UButton
-              @click.stop="resetSearchAndFilter"
-              color="success"
-              variant="soft"
-              size="sm"
-              class="flex items-center gap-1"
+      <!-- Search and Filter Section -->
+      <section aria-labelledby="search-filter-title">
+        <UCard class="w-full">
+          <template #header>
+            <div
+              class="flex items-center justify-between cursor-pointer select-none"
+              @click="searchFilterExpanded = !searchFilterExpanded"
+              :aria-expanded="!!searchFilterExpanded"
+              aria-controls="search-filter-content"
             >
-              <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
-            </UButton>
-          </div>
-        </div>
-      </template>
-
-      <div v-show="searchFilterExpanded" class="space-y-4">
-        <!-- Search Bar -->
-        <div class="flex items-center gap-4">
-          <div class="flex-1">
-            <UInput
-              v-model="state.searchQuery"
-              placeholder="Search armor..."
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- Filter Controls -->
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
-          <!-- Display Mode -->
-          <div>
-            <SelectField
-              label="Display Mode"
-              id="displayMode"
-              :model-value="state.displayMode"
-              :options="displayModeOptions"
-              placeholder="Select display mode"
-              :theme="selectedTheme"
-              @update:model-value="
-                (val: string) => setState({ displayMode: val })
-              "
-            />
-          </div>
-
-          <!-- Dodge Roll Filter Dropdown -->
-          <div>
-            <SelectField
-              label="Max Dodge Roll"
-              id="maxDodgeRollPercent"
-              :model-value="state.maxDodgeRollPercent?.toString() || 'all'"
-              :options="
-                categorizedDodgeRollOptions.map((option) => ({
-                  ...option,
-                  value: option.value?.toString() || '',
-                }))
-              "
-              placeholder="Show all"
-              :theme="selectedTheme"
-              :disabled="!['sets', 'mixmatch'].includes(state.displayMode)"
-              @update:model-value="
-                (val: string) =>
-                  setState({
-                    maxDodgeRollPercent:
-                      val && val !== 'all' ? parseFloat(val) : null,
-                  })
-              "
-            />
-          </div>
-        </div>
-
-        <!-- Advanced Custom Filter Toggle (moved to bottom) -->
-        <div class="mb-2 mt-4">
-          <UButton
-            color="primary"
-            size="md"
-            class="w-full sm:w-auto font-semibold flex items-center gap-2"
-            @click="state.showCustomFilter = !state.showCustomFilter"
-          >
-            <Icon name="i-heroicons-funnel" class="w-5 h-5" />
-            Custom Filter
-            <Icon
-              :name="
-                state.showCustomFilter
-                  ? 'i-heroicons-chevron-up'
-                  : 'i-heroicons-chevron-down'
-              "
-              class="w-4 h-4 ml-1"
-            />
-          </UButton>
-        </div>
-
-        <!-- Custom Filter Section (collapsible, collapsed by default) -->
-        <div>
-          <div
-            v-show="state.showCustomFilter"
-            class="p-4 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-4"
-          >
-            <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              <p v-if="state.displayMode === 'mixmatch'">
-                <strong>Mix and Match Mode:</strong> Filters out items below
-                minimum values, then sorts by weighted scores.
-              </p>
-              <p v-else>
-                <strong>Individual Pieces & Complete Sets:</strong> Shows all
-                items sorted by your custom weighted scores. Set Primary Sort to
-                "Custom" to use these weights.
-              </p>
-            </div>
-            <SelectField
-              label="Select stats to filter and weight"
-              id="customFilterStats"
-              :model-value="state.customFilter.selectedStats"
-              :options="customFilterStatOptionsFlat"
-              placeholder="Select stats..."
-              :theme="selectedTheme"
-              :multiple="true"
-              @update:model-value="
-                (val: string | string[]) => {
-                  let stats: string[] = [];
-                  if (Array.isArray(val)) {
-                    stats = val;
-                  } else if (typeof val === 'string') {
-                    stats = val ? val.split(',').filter((s) => s.trim()) : [];
-                  }
-                  setState({
-                    customFilter: {
-                      ...state.customFilter,
-                      selectedStats: stats,
-                    },
-                    sortPrimary: 'custom',
-                    sortSecondary: 'none',
-                  });
-                }
-              "
-            />
-            <div class="space-y-3">
-              <div
-                v-for="stat in state.customFilter.selectedStats"
-                :key="stat"
-                class="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-              >
-                <div class="flex items-center gap-2 min-w-0 flex-1">
-                  <span
-                    class="text-sm font-medium text-gray-900 dark:text-white truncate"
-                  >
-                    {{ getStatLabel(stat) }}
-                  </span>
-                  <UButton
-                    size="xs"
-                    variant="ghost"
-                    color="neutral"
-                    class="flex-shrink-0"
-                    @click="removeCustomStat(stat)"
-                    :aria-label="`Remove ${getStatLabel(stat)}`"
-                  >
-                    <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
-                  </UButton>
-                </div>
-                <div
-                  class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto"
+              <div>
+                <h2
+                  id="search-filter-title"
+                  class="text-xl font-semibold text-gray-900 dark:text-white"
                 >
-                  <div class="flex flex-col gap-1">
-                    <label
-                      class="text-xs text-gray-500 dark:text-gray-400"
-                      :for="`min-${stat}`"
-                      :class="{
-                        'opacity-50': state.displayMode !== 'mixmatch',
-                      }"
-                      >Min
-                      {{
-                        state.displayMode !== "mixmatch"
-                          ? "(Mix & Match only)"
-                          : ""
-                      }}</label
+                  Search and Filter
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Find and organize armor pieces
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <Icon
+                  :name="
+                    searchFilterExpanded
+                      ? 'i-heroicons-chevron-up'
+                      : 'i-heroicons-chevron-down'
+                  "
+                  class="w-5 h-5"
+                  aria-hidden="true"
+                />
+                <UButton
+                  @click.stop="resetSearchAndFilter"
+                  color="success"
+                  variant="soft"
+                  size="sm"
+                  class="flex items-center gap-1"
+                  aria-label="Reset search and filter"
+                >
+                  <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                </UButton>
+              </div>
+            </div>
+          </template>
+
+          <div
+            v-show="searchFilterExpanded"
+            class="space-y-4"
+            id="search-filter-content"
+          >
+            <!-- Search Bar -->
+            <div class="flex items-center gap-4">
+              <div class="flex-1">
+                <UInput
+                  v-model="state.searchQuery"
+                  placeholder="Search armor..."
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <!-- Display Mode -->
+              <div>
+                <SelectField
+                  label="Display Mode"
+                  id="displayMode"
+                  :model-value="state.displayMode"
+                  :options="displayModeOptions"
+                  placeholder="Select display mode"
+                  :theme="selectedTheme"
+                  @update:model-value="
+                    (val: string) => setState({ displayMode: val })
+                  "
+                />
+              </div>
+
+              <!-- Dodge Roll Filter Dropdown -->
+              <div>
+                <SelectField
+                  label="Max Dodge Roll"
+                  id="maxDodgeRollPercent"
+                  :model-value="state.maxDodgeRollPercent?.toString() || 'all'"
+                  :options="
+                    categorizedDodgeRollOptions.map((option) => ({
+                      ...option,
+                      value: option.value?.toString() || '',
+                    }))
+                  "
+                  placeholder="Show all"
+                  :theme="selectedTheme"
+                  :disabled="!['sets', 'mixmatch'].includes(state.displayMode)"
+                  @update:model-value="
+                    (val: string) =>
+                      setState({
+                        maxDodgeRollPercent:
+                          val && val !== 'all' ? parseFloat(val) : null,
+                      })
+                  "
+                />
+              </div>
+            </div>
+
+            <!-- Advanced Custom Filter Toggle (moved to bottom) -->
+            <div class="mb-2 mt-4">
+              <UButton
+                color="primary"
+                size="md"
+                class="w-full sm:w-auto font-semibold flex items-center gap-2"
+                @click="state.showCustomFilter = !state.showCustomFilter"
+              >
+                <Icon name="i-heroicons-funnel" class="w-5 h-5" />
+                Custom Filter
+                <Icon
+                  :name="
+                    state.showCustomFilter
+                      ? 'i-heroicons-chevron-up'
+                      : 'i-heroicons-chevron-down'
+                  "
+                  class="w-4 h-4 ml-1"
+                />
+              </UButton>
+            </div>
+
+            <!-- Custom Filter Section (collapsible, collapsed by default) -->
+            <div>
+              <div
+                v-show="state.showCustomFilter"
+                class="p-4 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-4"
+              >
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <p v-if="state.displayMode === 'mixmatch'">
+                    <strong>Mix and Match Mode:</strong> Filters out items below
+                    minimum values, then sorts by weighted scores.
+                  </p>
+                  <p v-else>
+                    <strong>Individual Pieces & Complete Sets:</strong> Shows
+                    all items sorted by your custom weighted scores. Set Primary
+                    Sort to "Custom" to use these weights.
+                  </p>
+                </div>
+                <SelectField
+                  label="Select stats to filter and weight"
+                  id="customFilterStats"
+                  :model-value="state.customFilter.selectedStats"
+                  :options="customFilterStatOptionsFlat"
+                  placeholder="Select stats..."
+                  :theme="selectedTheme"
+                  :multiple="true"
+                  @update:model-value="
+                    (val: string | string[]) => {
+                      let stats: string[] = [];
+                      if (Array.isArray(val)) {
+                        stats = val;
+                      } else if (typeof val === 'string') {
+                        stats = val
+                          ? val.split(',').filter((s) => s.trim())
+                          : [];
+                      }
+                      setState({
+                        customFilter: {
+                          ...state.customFilter,
+                          selectedStats: stats,
+                        },
+                        sortPrimary: 'custom',
+                        sortSecondary: 'none',
+                      });
+                    }
+                  "
+                />
+                <div class="space-y-3">
+                  <div
+                    v-for="stat in state.customFilter.selectedStats"
+                    :key="stat"
+                    class="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  >
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <span
+                        class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      >
+                        {{ getStatLabel(stat) }}
+                      </span>
+                      <UButton
+                        size="xs"
+                        variant="ghost"
+                        color="neutral"
+                        class="flex-shrink-0"
+                        @click="removeCustomStat(stat)"
+                        :aria-label="`Remove ${getStatLabel(stat)}`"
+                      >
+                        <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
+                      </UButton>
+                    </div>
+                    <div
+                      class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto"
                     >
-                    <UInput
-                      v-model.number="state.customFilter.minValues[stat]"
-                      type="number"
-                      :id="`min-${stat}`"
-                      placeholder="Min value"
-                      class="w-full sm:w-24"
-                      :disabled="state.displayMode !== 'mixmatch'"
-                      :aria-label="`Minimum ${getStatLabel(stat)}`"
-                    />
-                  </div>
-                  <div class="flex flex-col gap-1">
-                    <label
-                      class="text-xs text-gray-500 dark:text-gray-400"
-                      :for="`weight-${stat}`"
-                      >Weight</label
-                    >
-                    <UInput
-                      v-model.number="state.customFilter.weights[stat]"
-                      type="number"
-                      :id="`weight-${stat}`"
-                      placeholder="Weight"
-                      class="w-full sm:w-24"
-                      :aria-label="`Weight for ${getStatLabel(stat)}`"
-                    />
+                      <div class="flex flex-col gap-1">
+                        <label
+                          class="text-xs text-gray-500 dark:text-gray-400"
+                          :for="`min-${stat}`"
+                          :class="{
+                            'opacity-50': state.displayMode !== 'mixmatch',
+                          }"
+                          >Min
+                          {{
+                            state.displayMode !== "mixmatch"
+                              ? "(Mix & Match only)"
+                              : ""
+                          }}</label
+                        >
+                        <UInput
+                          v-model.number="state.customFilter.minValues[stat]"
+                          type="number"
+                          :id="`min-${stat}`"
+                          placeholder="Min value"
+                          class="w-full sm:w-24"
+                          :disabled="state.displayMode !== 'mixmatch'"
+                          :aria-label="`Minimum ${getStatLabel(stat)}`"
+                        />
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <label
+                          class="text-xs text-gray-500 dark:text-gray-400"
+                          :for="`weight-${stat}`"
+                          >Weight</label
+                        >
+                        <UInput
+                          v-model.number="state.customFilter.weights[stat]"
+                          type="number"
+                          :id="`weight-${stat}`"
+                          placeholder="Weight"
+                          class="w-full sm:w-24"
+                          :aria-label="`Weight for ${getStatLabel(stat)}`"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </UCard>
+        </UCard>
+      </section>
 
-    <!-- Expand/Collapse All buttons -->
-    <div
-      v-if="state.calculatedArmor && state.calculatedArmor.length > 0"
-      class="flex gap-2 mb-2"
-    >
-      <UButton
-        @click="expandAllCollapsibles"
-        size="sm"
-        color="primary"
-        variant="soft"
-        >Expand All</UButton
-      >
-      <UButton
-        @click="collapseAllCollapsibles"
-        size="sm"
-        color="primary"
-        variant="soft"
-        >Collapse All</UButton
-      >
-      <UButton @click="selectAllResults" size="sm" color="info" variant="soft"
-        >Select All</UButton
-      >
-      <UButton @click="unselectAllResults" size="sm" color="info" variant="soft"
-        >Unselect All</UButton
-      >
-    </div>
-
-    <!-- Results Section -->
-    <UCard class="w-full">
-      <template #header>
+      <!-- Expand/Collapse All buttons -->
+      <section aria-labelledby="expand-collapse-title">
         <div
-          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          v-if="state.calculatedArmor && state.calculatedArmor.length > 0"
+          class="flex gap-2 mb-2"
         >
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Armor Results
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{
-                state.displayMode === "individual"
-                  ? "Individual Pieces"
-                  : state.displayMode === "sets"
-                    ? "Complete Sets"
-                    : "Mix and Match"
-              }}
-            </p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2 sm:gap-4">
-            <!-- Primary Sort -->
-            <div class="flex-shrink-0">
-              <SelectField
-                label="Primary Sort"
-                id="sortPrimary"
-                :model-value="state.sortPrimary"
-                :options="sortOptions"
-                placeholder="Select primary sort"
-                :theme="selectedTheme"
-                size="sm"
-                class="w-32 sm:w-48"
-                @update:model-value="
-                  (val: string) => setState({ sortPrimary: val })
-                "
-              />
-            </div>
-
-            <!-- "to" text -->
-            <div class="flex items-end h-8 flex-shrink-0">
-              <span class="text-xs text-gray-600 dark:text-gray-400">to</span>
-            </div>
-
-            <!-- Secondary Sort -->
-            <div class="flex-shrink-0">
-              <SelectField
-                label="Secondary Sort"
-                id="sortSecondary"
-                :model-value="state.sortSecondary"
-                :options="secondarySortOptions"
-                placeholder="Select secondary sort"
-                :theme="selectedTheme"
-                size="sm"
-                class="w-32 sm:w-48"
-                @update:model-value="
-                  (val: string) => setState({ sortSecondary: val })
-                "
-              />
-            </div>
-
-            <!-- "ratio" text -->
-            <div class="flex items-end h-8 flex-shrink-0">
-              <span class="text-xs text-gray-600 dark:text-gray-400"
-                >ratio</span
-              >
-            </div>
-
-            <!-- Sort Direction Toggle Button -->
-            <div class="flex-shrink-0">
-              <label
-                class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                &nbsp;
-              </label>
-              <UButton
-                size="sm"
-                variant="outline"
-                @click="setState({ sortDescending: !state.sortDescending })"
-                :aria-label="
-                  state.sortDescending ? 'Sort ascending' : 'Sort descending'
-                "
-              >
-                <Icon
-                  :name="
-                    state.sortDescending
-                      ? 'i-heroicons-arrow-down'
-                      : 'i-heroicons-arrow-up'
-                  "
-                  class="w-4 h-4"
-                />
-              </UButton>
-            </div>
-
-            <!-- Compare Button for all display modes -->
-            <div class="flex-shrink-0">
-              <label
-                class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                &nbsp;
-              </label>
-              <UButton
-                v-if="
-                  (state.displayMode === 'individual' &&
-                    visibleSelectedArmorForComparison.length > 0) ||
-                  (state.displayMode === 'sets' &&
-                    visibleSelectedArmorSetsForComparison.length > 0) ||
-                  (state.displayMode === 'mixmatch' &&
-                    visibleSelectedMixMatchCombos.length > 0)
-                "
-                @click="openComparisonModal"
-                color="primary"
-                variant="solid"
-                size="sm"
-              >
-                Compare Selected (
-                {{
-                  state.displayMode === "individual"
-                    ? visibleSelectedArmorForComparison.length
-                    : state.displayMode === "sets"
-                      ? visibleSelectedArmorSetsForComparison.length
-                      : visibleSelectedMixMatchCombos.length
-                }}
-                )
-              </UButton>
-            </div>
-          </div>
+          <h2 id="expand-collapse-title" class="sr-only">
+            Expand/Collapse and Selection Controls
+          </h2>
+          <UButton
+            @click="expandAllCollapsibles"
+            size="sm"
+            color="primary"
+            variant="soft"
+            aria-label="Expand all sections"
+            >Expand All</UButton
+          >
+          <UButton
+            @click="collapseAllCollapsibles"
+            size="sm"
+            color="primary"
+            variant="soft"
+            aria-label="Collapse all sections"
+            >Collapse All</UButton
+          >
+          <UButton
+            @click="selectAllResults"
+            size="sm"
+            color="info"
+            variant="soft"
+            aria-label="Select all results"
+            >Select All</UButton
+          >
+          <UButton
+            @click="unselectAllResults"
+            size="sm"
+            color="info"
+            variant="soft"
+            aria-label="Unselect all results"
+            >Unselect All</UButton
+          >
         </div>
-      </template>
+      </section>
 
-      <!-- Results Display -->
-      <div
-        v-if="state.calculatedArmor && state.calculatedArmor.length > 0"
-        class="space-y-6"
-      >
-        <!-- Individual Display Mode -->
-        <ArmorIndividualDisplay
-          v-if="state.displayMode === 'individual'"
-          :armor="state.calculatedArmor"
-          :expanded-slots="state.expandedSlots"
-          :expanded-categories="state.expandedCategories"
-          :selected-armor-for-comparison="state.selectedArmorForComparison"
-          :current-pages="state.currentPages"
-          :items-per-page="state.itemsPerPage"
-          :pagination-enabled="state.paginationEnabled"
-          :expanded-armor="state.expandedArmor"
-          :sort-primary="state.sortPrimary"
-          :sort-secondary="state.sortSecondary"
-          :sort-descending="state.sortDescending"
-          @toggle-slot-expansion="toggleSlotExpansion"
-          @toggle-category-expansion="toggleCategoryExpansion"
-          @toggle-armor-comparison="toggleArmorComparison"
-          @toggle-armor-expansion="toggleArmorExpansion"
-          @page-change="goToPage"
-          @previous-page="previousPage"
-          @next-page="nextPage"
-        />
-
-        <!-- Sets Display Mode -->
-        <ArmorSetsDisplay
-          v-else-if="state.displayMode === 'sets'"
-          :armor-sets="state.calculatedArmor"
-          :expanded-categories="state.expandedSetCategories"
-          :selected-armor-sets-for-comparison="
-            state.selectedArmorSetsForComparison
-          "
-          :current-pages="state.currentPages"
-          :items-per-page="state.itemsPerPage"
-          :pagination-enabled="state.paginationEnabled"
-          :expanded-armor-sets="state.expandedArmorSets"
-          :sort-primary="state.sortPrimary"
-          :sort-secondary="state.sortSecondary"
-          :sort-descending="state.sortDescending"
-          :expanded-set-pieces="state.expandedSetPieces"
-          :on-toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
-          @toggle-category-expansion="toggleSetCategoryExpansion"
-          @toggle-armor-set-comparison="toggleArmorSetComparison"
-          @toggle-armor-set-expansion="toggleArmorSetExpansion"
-          @page-change="goToSetPage"
-          @previous-page="previousSetPage"
-          @next-page="nextSetPage"
-          @toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
-        />
-
-        <!-- Mix and Match Display Mode -->
-        <div v-else-if="state.displayMode === 'mixmatch'" class="space-y-0">
-          <div v-if="paginatedMixMatchResults.length > 0">
+      <!-- Results Section -->
+      <section aria-labelledby="armor-results-title">
+        <UCard class="w-full">
+          <template #header>
             <div
-              v-for="combo in paginatedMixMatchResults"
-              :key="combo.id"
-              class="border rounded-lg p-4 transition-all duration-200 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 mb-4"
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <!-- Card Header -->
-              <div
-                class="flex items-start justify-between cursor-pointer"
-                @click="toggleMixMatchExpansion(combo.id)"
-              >
-                <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                  <!-- Checkbox for comparison -->
-                  <div class="flex-shrink-0 mt-1">
-                    <input
-                      type="checkbox"
-                      :checked="
-                        persistentSelectedMixMatchCombos.includes(combo.id)
+              <div>
+                <h2
+                  id="armor-results-title"
+                  class="text-xl font-semibold text-gray-900 dark:text-white"
+                >
+                  Armor Results
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {{
+                    state.displayMode === "individual"
+                      ? "Individual Pieces"
+                      : state.displayMode === "sets"
+                        ? "Complete Sets"
+                        : "Mix and Match"
+                  }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+                <!-- Primary Sort -->
+                <div class="flex-shrink-0">
+                  <SelectField
+                    label="Primary Sort"
+                    id="sortPrimary"
+                    :model-value="state.sortPrimary"
+                    :options="sortOptions"
+                    placeholder="Select primary sort"
+                    :theme="selectedTheme"
+                    size="sm"
+                    class="w-32 sm:w-48"
+                    @update:model-value="
+                      (val: string) => setState({ sortPrimary: val })
+                    "
+                  />
+                </div>
+
+                <!-- "to" text -->
+                <div class="flex items-end h-8 flex-shrink-0">
+                  <span class="text-xs text-gray-600 dark:text-gray-400"
+                    >to</span
+                  >
+                </div>
+
+                <!-- Secondary Sort -->
+                <div class="flex-shrink-0">
+                  <SelectField
+                    label="Secondary Sort"
+                    id="sortSecondary"
+                    :model-value="state.sortSecondary"
+                    :options="secondarySortOptions"
+                    placeholder="Select secondary sort"
+                    :theme="selectedTheme"
+                    size="sm"
+                    class="w-32 sm:w-48"
+                    @update:model-value="
+                      (val: string) => setState({ sortSecondary: val })
+                    "
+                  />
+                </div>
+
+                <!-- "ratio" text -->
+                <div class="flex items-end h-8 flex-shrink-0">
+                  <span class="text-xs text-gray-600 dark:text-gray-400"
+                    >ratio</span
+                  >
+                </div>
+
+                <!-- Sort Direction Toggle Button -->
+                <div class="flex-shrink-0">
+                  <label
+                    class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    &nbsp;
+                  </label>
+                  <UButton
+                    size="sm"
+                    variant="outline"
+                    @click="setState({ sortDescending: !state.sortDescending })"
+                    :aria-label="
+                      state.sortDescending
+                        ? 'Sort ascending'
+                        : 'Sort descending'
+                    "
+                  >
+                    <Icon
+                      :name="
+                        state.sortDescending
+                          ? 'i-heroicons-arrow-down'
+                          : 'i-heroicons-arrow-up'
                       "
-                      @click.stop
-                      @change.stop="toggleMixMatchComboSelection(combo.id)"
-                      class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      class="w-4 h-4"
                     />
-                  </div>
-                  <!-- Combo Name and Stats -->
-                  <div class="flex-1 min-w-0">
-                    <div class="flex flex-col gap-2">
-                      <h4
-                        class="text-lg font-semibold text-gray-900 dark:text-white truncate"
-                        :title="
-                          ['head', 'chest', 'hands', 'legs']
-                            .map((slot) => combo.pieces[slot]?.name || '-')
-                            .join(' / ')
-                        "
-                      >
-                        {{
-                          ["head", "chest", "hands", "legs"]
-                            .map((slot) => {
-                              const name = combo.pieces[slot]?.name || "-";
-                              return name.length > 12
-                                ? name.slice(0, 12) + "…"
-                                : name;
-                            })
-                            .join(" / ")
-                        }}
-                      </h4>
-                      <div class="flex flex-wrap items-center gap-2">
-                        <span
-                          class="text-sm text-gray-600 dark:text-gray-400 flex-shrink-0"
-                        >
-                          ({{ combo.slotsFilled }} pieces)
-                        </span>
-                        <!-- Ratio Badge -->
-                        <span
-                          v-if="
-                            state.sortPrimary &&
-                            state.sortSecondary &&
-                            state.sortSecondary !== '' &&
-                            state.sortSecondary !== 'none'
+                  </UButton>
+                </div>
+
+                <!-- Compare Button for all display modes -->
+                <div class="flex-shrink-0">
+                  <label
+                    class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    &nbsp;
+                  </label>
+                  <UButton
+                    v-if="
+                      (state.displayMode === 'individual' &&
+                        visibleSelectedArmorForComparison.length > 0) ||
+                      (state.displayMode === 'sets' &&
+                        visibleSelectedArmorSetsForComparison.length > 0) ||
+                      (state.displayMode === 'mixmatch' &&
+                        visibleSelectedMixMatchCombos.length > 0)
+                    "
+                    @click="openComparisonModal"
+                    color="primary"
+                    variant="solid"
+                    size="sm"
+                  >
+                    Compare Selected (
+                    {{
+                      state.displayMode === "individual"
+                        ? visibleSelectedArmorForComparison.length
+                        : state.displayMode === "sets"
+                          ? visibleSelectedArmorSetsForComparison.length
+                          : visibleSelectedMixMatchCombos.length
+                    }}
+                    )
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Results Display -->
+          <div
+            v-if="state.calculatedArmor && state.calculatedArmor.length > 0"
+            class="space-y-6"
+            aria-live="polite"
+          >
+            <!-- Individual Display Mode -->
+            <ArmorIndividualDisplay
+              v-if="state.displayMode === 'individual'"
+              :armor="state.calculatedArmor"
+              :expanded-slots="state.expandedSlots"
+              :expanded-categories="state.expandedCategories"
+              :selected-armor-for-comparison="state.selectedArmorForComparison"
+              :current-pages="state.currentPages"
+              :items-per-page="state.itemsPerPage"
+              :pagination-enabled="state.paginationEnabled"
+              :expanded-armor="state.expandedArmor"
+              :sort-primary="state.sortPrimary"
+              :sort-secondary="state.sortSecondary"
+              :sort-descending="state.sortDescending"
+              @toggle-slot-expansion="toggleSlotExpansion"
+              @toggle-category-expansion="toggleCategoryExpansion"
+              @toggle-armor-comparison="toggleArmorComparison"
+              @toggle-armor-expansion="toggleArmorExpansion"
+              @page-change="goToPage"
+              @previous-page="previousPage"
+              @next-page="nextPage"
+            />
+
+            <!-- Sets Display Mode -->
+            <ArmorSetsDisplay
+              v-else-if="state.displayMode === 'sets'"
+              :armor-sets="state.calculatedArmor"
+              :expanded-categories="state.expandedSetCategories"
+              :selected-armor-sets-for-comparison="
+                state.selectedArmorSetsForComparison
+              "
+              :current-pages="state.currentPages"
+              :items-per-page="state.itemsPerPage"
+              :pagination-enabled="state.paginationEnabled"
+              :expanded-armor-sets="state.expandedArmorSets"
+              :sort-primary="state.sortPrimary"
+              :sort-secondary="state.sortSecondary"
+              :sort-descending="state.sortDescending"
+              :expanded-set-pieces="state.expandedSetPieces"
+              :on-toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
+              @toggle-category-expansion="toggleSetCategoryExpansion"
+              @toggle-armor-set-comparison="toggleArmorSetComparison"
+              @toggle-armor-set-expansion="toggleArmorSetExpansion"
+              @page-change="goToSetPage"
+              @previous-page="previousSetPage"
+              @next-page="nextSetPage"
+              @toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
+            />
+
+            <!-- Mix and Match Display Mode -->
+            <div v-else-if="state.displayMode === 'mixmatch'" class="space-y-0">
+              <div v-if="paginatedMixMatchResults.length > 0">
+                <div
+                  v-for="combo in paginatedMixMatchResults"
+                  :key="combo.id"
+                  class="border rounded-lg p-4 transition-all duration-200 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 mb-4"
+                >
+                  <!-- Card Header -->
+                  <div
+                    class="flex items-start justify-between cursor-pointer"
+                    @click="toggleMixMatchExpansion(combo.id)"
+                  >
+                    <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                      <!-- Checkbox for comparison -->
+                      <div class="flex-shrink-0 mt-1">
+                        <input
+                          type="checkbox"
+                          :checked="
+                            persistentSelectedMixMatchCombos.includes(combo.id)
                           "
-                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0"
-                          :title="`${getSortLabel(state.sortPrimary)} / ${getSortLabel(state.sortSecondary)} ratio: ${calculateComboRatio(combo, state.sortPrimary, state.sortSecondary).toFixed(2)}`"
-                        >
-                          <span class="hidden sm:inline"
-                            >{{ getSortLabel(state.sortPrimary) }} /
-                            {{ getSortLabel(state.sortSecondary) }}
-                            ratio:&nbsp;{{
-                              calculateComboRatio(
-                                combo,
-                                state.sortPrimary,
-                                state.sortSecondary
-                              ).toFixed(2)
-                            }}</span
-                          ><span class="sm:hidden"
-                            >Ratio:&nbsp;{{
-                              calculateComboRatio(
-                                combo,
-                                state.sortPrimary,
-                                state.sortSecondary
-                              ).toFixed(2)
-                            }}</span
-                          >
-                        </span>
+                          @click.stop
+                          @change.stop="toggleMixMatchComboSelection(combo.id)"
+                          class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        />
                       </div>
-                      <!-- Key Stats Row -->
-                      <div
-                        class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm"
-                      >
-                        <div class="flex items-center gap-1 flex-shrink-0">
-                          <span class="text-gray-600 dark:text-gray-400"
-                            >Weight:</span
-                          ><span
-                            class="font-semibold text-lg text-gray-900 dark:text-white"
-                            >{{ combo.totalWeight.toFixed(1) }}</span
+                      <!-- Combo Name and Stats -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex flex-col gap-2">
+                          <h4
+                            class="text-lg font-semibold text-gray-900 dark:text-white truncate"
+                            :title="
+                              ['head', 'chest', 'hands', 'legs']
+                                .map((slot) => combo.pieces[slot]?.name || '-')
+                                .join(' / ')
+                            "
                           >
-                        </div>
-                        <div class="flex items-center gap-1 flex-shrink-0">
-                          <span class="text-gray-600 dark:text-gray-400"
-                            >Poise:</span
-                          >
-                          <span
-                            class="font-semibold text-lg text-blue-600 dark:text-blue-400"
-                            >{{ combo.totalPoise.toFixed(1) }}</span
-                          >
-                        </div>
-                        <div
-                          class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs"
-                        >
-                          <div class="flex items-center gap-1 flex-shrink-0">
-                            <span class="text-blue-600 dark:text-blue-400"
-                              >Regular:</span
-                            >
+                            {{
+                              ["head", "chest", "hands", "legs"]
+                                .map((slot) => {
+                                  const name = combo.pieces[slot]?.name || "-";
+                                  return name.length > 12
+                                    ? name.slice(0, 12) + "…"
+                                    : name;
+                                })
+                                .join(" / ")
+                            }}
+                          </h4>
+                          <div class="flex flex-wrap items-center gap-2">
                             <span
+                              class="text-sm text-gray-600 dark:text-gray-400 flex-shrink-0"
+                            >
+                              ({{ combo.slotsFilled }} pieces)
+                            </span>
+                            <!-- Ratio Badge -->
+                            <span
+                              v-if="
+                                state.sortPrimary &&
+                                state.sortSecondary &&
+                                state.sortSecondary !== '' &&
+                                state.sortSecondary !== 'none'
+                              "
+                              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0"
+                              :title="`${getSortLabel(state.sortPrimary)} / ${getSortLabel(state.sortSecondary)} ratio: ${calculateComboRatio(combo, state.sortPrimary, state.sortSecondary).toFixed(2)}`"
+                            >
+                              <span class="hidden sm:inline"
+                                >{{ getSortLabel(state.sortPrimary) }} /
+                                {{ getSortLabel(state.sortSecondary) }}
+                                ratio:&nbsp;{{
+                                  calculateComboRatio(
+                                    combo,
+                                    state.sortPrimary,
+                                    state.sortSecondary
+                                  ).toFixed(2)
+                                }}</span
+                              ><span class="sm:hidden"
+                                >Ratio:&nbsp;{{
+                                  calculateComboRatio(
+                                    combo,
+                                    state.sortPrimary,
+                                    state.sortSecondary
+                                  ).toFixed(2)
+                                }}</span
+                              >
+                            </span>
+                          </div>
+                          <!-- Key Stats Row -->
+                          <div
+                            class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm"
+                          >
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                              <span class="text-gray-600 dark:text-gray-400"
+                                >Weight:</span
+                              ><span
+                                class="font-semibold text-lg text-gray-900 dark:text-white"
+                                >{{ combo.totalWeight.toFixed(1) }}</span
+                              >
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                              <span class="text-gray-600 dark:text-gray-400"
+                                >Poise:</span
+                              >
+                              <span
+                                class="font-semibold text-lg text-blue-600 dark:text-blue-400"
+                                >{{ combo.totalPoise.toFixed(1) }}</span
+                              >
+                            </div>
+                            <div
+                              class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs"
+                            >
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span class="text-blue-600 dark:text-blue-400"
+                                  >Regular:</span
+                                >
+                                <span
+                                  class="font-semibold text-blue-600 dark:text-blue-400"
+                                  >{{
+                                    combo.totalDefense.normal.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span
+                                  class="text-orange-600 dark:text-orange-400"
+                                  >Strike:</span
+                                >
+                                <span
+                                  class="font-semibold text-orange-600 dark:text-orange-400"
+                                  >{{
+                                    combo.totalDefense.strike.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span class="text-red-600 dark:text-red-400"
+                                  >Slash:</span
+                                >
+                                <span
+                                  class="font-semibold text-red-600 dark:text-red-400"
+                                  >{{
+                                    combo.totalDefense.slash.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span
+                                  class="text-purple-600 dark:text-purple-400"
+                                  >Thrust:</span
+                                >
+                                <span
+                                  class="font-semibold text-purple-600 dark:text-purple-400"
+                                  >{{
+                                    combo.totalDefense.thrust.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                            </div>
+                            <div
+                              class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs"
+                            >
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span
+                                  class="text-indigo-600 dark:text-indigo-400"
+                                  >Magic:</span
+                                >
+                                <span
+                                  class="font-semibold text-indigo-600 dark:text-indigo-400"
+                                  >{{
+                                    combo.totalDefense.magic.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span
+                                  class="text-yellow-600 dark:text-yellow-400"
+                                  >Fire:</span
+                                >
+                                <span
+                                  class="font-semibold text-yellow-600 dark:text-yellow-400"
+                                  >{{
+                                    combo.totalDefense.fire.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div
+                                class="flex items-center gap-1 flex-shrink-0"
+                              >
+                                <span class="text-cyan-600 dark:text-cyan-400"
+                                  >Lightning:</span
+                                >
+                                <span
+                                  class="font-semibold text-cyan-600 dark:text-cyan-400"
+                                  >{{
+                                    combo.totalDefense.lightning.toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Expand/Collapse Icon -->
+                    <div class="flex-shrink-0">
+                      <Icon
+                        :name="
+                          Array.isArray(state.expandedMixMatch) &&
+                          state.expandedMixMatch.includes(combo.id)
+                            ? 'i-heroicons-chevron-up'
+                            : 'i-heroicons-chevron-down'
+                        "
+                        class="w-5 h-5 text-gray-500"
+                      />
+                    </div>
+                  </div>
+                  <!-- Expanded Content -->
+                  <div
+                    v-if="
+                      Array.isArray(state.expandedMixMatch) &&
+                      state.expandedMixMatch.includes(combo.id)
+                    "
+                    class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+                  >
+                    <!-- Defense Stats Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <!-- Physical Defense -->
+                      <div class="space-y-2">
+                        <h5
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          Physical Defense
+                        </h5>
+                        <div class="space-y-1 text-xs">
+                          <div class="flex justify-between">
+                            <span class="text-blue-600 dark:text-blue-400"
+                              >Normal:</span
+                            ><span
                               class="font-semibold text-blue-600 dark:text-blue-400"
                               >{{ combo.totalDefense.normal.toFixed(1) }}</span
                             >
                           </div>
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          <div class="flex justify-between">
                             <span class="text-orange-600 dark:text-orange-400"
                               >Strike:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-orange-600 dark:text-orange-400"
                               >{{ combo.totalDefense.strike.toFixed(1) }}</span
                             >
                           </div>
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          <div class="flex justify-between">
                             <span class="text-red-600 dark:text-red-400"
                               >Slash:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-red-600 dark:text-red-400"
                               >{{ combo.totalDefense.slash.toFixed(1) }}</span
                             >
                           </div>
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          <div class="flex justify-between">
                             <span class="text-purple-600 dark:text-purple-400"
                               >Thrust:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-purple-600 dark:text-purple-400"
                               >{{ combo.totalDefense.thrust.toFixed(1) }}</span
                             >
                           </div>
                         </div>
-                        <div
-                          class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs"
+                      </div>
+                      <!-- Elemental Defense -->
+                      <div class="space-y-2">
+                        <h5
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300"
                         >
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          Elemental Defense
+                        </h5>
+                        <div class="space-y-1 text-xs">
+                          <div class="flex justify-between">
                             <span class="text-indigo-600 dark:text-indigo-400"
                               >Magic:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-indigo-600 dark:text-indigo-400"
                               >{{ combo.totalDefense.magic.toFixed(1) }}</span
                             >
                           </div>
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          <div class="flex justify-between">
                             <span class="text-yellow-600 dark:text-yellow-400"
                               >Fire:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-yellow-600 dark:text-yellow-400"
                               >{{ combo.totalDefense.fire.toFixed(1) }}</span
                             >
                           </div>
-                          <div class="flex items-center gap-1 flex-shrink-0">
+                          <div class="flex justify-between">
                             <span class="text-cyan-600 dark:text-cyan-400"
                               >Lightning:</span
-                            >
-                            <span
+                            ><span
                               class="font-semibold text-cyan-600 dark:text-cyan-400"
                               >{{
                                 combo.totalDefense.lightning.toFixed(1)
@@ -2262,383 +2439,28 @@ watch(persistentSelectedMixMatchCombos, (val) => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Expand/Collapse Icon -->
-                <div class="flex-shrink-0">
-                  <Icon
-                    :name="
-                      Array.isArray(state.expandedMixMatch) &&
-                      state.expandedMixMatch.includes(combo.id)
-                        ? 'i-heroicons-chevron-up'
-                        : 'i-heroicons-chevron-down'
-                    "
-                    class="w-5 h-5 text-gray-500"
-                  />
-                </div>
-              </div>
-              <!-- Expanded Content -->
-              <div
-                v-if="
-                  Array.isArray(state.expandedMixMatch) &&
-                  state.expandedMixMatch.includes(combo.id)
-                "
-                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-              >
-                <!-- Defense Stats Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <!-- Physical Defense -->
-                  <div class="space-y-2">
-                    <h5
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Physical Defense
-                    </h5>
-                    <div class="space-y-1 text-xs">
-                      <div class="flex justify-between">
-                        <span class="text-blue-600 dark:text-blue-400"
-                          >Normal:</span
-                        ><span
-                          class="font-semibold text-blue-600 dark:text-blue-400"
-                          >{{ combo.totalDefense.normal.toFixed(1) }}</span
+                      <!-- Status Resistance -->
+                      <div class="space-y-2">
+                        <h5
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300"
                         >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-orange-600 dark:text-orange-400"
-                          >Strike:</span
-                        ><span
-                          class="font-semibold text-orange-600 dark:text-orange-400"
-                          >{{ combo.totalDefense.strike.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-red-600 dark:text-red-400"
-                          >Slash:</span
-                        ><span
-                          class="font-semibold text-red-600 dark:text-red-400"
-                          >{{ combo.totalDefense.slash.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-purple-600 dark:text-purple-400"
-                          >Thrust:</span
-                        ><span
-                          class="font-semibold text-purple-600 dark:text-purple-400"
-                          >{{ combo.totalDefense.thrust.toFixed(1) }}</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Elemental Defense -->
-                  <div class="space-y-2">
-                    <h5
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Elemental Defense
-                    </h5>
-                    <div class="space-y-1 text-xs">
-                      <div class="flex justify-between">
-                        <span class="text-indigo-600 dark:text-indigo-400"
-                          >Magic:</span
-                        ><span
-                          class="font-semibold text-indigo-600 dark:text-indigo-400"
-                          >{{ combo.totalDefense.magic.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-yellow-600 dark:text-yellow-400"
-                          >Fire:</span
-                        ><span
-                          class="font-semibold text-yellow-600 dark:text-yellow-400"
-                          >{{ combo.totalDefense.fire.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-cyan-600 dark:text-cyan-400"
-                          >Lightning:</span
-                        ><span
-                          class="font-semibold text-cyan-600 dark:text-cyan-400"
-                          >{{ combo.totalDefense.lightning.toFixed(1) }}</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Status Resistance -->
-                  <div class="space-y-2">
-                    <h5
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Status Resistance
-                    </h5>
-                    <div class="space-y-1 text-xs">
-                      <div class="flex justify-between">
-                        <span class="text-red-500 dark:text-red-400"
-                          >Bleed:</span
-                        ><span
-                          class="font-semibold text-red-500 dark:text-red-400"
-                          >{{ combo.totalDefense.bleed.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-green-600 dark:text-green-400"
-                          >Poison:</span
-                        ><span
-                          class="font-semibold text-green-600 dark:text-green-400"
-                          >{{ combo.totalDefense.poison.toFixed(1) }}</span
-                        >
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-purple-500 dark:text-purple-400"
-                          >Curse:</span
-                        ><span
-                          class="font-semibold text-purple-500 dark:text-purple-400"
-                          >{{ combo.totalDefense.curse.toFixed(1) }}</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Set Summary -->
-                  <div class="space-y-2">
-                    <h5
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Set Summary
-                    </h5>
-                    <div class="space-y-1 text-xs">
-                      <div class="flex justify-between">
-                        <span>Total Weight:</span
-                        ><span>{{ combo.totalWeight.toFixed(1) }}</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span>Total Poise:</span
-                        ><span>{{ combo.totalPoise.toFixed(1) }}</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span>Total Defense:</span
-                        ><span>{{
-                          (
-                            combo.totalDefense.normal +
-                            combo.totalDefense.strike +
-                            combo.totalDefense.slash +
-                            combo.totalDefense.thrust
-                          ).toFixed(1)
-                        }}</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span>Elemental:</span>
-                        <span>{{
-                          (
-                            combo.totalDefense.magic +
-                            combo.totalDefense.fire +
-                            combo.totalDefense.lightning
-                          ).toFixed(1)
-                        }}</span>
-                      </div>
-                      <div
-                        v-if="combo.totalStaminaRegenReduction"
-                        class="flex justify-between"
-                      >
-                        <span
-                          class="text-xs text-yellow-600 dark:text-yellow-400"
-                          >Stamina Regen:</span
-                        >
-                        <span
-                          class="text-xs text-yellow-600 dark:text-yellow-400"
-                          >-{{ combo.totalStaminaRegenReduction }}</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Individual Armor Pieces -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <UButton
-                    variant="ghost"
-                    size="sm"
-                    class="mb-3 w-full justify-between"
-                    @click="toggleMixMatchPiecesExpansion(combo.id)"
-                  >
-                    <span
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Individual Pieces
-                    </span>
-                    <Icon
-                      :name="
-                        Array.isArray(state.expandedMixMatchPieces) &&
-                        state.expandedMixMatchPieces.includes(combo.id)
-                          ? 'i-heroicons-chevron-down'
-                          : 'i-heroicons-chevron-right'
-                      "
-                      class="w-4 h-4"
-                    />
-                  </UButton>
-                  <div
-                    v-if="
-                      Array.isArray(state.expandedMixMatchPieces) &&
-                      state.expandedMixMatchPieces.includes(combo.id)
-                    "
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-                  >
-                    <div
-                      v-for="slot in ['head', 'chest', 'hands', 'legs']"
-                      :key="slot"
-                      class="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                    >
-                      <!-- Piece Header -->
-                      <div class="flex items-center justify-between mb-3">
-                        <span
-                          class="text-sm font-semibold capitalize text-gray-900 dark:text-white"
-                          >{{ slot }}</span
-                        >
-                        <span
-                          v-if="combo.pieces && combo.pieces[slot]"
-                          class="text-xs text-gray-500 dark:text-gray-400"
-                          >{{ (combo.pieces[slot].weight ?? 0).toFixed(1) }}
-                          weight
-                        </span>
-                      </div>
-                      <!-- Piece Name -->
-                      <div
-                        v-if="combo.pieces && combo.pieces[slot]"
-                        class="text-sm font-medium mb-3 text-gray-900 dark:text-white"
-                      >
-                        {{ combo.pieces[slot].name }}
-                      </div>
-                      <div v-else class="text-xs text-gray-400 italic">
-                        Empty
-                      </div>
-                      <!-- Piece Stats -->
-                      <div
-                        v-if="combo.pieces && combo.pieces[slot]"
-                        class="space-y-2 text-xs"
-                      >
-                        <!-- Poise -->
-                        <div class="flex justify-between">
-                          <span class="text-gray-600 dark:text-gray-400"
-                            >Poise:</span
-                          ><span
-                            class="font-semibold text-blue-600 dark:text-blue-400"
-                            >{{
-                              (combo.pieces[slot].effect?.poise ?? 0).toFixed(1)
-                            }}</span
-                          >
-                        </div>
-                        <!-- Physical Defense -->
-                        <div class="space-y-1">
-                          <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400"
-                              >Regular:</span
-                            ><span
-                              class="font-semibold text-blue-600 dark:text-blue-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.normal ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                          <div class="flex justify-between">
-                            <span class="text-orange-600 dark:text-orange-400"
-                              >Strike:</span
-                            ><span
-                              class="font-semibold text-orange-600 dark:text-orange-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.strike ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                          <div class="flex justify-between">
-                            <span class="text-red-600 dark:text-red-400"
-                              >Slash:</span
-                            ><span
-                              class="font-semibold text-red-600 dark:text-red-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.slash ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                          <div class="flex justify-between">
-                            <span class="text-purple-600 dark:text-purple-400"
-                              >Thrust:</span
-                            ><span
-                              class="font-semibold text-purple-600 dark:text-purple-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.thrust ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                        </div>
-                        <!-- Elemental Defense -->
-                        <div class="space-y-1">
-                          <div class="flex justify-between">
-                            <span class="text-indigo-600 dark:text-indigo-400"
-                              >Magic:</span
-                            ><span
-                              class="font-semibold text-indigo-600 dark:text-indigo-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.magic ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                          <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-yellow-400"
-                              >Fire:</span
-                            ><span
-                              class="font-semibold text-yellow-600 dark:text-yellow-400"
-                              >{{
-                                (combo.pieces[slot].defense?.fire ?? 0).toFixed(
-                                  1
-                                )
-                              }}</span
-                            >
-                          </div>
-                          <div class="flex justify-between">
-                            <span class="text-cyan-600 dark:text-cyan-400"
-                              >Lightning:</span
-                            ><span
-                              class="font-semibold text-cyan-600 dark:text-cyan-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.lightning ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
-                        </div>
-                        <!-- Status Resistance -->
-                        <div class="space-y-1">
-                          <div class="flex justify-between">
-                            <span class="text-green-600 dark:text-green-400"
-                              >Poison:</span
-                            ><span
-                              class="font-semibold text-green-600 dark:text-green-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.poison ?? 0
-                                ).toFixed(1)
-                              }}</span
-                            >
-                          </div>
+                          Status Resistance
+                        </h5>
+                        <div class="space-y-1 text-xs">
                           <div class="flex justify-between">
                             <span class="text-red-500 dark:text-red-400"
                               >Bleed:</span
                             ><span
                               class="font-semibold text-red-500 dark:text-red-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.bleed ?? 0
-                                ).toFixed(1)
-                              }}</span
+                              >{{ combo.totalDefense.bleed.toFixed(1) }}</span
+                            >
+                          </div>
+                          <div class="flex justify-between">
+                            <span class="text-green-600 dark:text-green-400"
+                              >Poison:</span
+                            ><span
+                              class="font-semibold text-green-600 dark:text-green-400"
+                              >{{ combo.totalDefense.poison.toFixed(1) }}</span
                             >
                           </div>
                           <div class="flex justify-between">
@@ -2646,119 +2468,391 @@ watch(persistentSelectedMixMatchCombos, (val) => {
                               >Curse:</span
                             ><span
                               class="font-semibold text-purple-500 dark:text-purple-400"
-                              >{{
-                                (
-                                  combo.pieces[slot].defense?.curse ?? 0
-                                ).toFixed(1)
-                              }}</span
+                              >{{ combo.totalDefense.curse.toFixed(1) }}</span
                             >
                           </div>
                         </div>
-                        <div
-                          v-if="combo.pieces[slot].staminaRegenReduction"
-                          class="flex justify-between text-xs text-yellow-600 dark:text-yellow-400"
+                      </div>
+                      <!-- Set Summary -->
+                      <div class="space-y-2">
+                        <h5
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300"
                         >
-                          <span>Stamina Regen:</span>
-                          <span class="font-semibold"
-                            >-{{
-                              combo.pieces[slot].staminaRegenReduction
-                            }}</span
+                          Set Summary
+                        </h5>
+                        <div class="space-y-1 text-xs">
+                          <div class="flex justify-between">
+                            <span>Total Weight:</span
+                            ><span>{{ combo.totalWeight.toFixed(1) }}</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span>Total Poise:</span
+                            ><span>{{ combo.totalPoise.toFixed(1) }}</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span>Total Defense:</span
+                            ><span>{{
+                              (
+                                combo.totalDefense.normal +
+                                combo.totalDefense.strike +
+                                combo.totalDefense.slash +
+                                combo.totalDefense.thrust
+                              ).toFixed(1)
+                            }}</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span>Elemental:</span>
+                            <span>{{
+                              (
+                                combo.totalDefense.magic +
+                                combo.totalDefense.fire +
+                                combo.totalDefense.lightning
+                              ).toFixed(1)
+                            }}</span>
+                          </div>
+                          <div
+                            v-if="combo.totalStaminaRegenReduction"
+                            class="flex justify-between"
                           >
+                            <span
+                              class="text-xs text-yellow-600 dark:text-yellow-400"
+                              >Stamina Regen:</span
+                            >
+                            <span
+                              class="text-xs text-yellow-600 dark:text-yellow-400"
+                              >-{{ combo.totalStaminaRegenReduction }}</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Individual Armor Pieces -->
+                    <div
+                      class="border-t border-gray-200 dark:border-gray-700 pt-4"
+                    >
+                      <UButton
+                        variant="ghost"
+                        size="sm"
+                        class="mb-3 w-full justify-between"
+                        @click="toggleMixMatchPiecesExpansion(combo.id)"
+                      >
+                        <span
+                          class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          Individual Pieces
+                        </span>
+                        <Icon
+                          :name="
+                            Array.isArray(state.expandedMixMatchPieces) &&
+                            state.expandedMixMatchPieces.includes(combo.id)
+                              ? 'i-heroicons-chevron-down'
+                              : 'i-heroicons-chevron-right'
+                          "
+                          class="w-4 h-4"
+                        />
+                      </UButton>
+                      <div
+                        v-if="
+                          Array.isArray(state.expandedMixMatchPieces) &&
+                          state.expandedMixMatchPieces.includes(combo.id)
+                        "
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+                      >
+                        <div
+                          v-for="slot in ['head', 'chest', 'hands', 'legs']"
+                          :key="slot"
+                          class="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        >
+                          <!-- Piece Header -->
+                          <div class="flex items-center justify-between mb-3">
+                            <span
+                              class="text-sm font-semibold capitalize text-gray-900 dark:text-white"
+                              >{{ slot }}</span
+                            >
+                            <span
+                              v-if="combo.pieces && combo.pieces[slot]"
+                              class="text-xs text-gray-500 dark:text-gray-400"
+                              >{{ (combo.pieces[slot].weight ?? 0).toFixed(1) }}
+                              weight
+                            </span>
+                          </div>
+                          <!-- Piece Name -->
+                          <div
+                            v-if="combo.pieces && combo.pieces[slot]"
+                            class="text-sm font-medium mb-3 text-gray-900 dark:text-white"
+                          >
+                            {{ combo.pieces[slot].name }}
+                          </div>
+                          <div v-else class="text-xs text-gray-400 italic">
+                            Empty
+                          </div>
+                          <!-- Piece Stats -->
+                          <div
+                            v-if="combo.pieces && combo.pieces[slot]"
+                            class="space-y-2 text-xs"
+                          >
+                            <!-- Poise -->
+                            <div class="flex justify-between">
+                              <span class="text-gray-600 dark:text-gray-400"
+                                >Poise:</span
+                              ><span
+                                class="font-semibold text-blue-600 dark:text-blue-400"
+                                >{{
+                                  (
+                                    combo.pieces[slot].effect?.poise ?? 0
+                                  ).toFixed(1)
+                                }}</span
+                              >
+                            </div>
+                            <!-- Physical Defense -->
+                            <div class="space-y-1">
+                              <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400"
+                                  >Regular:</span
+                                ><span
+                                  class="font-semibold text-blue-600 dark:text-blue-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.normal ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span
+                                  class="text-orange-600 dark:text-orange-400"
+                                  >Strike:</span
+                                ><span
+                                  class="font-semibold text-orange-600 dark:text-orange-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.strike ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span class="text-red-600 dark:text-red-400"
+                                  >Slash:</span
+                                ><span
+                                  class="font-semibold text-red-600 dark:text-red-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.slash ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span
+                                  class="text-purple-600 dark:text-purple-400"
+                                  >Thrust:</span
+                                ><span
+                                  class="font-semibold text-purple-600 dark:text-purple-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.thrust ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                            </div>
+                            <!-- Elemental Defense -->
+                            <div class="space-y-1">
+                              <div class="flex justify-between">
+                                <span
+                                  class="text-indigo-600 dark:text-indigo-400"
+                                  >Magic:</span
+                                ><span
+                                  class="font-semibold text-indigo-600 dark:text-indigo-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.magic ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span
+                                  class="text-yellow-600 dark:text-yellow-400"
+                                  >Fire:</span
+                                ><span
+                                  class="font-semibold text-yellow-600 dark:text-yellow-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.fire ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span class="text-cyan-600 dark:text-cyan-400"
+                                  >Lightning:</span
+                                ><span
+                                  class="font-semibold text-cyan-600 dark:text-cyan-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.lightning ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                            </div>
+                            <!-- Status Resistance -->
+                            <div class="space-y-1">
+                              <div class="flex justify-between">
+                                <span class="text-green-600 dark:text-green-400"
+                                  >Poison:</span
+                                ><span
+                                  class="font-semibold text-green-600 dark:text-green-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.poison ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span class="text-red-500 dark:text-red-400"
+                                  >Bleed:</span
+                                ><span
+                                  class="font-semibold text-red-500 dark:text-red-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.bleed ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                              <div class="flex justify-between">
+                                <span
+                                  class="text-purple-500 dark:text-purple-400"
+                                  >Curse:</span
+                                ><span
+                                  class="font-semibold text-purple-500 dark:text-purple-400"
+                                  >{{
+                                    (
+                                      combo.pieces[slot].defense?.curse ?? 0
+                                    ).toFixed(1)
+                                  }}</span
+                                >
+                              </div>
+                            </div>
+                            <div
+                              v-if="combo.pieces[slot].staminaRegenReduction"
+                              class="flex justify-between text-xs text-yellow-600 dark:text-yellow-400"
+                            >
+                              <span>Stamina Regen:</span>
+                              <span class="font-semibold"
+                                >-{{
+                                  combo.pieces[slot].staminaRegenReduction
+                                }}</span
+                              >
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+                <!-- Pagination Controls -->
+                <div
+                  class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2 sm:gap-0"
+                >
+                  <div
+                    class="order-2 sm:order-1 flex justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-400"
+                  >
+                    Showing
+                    {{ (mixMatchPage - 1) * mixMatchItemsPerPage + 1 }} -
+                    {{
+                      Math.min(
+                        mixMatchPage * mixMatchItemsPerPage,
+                        state.calculatedArmor.length
+                      )
+                    }}
+                    of {{ state.calculatedArmor.length }} combinations
+                  </div>
+                  <div
+                    class="order-1 sm:order-2 flex items-center justify-center gap-2"
+                  >
+                    <UButton
+                      :disabled="mixMatchPage === 1"
+                      @click="previousMixMatchPage"
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Icon name="i-heroicons-chevron-left" class="w-4 h-4" />
+                    </UButton>
+                    <UButton
+                      v-for="page in mixMatchTotalPages"
+                      :key="page"
+                      :variant="mixMatchPage === page ? 'solid' : 'ghost'"
+                      size="sm"
+                      @click="goToMixMatchPage(page)"
+                    >
+                      {{ page }}
+                    </UButton>
+                    <UButton
+                      :disabled="mixMatchPage === mixMatchTotalPages"
+                      @click="nextMixMatchPage"
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Icon name="i-heroicons-chevron-right" class="w-4 h-4" />
+                    </UButton>
+                  </div>
+                </div>
               </div>
-            </div>
-            <!-- Pagination Controls -->
-            <div
-              class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2 sm:gap-0"
-            >
-              <div
-                class="order-2 sm:order-1 flex justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-400"
-              >
-                Showing {{ (mixMatchPage - 1) * mixMatchItemsPerPage + 1 }} -
-                {{
-                  Math.min(
-                    mixMatchPage * mixMatchItemsPerPage,
-                    state.calculatedArmor.length
-                  )
-                }}
-                of {{ state.calculatedArmor.length }} combinations
-              </div>
-              <div
-                class="order-1 sm:order-2 flex items-center justify-center gap-2"
-              >
-                <UButton
-                  :disabled="mixMatchPage === 1"
-                  @click="previousMixMatchPage"
-                  variant="ghost"
-                  size="sm"
+              <div v-else class="text-center py-12">
+                <Icon
+                  name="i-heroicons-shield-check"
+                  class="w-12 h-12 text-gray-400 mx-auto mb-4"
+                />
+                <h3
+                  class="text-lg font-medium text-gray-900 dark:text-white mb-2"
                 >
-                  <Icon name="i-heroicons-chevron-left" class="w-4 h-4" />
-                </UButton>
-                <UButton
-                  v-for="page in mixMatchTotalPages"
-                  :key="page"
-                  :variant="mixMatchPage === page ? 'solid' : 'ghost'"
-                  size="sm"
-                  @click="goToMixMatchPage(page)"
-                >
-                  {{ page }}
-                </UButton>
-                <UButton
-                  :disabled="mixMatchPage === mixMatchTotalPages"
-                  @click="nextMixMatchPage"
-                  variant="ghost"
-                  size="sm"
-                >
-                  <Icon name="i-heroicons-chevron-right" class="w-4 h-4" />
-                </UButton>
+                  No valid combinations found
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                  Try adjusting your search criteria, character stats, or dodge
+                  roll filter.
+                </p>
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-12">
-            <Icon
-              name="i-heroicons-shield-check"
-              class="w-12 h-12 text-gray-400 mx-auto mb-4"
-            />
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No valid combinations found
-            </h3>
-            <p class="text-gray-600 dark:text-gray-400">
-              Try adjusting your search criteria, character stats, or dodge roll
-              filter.
-            </p>
-          </div>
-        </div>
+        </UCard>
+      </section>
+
+      <!-- Top 3 Performance Disclaimer: only show for mixmatch mode -->
+      <div
+        v-if="state.displayMode === 'mixmatch'"
+        class="mt-6 text-xs text-gray-500 dark:text-gray-400 text-center"
+      >
+        <span>
+          These results are generated from the top 3 pieces per category per
+          slot for your chosen filter.<br />
+          A full unrestricted search would require evaluating
+          <b>{{ fullMixMatchCombinationCount.toLocaleString() }}</b>
+          possible combinations, while this restricted search only considers
+          about
+          <b>{{ restrictedMixMatchCombinationCount.toLocaleString() }}</b>
+          combinations. This makes the tool much faster while still providing
+          accurate (95%+) results.
+        </span>
       </div>
-    </UCard>
-    <!-- Top 3 Performance Disclaimer: only show for mixmatch mode -->
-    <div
-      v-if="state.displayMode === 'mixmatch'"
-      class="mt-6 text-xs text-gray-500 dark:text-gray-400 text-center"
-    >
-      <span>
-        These results are generated from the top 3 pieces per category per slot
-        for your chosen filter.<br />
-        A full unrestricted search would require evaluating
-        <b>{{ fullMixMatchCombinationCount.toLocaleString() }}</b>
-        possible combinations, while this restricted search only considers about
-        <b>{{ restrictedMixMatchCombinationCount.toLocaleString() }}</b>
-        combinations. This makes the tool much faster while still providing
-        accurate (95%+) results.
-      </span>
     </div>
-  </div>
+  </main>
 
   <!-- Comparison Modal -->
   <ArmorComparisonModal
     v-model:open="showComparisonModal"
     :items="getComparisonItems()"
     :mode="state.displayMode as 'individual' | 'sets' | 'mixmatch'"
+    aria-label="Armor Comparison Modal"
   />
 
   <!-- How to Use Section -->
-  <HowToUse :steps="howToUseSteps" :theme="selectedTheme" class="mt-6" />
+  <section aria-labelledby="how-to-use-title">
+    <HowToUse :steps="howToUseSteps" :theme="selectedTheme" class="mt-6" />
+  </section>
 </template>

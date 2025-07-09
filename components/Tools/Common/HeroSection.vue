@@ -65,12 +65,12 @@
           v-if="variant === 'homepage'"
           class="flex flex-col items-center gap-2"
         >
-          <span
+          <h1
             class="inline-block rounded-2xl px-5 py-1.5 max-w-xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-0 text-center"
             :style="`${$colorMode?.value === 'dark' ? 'background:rgba(0,0,0,0.16);' : 'background:rgba(0,0,0,0.06);'}`"
           >
             {{ title }}
-          </span>
+          </h1>
           <span
             class="inline-block rounded-xl px-3 py-0.5 max-w-xl text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] text-base sm:text-lg text-center"
             :style="`${$colorMode?.value === 'dark' ? 'background:rgba(0,0,0,0.10);' : 'background:rgba(0,0,0,0.04);'}`"
@@ -79,14 +79,15 @@
           </span>
         </div>
         <template v-else>
-          <h2
+          <h1
+            id="tool-title"
             :class="[
               'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
               'text-gray-900 dark:text-white drop-shadow-sm',
             ]"
           >
             {{ title }}
-          </h2>
+          </h1>
           <p
             :class="[
               'text-base sm:text-lg text-center',

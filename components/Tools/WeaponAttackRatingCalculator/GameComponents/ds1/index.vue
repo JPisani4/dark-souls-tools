@@ -283,232 +283,315 @@ const howToUseSteps = computed(() => [
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Filters and Search -->
-    <UCard>
-      <template #header>
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer select-none"
-          @click="toggleFiltersOpen"
-        >
-          <div class="flex items-center gap-2">
-            <h3 class="text-lg font-semibold">Filters & Search</h3>
-            <Icon
-              :name="
-                filtersOpen
-                  ? 'i-heroicons-chevron-up'
-                  : 'i-heroicons-chevron-down'
-              "
-              class="w-4 h-4"
-            />
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-500"
-              >{{ filteredWeaponsWithRatings.length }} weapons found</span
-            >
-            <UButton
-              size="sm"
-              variant="outline"
-              @click.stop="resetFilters"
-              :aria-label="'Reset filters'"
-            >
-              <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
-            </UButton>
-          </div>
-        </div>
-      </template>
-      <div v-show="filtersOpen">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <TextField
-            label="Search Weapons"
-            id="search"
-            :model-value="state.search"
-            placeholder="Search by weapon name..."
-            :theme="safeTheme"
-            @update:model-value="
-              (val: string) => setState({ search: val, currentPage: 1 })
-            "
-          />
-
-          <SelectField
-            label="Weapon Category"
-            id="category"
-            :model-value="state.selectedCategory || 'all'"
-            :options="categoryOptions"
-            :theme="safeTheme"
-            @update:model-value="handleCategoryChange"
-          />
-
-          <SelectField
-            label="Upgrade Path"
-            id="upgradePath"
-            :model-value="selectedUpgradePathModelValue"
-            :options="upgradePathOptions"
-            :theme="safeTheme"
-            @update:model-value="handleUpgradePathChange"
-          />
-        </div>
-        <!-- Equippable Only Checkbox -->
-        <div class="mt-4">
-          <CheckboxField
-            id="equippableOnly"
-            label="Equipable"
-            :model-value="state.filterEquippableOnly"
-            :theme="safeTheme"
-            @update:model-value="handleEquippableFilterChange"
-          />
-        </div>
-      </div>
-    </UCard>
-
-    <!-- Expand/Collapse/Select/Unselect All buttons -->
-    <div v-if="paginatedWeapons.length > 0" class="flex gap-2 mb-2">
-      <UButton
-        @click="expandAllWeapons"
-        size="sm"
-        color="primary"
-        variant="soft"
-        >Expand All</UButton
-      >
-      <UButton
-        @click="collapseAllWeapons"
-        size="sm"
-        color="primary"
-        variant="soft"
-        >Collapse All</UButton
-      >
-      <UButton @click="selectAllWeapons" size="sm" color="info" variant="soft"
-        >Select All</UButton
-      >
-      <UButton @click="unselectAllWeapons" size="sm" color="info" variant="soft"
-        >Unselect All</UButton
-      >
-    </div>
-
-    <!-- Results -->
-    <UCard>
-      <template #header>
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
-          <h3 class="text-lg font-semibold">Weapon Attack Ratings</h3>
-          <div class="flex items-center gap-2">
-            <template v-if="isMobile">
-              <SelectField
-                id="sortBy"
-                :model-value="state.sortBy"
-                :options="sortOptions"
-                :theme="safeTheme"
-                class="text-xs py-1.5"
-                @update:model-value="(val: string) => setState({ sortBy: val })"
-              />
-            </template>
-            <template v-else>
-              <USelectMenu
-                :model-value="state.sortBy"
-                :items="sortOptions"
-                value-key="value"
-                label-key="label"
-                placeholder="Sort by"
-                size="sm"
-                class="w-full sm:w-48"
-                @update:model-value="
-                  (value: string) => setState({ sortBy: value })
-                "
-              />
-            </template>
-            <UButton
-              size="sm"
-              variant="outline"
-              @click="setState({ sortDescending: !state.sortDescending })"
-              :aria-label="
-                state.sortDescending ? 'Sort ascending' : 'Sort descending'
-              "
-            >
+  <!-- Main Calculator Section -->
+  <main role="main" aria-labelledby="tool-title">
+    <!-- Filters and Search Section -->
+    <section aria-labelledby="filters-title" class="mb-6">
+      <UCard>
+        <template #header>
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer select-none"
+            @click="toggleFiltersOpen"
+            @keydown.enter="toggleFiltersOpen"
+            @keydown.space.prevent="toggleFiltersOpen"
+            role="button"
+            tabindex="0"
+            :aria-expanded="filtersOpen"
+            :aria-controls="'filters-content'"
+          >
+            <div class="flex items-center gap-2">
+              <h2 id="filters-title" class="text-lg font-semibold">
+                Filters & Search
+              </h2>
               <Icon
                 :name="
-                  state.sortDescending
-                    ? 'i-heroicons-arrow-down'
-                    : 'i-heroicons-arrow-up'
+                  filtersOpen
+                    ? 'i-heroicons-chevron-up'
+                    : 'i-heroicons-chevron-down'
                 "
                 class="w-4 h-4"
+                aria-hidden="true"
               />
-            </UButton>
-            <UButton
-              v-if="visibleSelectedWeaponsForComparison.length > 0"
-              size="sm"
-              color="primary"
-              @click="openComparisonModal"
-            >
-              Compare Selected ({{
-                visibleSelectedWeaponsForComparison.length
-              }})
-            </UButton>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-500" aria-live="polite">
+                {{ filteredWeaponsWithRatings.length }} weapons found
+              </span>
+              <UButton
+                size="sm"
+                variant="outline"
+                @click.stop="resetFilters"
+                aria-label="Reset all filters to default values"
+              >
+                <Icon
+                  name="i-heroicons-arrow-path"
+                  class="w-4 h-4"
+                  aria-hidden="true"
+                />
+              </UButton>
+            </div>
+          </div>
+        </template>
+        <div
+          v-show="filtersOpen"
+          id="filters-content"
+          aria-labelledby="filters-title"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <TextField
+              label="Search Weapons"
+              id="search"
+              :model-value="state.search"
+              placeholder="Search by weapon name..."
+              :theme="safeTheme"
+              aria-describedby="search-help"
+              @update:model-value="
+                (val: string) => setState({ search: val, currentPage: 1 })
+              "
+            />
+            <div id="search-help" class="sr-only">
+              Enter weapon name to filter results
+            </div>
+
+            <SelectField
+              label="Weapon Category"
+              id="category"
+              :model-value="state.selectedCategory || 'all'"
+              :options="categoryOptions"
+              :theme="safeTheme"
+              aria-describedby="category-help"
+              @update:model-value="handleCategoryChange"
+            />
+            <div id="category-help" class="sr-only">
+              Filter weapons by category type
+            </div>
+
+            <SelectField
+              label="Upgrade Path"
+              id="upgradePath"
+              :model-value="selectedUpgradePathModelValue"
+              :options="upgradePathOptions"
+              :theme="safeTheme"
+              aria-describedby="upgrade-path-help"
+              @update:model-value="handleUpgradePathChange"
+            />
+            <div id="upgrade-path-help" class="sr-only">
+              Filter weapons by upgrade path
+            </div>
+          </div>
+          <!-- Equippable Only Checkbox -->
+          <div class="mt-4">
+            <CheckboxField
+              id="equippableOnly"
+              label="Equipable"
+              :model-value="state.filterEquippableOnly"
+              :theme="safeTheme"
+              aria-describedby="equippable-help"
+              @update:model-value="handleEquippableFilterChange"
+            />
+            <div id="equippable-help" class="sr-only">
+              Show only weapons you can currently equip with your stats
+            </div>
           </div>
         </div>
-      </template>
+      </UCard>
+    </section>
 
-      <div class="space-y-4">
-        <!-- Individual Weapons -->
-        <div
-          v-for="weapon in paginatedWeapons"
-          :key="`${weapon.name}-${state.strength}-${state.dexterity}-${state.intelligence}-${state.faith}-${state.weaponLevel}-${state.humanity}-${state.isTwoHanded}`"
-          class="relative"
+    <!-- Bulk Actions Section -->
+    <section
+      v-if="paginatedWeapons.length > 0"
+      aria-labelledby="bulk-actions-title"
+      class="mb-2"
+    >
+      <h2 id="bulk-actions-title" class="sr-only">Bulk Actions</h2>
+      <div class="flex gap-2">
+        <UButton
+          @click="expandAllWeapons"
+          size="sm"
+          color="primary"
+          variant="soft"
+          aria-label="Expand all weapon details"
         >
-          <WeaponCard
-            :weapon="weapon"
-            :is-expanded="isWeaponExpanded(weapon.name)"
-            :on-toggle-expansion="() => toggleWeaponExpansion(weapon.name)"
-            :get-weapon-category="getWeaponCategory"
-            :get-effective-requirements="getEffectiveRequirements"
-            :has-auxiliary-damage="hasAuxiliaryDamage"
-            :has-scaling="hasScaling"
-            :get-max-level-for-upgrade-path="getMaxLevelForUpgradePath"
-            :state="state"
-            :is-selected="
-              persistentSelectedWeaponsForComparison.includes(weapon.name)
-            "
-            :on-toggle-selection="() => toggleWeaponSelection(weapon.name)"
-            show-checkbox
-          />
-        </div>
-
-        <!-- Empty State -->
-        <div
-          v-if="filteredWeaponsWithRatings.length === 0"
-          class="text-center py-8"
+          Expand All
+        </UButton>
+        <UButton
+          @click="collapseAllWeapons"
+          size="sm"
+          color="primary"
+          variant="soft"
+          aria-label="Collapse all weapon details"
         >
-          <Icon
-            name="i-heroicons-calculator"
-            class="w-12 h-12 text-gray-400 mx-auto mb-4"
-          />
-          <p class="text-gray-500 dark:text-gray-400">
-            No weapons found matching your criteria.
-          </p>
-        </div>
+          Collapse All
+        </UButton>
+        <UButton
+          @click="selectAllWeapons"
+          size="sm"
+          color="info"
+          variant="soft"
+          aria-label="Select all weapons for comparison"
+        >
+          Select All
+        </UButton>
+        <UButton
+          @click="unselectAllWeapons"
+          size="sm"
+          color="info"
+          variant="soft"
+          aria-label="Unselect all weapons from comparison"
+        >
+          Unselect All
+        </UButton>
+      </div>
+    </section>
 
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6">
-          <div class="flex justify-center">
-            <CustomPagination
-              :current-page="state.currentPage"
-              :total-pages="totalPages"
-              :total-items="filteredWeaponsWithRatings.length"
-              :page-size="weaponsPerPage"
-              @update:current-page="(page) => setState({ currentPage: page })"
+    <!-- Results Section -->
+    <section
+      aria-labelledby="results-title"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <UCard>
+        <template #header>
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
+            <h2 id="results-title" class="text-lg font-semibold">
+              Weapon Attack Ratings
+            </h2>
+            <div class="flex items-center gap-2">
+              <template v-if="isMobile">
+                <SelectField
+                  id="sortBy"
+                  :model-value="state.sortBy"
+                  :options="sortOptions"
+                  :theme="safeTheme"
+                  class="text-xs py-1.5"
+                  aria-label="Sort weapons by"
+                  @update:model-value="
+                    (val: string) => setState({ sortBy: val })
+                  "
+                />
+              </template>
+              <template v-else>
+                <USelectMenu
+                  :model-value="state.sortBy"
+                  :items="sortOptions"
+                  value-key="value"
+                  label-key="label"
+                  placeholder="Sort by"
+                  size="sm"
+                  class="w-full sm:w-48"
+                  aria-label="Sort weapons by"
+                  @update:model-value="
+                    (value: string) => setState({ sortBy: value })
+                  "
+                />
+              </template>
+              <UButton
+                size="sm"
+                variant="outline"
+                @click="setState({ sortDescending: !state.sortDescending })"
+                :aria-label="
+                  state.sortDescending ? 'Sort ascending' : 'Sort descending'
+                "
+              >
+                <Icon
+                  :name="
+                    state.sortDescending
+                      ? 'i-heroicons-arrow-down'
+                      : 'i-heroicons-arrow-up'
+                  "
+                  class="w-4 h-4"
+                  aria-hidden="true"
+                />
+              </UButton>
+              <UButton
+                v-if="visibleSelectedWeaponsForComparison.length > 0"
+                size="sm"
+                color="primary"
+                @click="openComparisonModal"
+                :aria-label="`Compare ${visibleSelectedWeaponsForComparison.length} selected weapons`"
+              >
+                Compare Selected ({{
+                  visibleSelectedWeaponsForComparison.length
+                }})
+              </UButton>
+            </div>
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <!-- Individual Weapons -->
+          <div
+            v-for="weapon in paginatedWeapons"
+            :key="`${weapon.name}-${state.strength}-${state.dexterity}-${state.intelligence}-${state.faith}-${state.weaponLevel}-${state.humanity}-${state.isTwoHanded}`"
+            class="relative"
+          >
+            <WeaponCard
+              :weapon="weapon"
+              :is-expanded="isWeaponExpanded(weapon.name)"
+              :on-toggle-expansion="() => toggleWeaponExpansion(weapon.name)"
+              :get-weapon-category="getWeaponCategory"
+              :get-effective-requirements="getEffectiveRequirements"
+              :has-auxiliary-damage="hasAuxiliaryDamage"
+              :has-scaling="hasScaling"
+              :get-max-level-for-upgrade-path="getMaxLevelForUpgradePath"
+              :state="state"
+              :is-selected="
+                persistentSelectedWeaponsForComparison.includes(weapon.name)
+              "
+              :on-toggle-selection="() => toggleWeaponSelection(weapon.name)"
+              show-checkbox
             />
           </div>
+
+          <!-- Empty State -->
+          <div
+            v-if="filteredWeaponsWithRatings.length === 0"
+            class="text-center py-8"
+            role="status"
+            aria-live="polite"
+          >
+            <Icon
+              name="i-heroicons-calculator"
+              class="w-12 h-12 text-gray-400 mx-auto mb-4"
+              aria-hidden="true"
+            />
+            <p class="text-gray-500 dark:text-gray-400">
+              No weapons found matching your criteria.
+            </p>
+          </div>
+
+          <!-- Pagination -->
+          <nav
+            v-if="totalPages > 1"
+            aria-labelledby="pagination-title"
+            class="mt-6"
+          >
+            <h3 id="pagination-title" class="sr-only">Results Navigation</h3>
+            <div class="flex justify-center">
+              <CustomPagination
+                :current-page="state.currentPage"
+                :total-pages="totalPages"
+                :total-items="filteredWeaponsWithRatings.length"
+                :page-size="weaponsPerPage"
+                @update:current-page="(page) => setState({ currentPage: page })"
+              />
+            </div>
+          </nav>
         </div>
-      </div>
-    </UCard>
+      </UCard>
+    </section>
 
     <!-- How to Use Section -->
-    <HowToUse :steps="howToUseSteps" :theme="safeTheme" />
+    <aside aria-labelledby="how-to-use-title">
+      <HowToUse :steps="howToUseSteps" :theme="safeTheme" />
+    </aside>
 
     <!-- Weapon Comparison Modal -->
     <WeaponComparisonModal
       v-model:open="showComparisonModal"
       :weapons="getVisibleComparisonWeapons()"
     />
-  </div>
+  </main>
 </template>

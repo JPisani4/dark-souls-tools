@@ -196,11 +196,7 @@ const howToUseSteps = computed(() => [
     title: "Enable password (optional)",
     description: "Bypasses level/weapon restrictions for compatible items.",
   },
-  {
-    type: "tip",
-    title: "Clear",
-    description: "Reset all fields.",
-  },
+  { type: "tip", title: "Clear", description: "Reset all fields." },
 ]);
 
 // Get data from the calculator
@@ -228,302 +224,401 @@ useToolLayout({
 </script>
 
 <template>
-  <!-- Tool Card (Form) -->
-  <UCard
-    :class="[
-      'border-l-4',
-      sectionTheme.gradient,
-      sectionTheme.darkGradient,
-      sectionTheme.border,
-    ]"
-  >
-    <div class="space-y-6">
-      <!-- Input Fields -->
-      <div class="grid gap-4">
-        <!-- Character Level (required) -->
-        <NumberField
-          :label="terminology.characterLevel || 'Character Level'"
-          id="characterLevel"
-          :model-value="
-            state.characterLevel ? parseInt(state.characterLevel) : undefined
-          "
-          placeholder="Enter your level..."
-          :min="1"
-          :max="gameData.config.mechanics.maxLevel"
-          :theme="safeTheme"
-          @update:model-value="
-            (val: number | undefined) =>
-              (state.characterLevel = val?.toString() || '')
-          "
-        />
-        <!-- Multiplayer Item Dropdown -->
-        <SelectField
-          :label="`${terminology.multiplayerItem || 'Multiplayer Item'} (optional)`"
-          id="multiplayerItem"
-          :options="multiplayerItems"
-          :model-value="state.multiplayerItem"
-          placeholder="All items"
-          @update:model-value="
-            (val: string | undefined) => (state.multiplayerItem = val ?? '')
-          "
-        />
-        <!-- Password Checkbox -->
-        <UCheckbox
-          id="usePassword"
-          :model-value="Boolean(state.usePassword)"
-          @update:model-value="
-            (val: boolean | 'indeterminate') => {
-              state.usePassword = Boolean(val);
-            }
-          "
-          :label="
-            String(terminology.usePassword || 'Use Password') +
-            ' (bypass level/weapon restrictions for some items)'
-          "
-        />
-        <!-- Weapon-Related Inputs Grouped -->
-        <div
-          class="grid gap-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/30"
-        >
-          <div class="font-semibold text-sm mb-1 flex items-center gap-1">
-            Weapon Level Range (optional)
-            <SmartTooltip>
-              <template #trigger>
-                <Icon
-                  name="i-heroicons-information-circle"
-                  class="w-4 h-4 text-blue-500 cursor-pointer align-middle"
-                />
-              </template>
-              Weapon Level is determined by the highest level weapon that has
-              been in your possession (past and present), not just equipped.
-            </SmartTooltip>
-          </div>
-          <!-- Weapon/Shield Dropdown -->
-          <SelectField
-            :label="terminology.weaponOrShield || 'Weapon or Shield'"
-            id="itemSelect"
-            :options="flatOptions"
-            :model-value="state.selectedItem ? state.selectedItem.name : ''"
-            placeholder="Select weapon or shield..."
-            @update:model-value="handleItemSelect"
-          />
-          <!-- Upgrade Path Dropdown (filtered) -->
-          <SelectField
-            v-if="state.selectedItem"
-            :label="terminology.upgradePathLabel || 'Upgrade Path'"
-            id="upgradePathSelect"
-            :options="
-              availableUpgradePaths.map((path) => ({
-                label: getUpgradePathDisplayName(path),
-                value: path,
-              }))
-            "
-            :model-value="state.selectedUpgradePath"
-            placeholder="Select upgrade path..."
-            @update:model-value="handleUpgradePathSelect"
-          />
-          <!-- Level Numeric Input (filtered) -->
-          <NumberField
-            v-if="state.selectedUpgradePath"
-            :label="terminology.weaponShieldLevel || 'Weapon/Shield Level'"
-            id="levelInput"
-            :model-value="
-              state.selectedLevel ? parseInt(state.selectedLevel) : undefined
-            "
-            :min="availableLevels.length > 0 ? Math.min(...availableLevels) : 0"
-            :max="availableLevels.length > 0 ? Math.max(...availableLevels) : 0"
-            placeholder="Enter level..."
-            :theme="safeTheme"
-            @update:model-value="handleLevelSelect"
-          />
-        </div>
-      </div>
-
-      <!-- Clear Button at bottom right -->
-      <div class="flex justify-end">
-        <UButton color="primary" variant="outline" @click.prevent="resetForm">
-          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
-      </div>
-    </div>
-  </UCard>
-
-  <!-- Results Section (moved outside form) -->
-  <div v-if="hasData" class="space-y-4 mt-8">
-    <UCard
-      :class="[
-        'border-l-4',
-        sectionTheme.gradient,
-        sectionTheme.darkGradient,
-        sectionTheme.border,
-      ]"
-    >
-      <template #header>
-        <h3 class="text-md font-semibold text-center">
-          Soul and Weapon Level ranges
-        </h3>
-      </template>
-      <div class="p-4">
-        <div class="overflow-x-auto">
-          <table
-            class="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm"
-          >
-            <thead class="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th
-                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                >
-                  {{ terminology.multiplayerItem || "Item" }}
-                </th>
-                <th
-                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                >
-                  {{ terminology.levelRange || "Level Range" }}
-                </th>
-                <th
-                  class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                >
-                  {{ terminology.weaponLevelRange || "Weapon Level Range" }}
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
-            >
-              <tr
-                v-for="row in results"
-                :key="row.item"
-                class="hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <td
-                  class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 break-words"
-                >
-                  {{ row.item }}
-                </td>
-                <td class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
-                  <span v-if="row.bypass">All*</span>
-                  <span v-else-if="state.characterLevel.trim().length > 0"
-                    >{{ row.minLevel }} – {{ row.maxLevel }}</span
-                  >
-                  <span v-else>—</span>
-                </td>
-                <td class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
-                  <span v-if="row.bypass">All*</span>
-                  <span v-else-if="row.weaponLevelRange">
-                    {{ row.weaponLevelRange[0] }} –
-                    {{ row.weaponLevelRange[1] }}
-                  </span>
-                  <span v-else>—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Footnote about overleveled summons -->
-        <div
-          v-if="state.usePassword"
-          class="mt-4 text-xs text-gray-600 dark:text-gray-400 italic"
-        >
-          *Overleveled summons (players outside of the normal ranges) will
-          receive a debuff when paired with a lower-level host.
-        </div>
-        <!-- Weapon Level footnote -->
-        <div
-          v-if="
-            state.selectedItem &&
-            state.selectedUpgradePath &&
-            state.selectedLevel
-          "
-          class="mt-2 text-xs text-gray-600 dark:text-gray-400 italic"
-        >
-          <!-- Moved to tooltip above -->
-        </div>
-      </div>
-    </UCard>
-  </div>
-
-  <!-- Quick Reference Section (outside form) -->
-  <UCard
-    class="mt-8"
-    :class="[
-      'border-l-4',
-      sectionTheme.gradient,
-      sectionTheme.darkGradient,
-      sectionTheme.border,
-    ]"
-  >
-    <template #header>
-      <h3 class="text-md font-semibold text-center">Quick Reference</h3>
-    </template>
-    <div class="p-4 space-y-6">
-      <div
-        v-for="(ref, idx) in quickReference"
-        :key="ref.title"
+  <!-- Main Calculator Section -->
+  <main role="main" aria-labelledby="tool-title">
+    <!-- Tool Card (Form) -->
+    <section aria-labelledby="calculator-title" class="mb-8">
+      <UCard
         :class="[
-          'pb-4',
-          idx !== quickReference.length - 1
-            ? 'border-b border-gray-200 dark:border-gray-700'
-            : '',
+          'border-l-4',
+          sectionTheme.gradient,
+          sectionTheme.darkGradient,
+          sectionTheme.border,
         ]"
       >
-        <div class="font-semibold mb-2">
-          {{ ref.title }}
-          <span
-            v-if="ref.superscriptType === 1"
-            class="text-sm align-super ml-1"
-            >¹</span
-          >
-          <span
-            v-if="ref.superscriptType === 2"
-            class="text-sm align-super ml-1"
-            >²</span
-          >
-          <span
-            v-if="ref.superscriptType === 12"
-            class="text-sm align-super ml-1"
-            >¹<span class="ml-1">²</span></span
-          >
-        </div>
-        <div class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-          {{ ref.description }}
-        </div>
-      </div>
-      <div
-        class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400 italic space-y-2"
-      >
-        <div>¹ Must be human to see this sign</div>
-        <div>² Must be human to use this item</div>
-      </div>
-    </div>
-  </UCard>
+        <template #header>
+          <h2 id="calculator-title" class="sr-only">
+            Co-op Level Range Calculator
+          </h2>
+        </template>
 
-  <!-- How To Use Section (at bottom) -->
-  <HowToUse
-    :steps="[
-      {
-        type: 'step',
-        title: 'Enter your character level',
-        description: 'Shows level-based matchmaking ranges.',
-      },
-      {
-        type: 'step',
-        title: 'Select a multiplayer item (optional)',
-        description: 'Filter results to a specific item.',
-      },
-      {
-        type: 'step',
-        title: 'Enter weapon info (optional)',
-        description: 'Shows weapon level matchmaking ranges.',
-      },
-      {
-        type: 'step',
-        title: 'Enable password (optional)',
-        description: 'Bypasses level/weapon restrictions for compatible items.',
-      },
-      { type: 'tip', title: 'Clear', description: 'Reset all fields.' },
-    ]"
-    :theme="safeTheme"
-    class="mt-8"
-  />
+        <div class="space-y-6">
+          <!-- Input Fields -->
+          <div class="grid gap-4">
+            <!-- Character Level (required) -->
+            <NumberField
+              :label="terminology.characterLevel || 'Character Level'"
+              id="characterLevel"
+              :model-value="
+                state.characterLevel
+                  ? parseInt(state.characterLevel)
+                  : undefined
+              "
+              placeholder="Enter your level..."
+              :min="1"
+              :max="gameData.config.mechanics.maxLevel"
+              :theme="safeTheme"
+              aria-describedby="character-level-help"
+              @update:model-value="
+                (val: number | undefined) =>
+                  (state.characterLevel = val?.toString() || '')
+              "
+            />
+            <div id="character-level-help" class="sr-only">
+              Enter your character level to see matchmaking ranges
+            </div>
+
+            <!-- Multiplayer Item Dropdown -->
+            <SelectField
+              :label="`${terminology.multiplayerItem || 'Multiplayer Item'} (optional)`"
+              id="multiplayerItem"
+              :options="multiplayerItems"
+              :model-value="state.multiplayerItem"
+              placeholder="All items"
+              aria-describedby="multiplayer-item-help"
+              @update:model-value="
+                (val: string | undefined) => (state.multiplayerItem = val ?? '')
+              "
+            />
+            <div id="multiplayer-item-help" class="sr-only">
+              Select a specific multiplayer item to filter results
+            </div>
+
+            <!-- Password Checkbox -->
+            <UCheckbox
+              id="usePassword"
+              :model-value="Boolean(state.usePassword)"
+              @update:model-value="
+                (val: boolean | 'indeterminate') => {
+                  state.usePassword = Boolean(val);
+                }
+              "
+              :label="
+                String(terminology.usePassword || 'Use Password') +
+                ' (bypass level/weapon restrictions for some items)'
+              "
+              aria-describedby="password-help"
+            />
+            <div id="password-help" class="sr-only">
+              Enable to bypass level and weapon restrictions for compatible
+              items
+            </div>
+
+            <!-- Weapon-Related Inputs Grouped -->
+            <div
+              class="grid gap-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/30"
+              aria-labelledby="weapon-level-title"
+            >
+              <div
+                id="weapon-level-title"
+                class="font-semibold text-sm mb-1 flex items-center gap-1"
+              >
+                Weapon Level Range (optional)
+                <SmartTooltip>
+                  <template #trigger>
+                    <Icon
+                      name="i-heroicons-information-circle"
+                      class="w-4 h-4 text-blue-500 cursor-pointer align-middle"
+                      aria-label="Weapon level information"
+                    />
+                  </template>
+                  Weapon Level is determined by the highest level weapon that
+                  has been in your possession (past and present), not just
+                  equipped.
+                </SmartTooltip>
+              </div>
+              <!-- Weapon/Shield Dropdown -->
+              <SelectField
+                :label="terminology.weaponOrShield || 'Weapon or Shield'"
+                id="itemSelect"
+                :options="flatOptions"
+                :model-value="state.selectedItem ? state.selectedItem.name : ''"
+                placeholder="Select weapon or shield..."
+                aria-describedby="item-select-help"
+                @update:model-value="handleItemSelect"
+              />
+              <div id="item-select-help" class="sr-only">
+                Select a weapon or shield to determine weapon level ranges
+              </div>
+
+              <!-- Upgrade Path Dropdown (filtered) -->
+              <SelectField
+                v-if="state.selectedItem"
+                :label="terminology.upgradePathLabel || 'Upgrade Path'"
+                id="upgradePathSelect"
+                :options="
+                  availableUpgradePaths.map((path) => ({
+                    label: getUpgradePathDisplayName(path),
+                    value: path,
+                  }))
+                "
+                :model-value="state.selectedUpgradePath"
+                placeholder="Select upgrade path..."
+                aria-describedby="upgrade-path-help"
+                @update:model-value="handleUpgradePathSelect"
+              />
+              <div id="upgrade-path-help" class="sr-only">
+                Select the upgrade path for your weapon or shield
+              </div>
+
+              <!-- Level Numeric Input (filtered) -->
+              <NumberField
+                v-if="state.selectedUpgradePath"
+                :label="terminology.weaponShieldLevel || 'Weapon/Shield Level'"
+                id="levelInput"
+                :model-value="
+                  state.selectedLevel
+                    ? parseInt(state.selectedLevel)
+                    : undefined
+                "
+                :min="
+                  availableLevels.length > 0 ? Math.min(...availableLevels) : 0
+                "
+                :max="
+                  availableLevels.length > 0 ? Math.max(...availableLevels) : 0
+                "
+                placeholder="Enter level..."
+                :theme="safeTheme"
+                aria-describedby="level-input-help"
+                @update:model-value="handleLevelSelect"
+              />
+              <div id="level-input-help" class="sr-only">
+                Enter the level of your weapon or shield
+              </div>
+            </div>
+          </div>
+
+          <!-- Clear Button at bottom right -->
+          <div class="flex justify-end">
+            <UButton
+              color="primary"
+              variant="outline"
+              @click.prevent="resetForm"
+              aria-label="Clear all form fields and reset calculator"
+            >
+              <Icon
+                name="i-heroicons-x-mark"
+                class="w-4 h-4 mr-1"
+                aria-hidden="true"
+              />
+              Clear
+            </UButton>
+          </div>
+        </div>
+      </UCard>
+    </section>
+
+    <!-- Results Section -->
+    <section
+      v-if="hasData"
+      aria-labelledby="results-title"
+      aria-live="polite"
+      aria-atomic="true"
+      class="space-y-4 mt-8"
+    >
+      <UCard
+        :class="[
+          'border-l-4',
+          sectionTheme.gradient,
+          sectionTheme.darkGradient,
+          sectionTheme.border,
+        ]"
+      >
+        <template #header>
+          <h2 id="results-title" class="text-md font-semibold text-center">
+            Soul and Weapon Level ranges
+          </h2>
+        </template>
+        <div class="p-4">
+          <div class="overflow-x-auto">
+            <table
+              class="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm"
+              aria-describedby="results-description"
+            >
+              <caption id="results-description" class="sr-only">
+                Table showing soul level and weapon level ranges for multiplayer
+                items
+              </caption>
+              <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th
+                    class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    scope="col"
+                  >
+                    {{ terminology.multiplayerItem || "Item" }}
+                  </th>
+                  <th
+                    class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    scope="col"
+                  >
+                    {{ terminology.levelRange || "Level Range" }}
+                  </th>
+                  <th
+                    class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    scope="col"
+                  >
+                    {{ terminology.weaponLevelRange || "Weapon Level Range" }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700"
+              >
+                <tr
+                  v-for="row in results"
+                  :key="row.item"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <td
+                    class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 break-words"
+                    scope="row"
+                  >
+                    {{ row.item }}
+                  </td>
+                  <td
+                    class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  >
+                    <span v-if="row.bypass">All*</span>
+                    <span v-else-if="state.characterLevel.trim().length > 0"
+                      >{{ row.minLevel }} – {{ row.maxLevel }}</span
+                    >
+                    <span v-else>—</span>
+                  </td>
+                  <td
+                    class="px-2 py-2 text-sm text-gray-900 dark:text-gray-100"
+                  >
+                    <span v-if="row.bypass">All*</span>
+                    <span v-else-if="row.weaponLevelRange">
+                      {{ row.weaponLevelRange[0] }} –
+                      {{ row.weaponLevelRange[1] }}
+                    </span>
+                    <span v-else>—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Footnote about overleveled summons -->
+          <div
+            v-if="state.usePassword"
+            class="mt-4 text-xs text-gray-600 dark:text-gray-400 italic"
+            role="note"
+          >
+            *Overleveled summons (players outside of the normal ranges) will
+            receive a debuff when paired with a lower-level host.
+          </div>
+          <!-- Weapon Level footnote -->
+          <div
+            v-if="
+              state.selectedItem &&
+              state.selectedUpgradePath &&
+              state.selectedLevel
+            "
+            class="mt-2 text-xs text-gray-600 dark:text-gray-400 italic"
+            role="note"
+          >
+            <!-- Moved to tooltip above -->
+          </div>
+        </div>
+      </UCard>
+    </section>
+
+    <!-- Quick Reference Section -->
+    <section aria-labelledby="quick-reference-title" class="mt-8">
+      <UCard
+        :class="[
+          'border-l-4',
+          sectionTheme.gradient,
+          sectionTheme.darkGradient,
+          sectionTheme.border,
+        ]"
+      >
+        <template #header>
+          <h2
+            id="quick-reference-title"
+            class="text-md font-semibold text-center"
+          >
+            Quick Reference
+          </h2>
+        </template>
+        <div class="p-4 space-y-6">
+          <div
+            v-for="(ref, idx) in quickReference"
+            :key="ref.title"
+            :class="[
+              'pb-4',
+              idx !== quickReference.length - 1
+                ? 'border-b border-gray-200 dark:border-gray-700'
+                : '',
+            ]"
+          >
+            <div class="font-semibold mb-2">
+              {{ ref.title }}
+              <span
+                v-if="ref.superscriptType === 1"
+                class="text-sm align-super ml-1"
+                aria-label="Must be human to see this sign"
+                >¹</span
+              >
+              <span
+                v-if="ref.superscriptType === 2"
+                class="text-sm align-super ml-1"
+                aria-label="Must be human to use this item"
+                >²</span
+              >
+              <span
+                v-if="ref.superscriptType === 12"
+                class="text-sm align-super ml-1"
+                aria-label="Must be human to see this sign and use this item"
+                >¹<span class="ml-1">²</span></span
+              >
+            </div>
+            <div
+              class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed"
+            >
+              {{ ref.description }}
+            </div>
+          </div>
+          <div
+            class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400 italic space-y-2"
+            role="note"
+          >
+            <div>¹ Must be human to see this sign</div>
+            <div>² Must be human to use this item</div>
+          </div>
+        </div>
+      </UCard>
+    </section>
+
+    <!-- How To Use Section -->
+    <aside aria-labelledby="how-to-use-title" class="mt-8">
+      <HowToUse
+        :steps="[
+          {
+            type: 'step',
+            title: 'Enter your character level',
+            description: 'Shows level-based matchmaking ranges.',
+          },
+          {
+            type: 'step',
+            title: 'Select a multiplayer item (optional)',
+            description: 'Filter results to a specific item.',
+          },
+          {
+            type: 'step',
+            title: 'Enter weapon info (optional)',
+            description: 'Shows weapon level matchmaking ranges.',
+          },
+          {
+            type: 'step',
+            title: 'Enable password (optional)',
+            description:
+              'Bypasses level/weapon restrictions for compatible items.',
+          },
+          { type: 'tip', title: 'Clear', description: 'Reset all fields.' },
+        ]"
+        :theme="safeTheme"
+      />
+    </aside>
+  </main>
 </template>

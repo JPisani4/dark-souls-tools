@@ -4,6 +4,8 @@ import ToolList from "~/components/Tools/Common/ToolList.vue";
 import ToolFilterSidebar from "~/components/Tools/Common/ToolFilterSidebar.vue";
 import { useToolFilters } from "~/composables/useToolFilters";
 import { getRandomTheme } from "~/utils/constants";
+import { useHead } from "#imports";
+import { tools } from "~/tools";
 
 const selectedTheme = getRandomTheme();
 const {
@@ -13,12 +15,92 @@ const {
   updateFilters,
   clearFilters,
 } = useToolFilters();
+
+// Tools index page-specific SEO
+useHead({
+  title: "Dark Souls Tools & Calculators - Gold Phantom",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Browse all Dark Souls 1 tools and calculators. Find soul level calculators, armor optimizers, weapon calculators, and more for Dark Souls Remastered.",
+    },
+    {
+      name: "keywords",
+      content:
+        "dark souls tools, dark souls 1 calculators, soul level calculator, armor optimizer, weapon calculator, dark souls remastered tools",
+    },
+    // Open Graph
+    {
+      property: "og:title",
+      content: "Dark Souls Tools & Calculators - Gold Phantom",
+    },
+    {
+      property: "og:description",
+      content:
+        "Browse all Dark Souls 1 tools and calculators. Find soul level calculators, armor optimizers, weapon calculators, and more for Dark Souls Remastered.",
+    },
+    // Twitter Card
+    {
+      name: "twitter:title",
+      content: "Dark Souls Tools & Calculators - Gold Phantom",
+    },
+    {
+      name: "twitter:description",
+      content:
+        "Browse all Dark Souls 1 tools and calculators. Find soul level calculators, armor optimizers, weapon calculators, and more for Dark Souls Remastered.",
+    },
+  ],
+  script: [
+    {
+      type: "application/ld+json",
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": "https://www.goldphantom.com/tools#collection",
+        url: "https://www.goldphantom.com/tools",
+        name: "Dark Souls Tools & Calculators",
+        description:
+          "Browse all Dark Souls 1 tools and calculators. Find soul level calculators, armor optimizers, weapon calculators, and more for Dark Souls Remastered.",
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: tools.map((tool, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "SoftwareApplication",
+              "@id": `https://www.goldphantom.com/tools/ds1/${tool.slug}#tool`,
+              name: tool.title,
+              description: tool.description,
+              url: `https://www.goldphantom.com/tools/ds1/${tool.slug}`,
+              applicationCategory: tool.category || "Gaming Tool",
+              operatingSystem: "Web Browser",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
+              },
+            },
+          })),
+        },
+        about: [
+          {
+            "@type": "Thing",
+            name: "Dark Souls 1",
+            alternateName: "Dark Souls Remastered",
+          },
+        ],
+      }),
+    },
+  ],
+});
 </script>
 
 <template>
   <ToolLayout
-    title="Soulsborne Tools"
-    description="Essential Tools & Calculators"
+    title="Dark Souls Tools & Calculators"
+    description="Browse all Dark Souls 1 tools and calculators. Find soul level calculators, armor optimizers, weapon calculators, and more for Dark Souls Remastered."
     icon-path="/favicon.webp"
   >
     <template #hero>

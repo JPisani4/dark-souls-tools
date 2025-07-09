@@ -1,6 +1,7 @@
 <template>
   <div
     class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"
+    aria-live="polite"
   >
     <div class="flex flex-col items-center space-y-6">
       <!-- Spinner Icon -->
@@ -9,6 +10,7 @@
           class="w-16 h-16 text-primary-600 dark:text-primary-400 animate-spin"
           fill="none"
           viewBox="0 0 32 32"
+          aria-hidden="true"
         >
           <path
             d="M30 16a14 14 0 0 0-14-14"

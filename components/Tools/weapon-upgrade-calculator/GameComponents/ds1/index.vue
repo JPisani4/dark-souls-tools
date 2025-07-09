@@ -138,112 +138,169 @@ const howToUseSteps = [
     :on-reset="clearForm"
     @error="(error) => console.error('Weapon Upgrade Calculator Error:', error)"
   >
-    <!-- Calculator Card with themed styling -->
-    <UCard :class="`shadow-md rounded-xl border-l-4 ${calculatorTheme.border}`">
-      <div class="space-y-6">
-        <!-- Input Fields -->
-        <FormSection title="" :theme="calculatorTheme">
-          <NumberField
-            :label="`Current ${terminology.level || 'Level'}`"
-            id="currentLevel"
-            :model-value="
-              state.currentLevel ? parseInt(state.currentLevel) : undefined
-            "
-            placeholder="0"
-            :min="0"
-            :max="14"
-            :theme="calculatorTheme"
-            @update:model-value="
-              (val) =>
-                (state.currentLevel =
-                  val !== undefined && val !== null ? val.toString() : '')
-            "
-          />
-          <NumberField
-            :label="`Desired ${terminology.level || 'Level'}`"
-            id="desiredLevel"
-            :model-value="
-              state.desiredLevel ? parseInt(state.desiredLevel) : undefined
-            "
-            placeholder="5"
-            :min="1"
-            :max="maxLevelForSelectedPath"
-            :theme="calculatorTheme"
-            @update:model-value="
-              (val) =>
-                (state.desiredLevel =
-                  val !== undefined && val !== null ? val.toString() : '')
-            "
-          />
-        </FormSection>
+    <!-- Main Calculator Section -->
+    <main role="main" aria-labelledby="tool-title">
+      <!-- Calculator Card with themed styling -->
+      <section aria-labelledby="calculator-title" class="mb-8">
+        <UCard
+          :class="`shadow-md rounded-xl border-l-4 ${calculatorTheme.border}`"
+        >
+          <template #header>
+            <h2 id="calculator-title" class="sr-only">
+              Weapon Upgrade Calculator
+            </h2>
+          </template>
 
-        <!-- Weapon Path Selection -->
-        <FormSection title="" :theme="calculatorTheme">
-          <SelectField
-            :label="terminology.currentWeaponPath || 'Current Weapon Path'"
-            id="currentWeaponPath"
-            :model-value="currentWeaponPathSelectModel"
-            :options="currentWeaponPathItems"
-            :placeholder="`Select current ${terminology.weapon?.toLowerCase() || 'weapon'} path`"
-            :theme="calculatorTheme"
-            @update:model-value="(val) => (currentWeaponPathSelectModel = val)"
-          />
-          <SelectField
-            :label="terminology.desiredWeaponPath || 'Desired Weapon Path'"
-            id="upgradePath"
-            :model-value="upgradePathSelectModel"
-            :options="upgradePathItems"
-            :placeholder="`Select desired ${terminology.upgrade?.toLowerCase() || 'upgrade'} path`"
-            :theme="calculatorTheme"
-            @update:model-value="(val) => (upgradePathSelectModel = val)"
-          />
-        </FormSection>
+          <div class="space-y-6">
+            <!-- Input Fields -->
+            <FormSection title="" :theme="calculatorTheme">
+              <NumberField
+                :label="`Current ${terminology.level || 'Level'}`"
+                id="currentLevel"
+                :model-value="
+                  state.currentLevel ? parseInt(state.currentLevel) : undefined
+                "
+                placeholder="0"
+                :min="0"
+                :max="14"
+                :theme="calculatorTheme"
+                aria-describedby="current-level-help"
+                @update:model-value="
+                  (val) =>
+                    (state.currentLevel =
+                      val !== undefined && val !== null ? val.toString() : '')
+                "
+              />
+              <div id="current-level-help" class="sr-only">
+                Enter your weapon's current upgrade level between 0 and 14
+              </div>
 
-        <!-- Merchant -->
-        <FormSection title="" :theme="calculatorTheme">
-          <SelectField
-            :label="terminology.merchant || 'Merchant'"
-            id="merchants"
-            :model-value="merchantSelectModel"
-            :options="merchantItems"
-            :placeholder="`Select a ${terminology.merchant?.toLowerCase() || 'merchant'} (optional)`"
-            :theme="calculatorTheme"
-            @update:model-value="(val) => (merchantSelectModel = val)"
-          />
-        </FormSection>
+              <NumberField
+                :label="`Desired ${terminology.level || 'Level'}`"
+                id="desiredLevel"
+                :model-value="
+                  state.desiredLevel ? parseInt(state.desiredLevel) : undefined
+                "
+                placeholder="5"
+                :min="1"
+                :max="maxLevelForSelectedPath"
+                :theme="calculatorTheme"
+                aria-describedby="desired-level-help"
+                @update:model-value="
+                  (val) =>
+                    (state.desiredLevel =
+                      val !== undefined && val !== null ? val.toString() : '')
+                "
+              />
+              <div id="desired-level-help" class="sr-only">
+                Enter the upgrade level you want to reach between 1 and
+                {{ maxLevelForSelectedPath }}
+              </div>
+            </FormSection>
 
-        <!-- Clear Button -->
-        <div class="flex justify-end">
-          <UButton
-            color="primary"
-            variant="outline"
-            @click.prevent="clearForm"
-            :class="`${calculatorTheme.iconBg} ${calculatorTheme.hoverBg} text-white border-${calculatorTheme.border.split('-')[1]}-300 hover:border-${calculatorTheme.border.split('-')[1]}-400`"
-          >
-            <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
-            Clear
-          </UButton>
-        </div>
-      </div>
-    </UCard>
+            <!-- Weapon Path Selection -->
+            <FormSection title="" :theme="calculatorTheme">
+              <SelectField
+                :label="terminology.currentWeaponPath || 'Current Weapon Path'"
+                id="currentWeaponPath"
+                :model-value="currentWeaponPathSelectModel"
+                :options="currentWeaponPathItems"
+                :placeholder="`Select current ${terminology.weapon?.toLowerCase() || 'weapon'} path`"
+                :theme="calculatorTheme"
+                aria-describedby="current-path-help"
+                @update:model-value="
+                  (val: string) => (currentWeaponPathSelectModel = val)
+                "
+              />
+              <div id="current-path-help" class="sr-only">
+                Select your weapon's current upgrade path
+              </div>
 
-    <!-- Upgrade Summary with themed styling -->
-    <div v-if="unwrappedResult && hasBothLevels" class="mt-6">
-      <UpgradeSummary
-        :souls="unwrappedResult.souls"
-        :materials="unwrappedResult.materials"
-        :steps="unwrappedResult.steps"
-        :selected-merchant-id="merchantIdString"
-        :selected-theme="summaryTheme"
-        :icon-path="
-          toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'
-        "
-        :terminology="terminology"
-        :total-cost="totalCost"
-      />
-    </div>
+              <SelectField
+                :label="terminology.desiredWeaponPath || 'Desired Weapon Path'"
+                id="upgradePath"
+                :model-value="upgradePathSelectModel"
+                :options="upgradePathItems"
+                :placeholder="`Select desired ${terminology.upgrade?.toLowerCase() || 'upgrade'} path`"
+                :theme="calculatorTheme"
+                aria-describedby="desired-path-help"
+                @update:model-value="
+                  (val: string) => (upgradePathSelectModel = val)
+                "
+              />
+              <div id="desired-path-help" class="sr-only">
+                Select the upgrade path you want to reach
+              </div>
+            </FormSection>
+
+            <!-- Merchant -->
+            <FormSection title="" :theme="calculatorTheme">
+              <SelectField
+                :label="terminology.merchant || 'Merchant'"
+                id="merchants"
+                :model-value="merchantSelectModel"
+                :options="merchantItems"
+                :placeholder="`Select a ${terminology.merchant?.toLowerCase() || 'merchant'} (optional)`"
+                :theme="calculatorTheme"
+                aria-describedby="merchant-help"
+                @update:model-value="
+                  (val: string) => (merchantSelectModel = val)
+                "
+              />
+              <div id="merchant-help" class="sr-only">
+                Optional: Select a merchant to see potential savings on material
+                costs
+              </div>
+            </FormSection>
+
+            <!-- Clear Button -->
+            <div class="flex justify-end">
+              <UButton
+                color="primary"
+                variant="outline"
+                @click.prevent="clearForm"
+                :class="`${calculatorTheme.iconBg} ${calculatorTheme.hoverBg} text-white border-${calculatorTheme.border.split('-')[1]}-300 hover:border-${calculatorTheme.border.split('-')[1]}-400`"
+                aria-label="Clear all form fields and reset calculator"
+              >
+                <Icon
+                  name="i-heroicons-x-mark"
+                  class="w-4 h-4 mr-1"
+                  aria-hidden="true"
+                />
+                Clear
+              </UButton>
+            </div>
+          </div>
+        </UCard>
+      </section>
+
+      <!-- Upgrade Summary Section -->
+      <section
+        v-if="unwrappedResult && hasBothLevels"
+        aria-labelledby="summary-title"
+        aria-live="polite"
+        aria-atomic="true"
+        class="mt-6"
+      >
+        <h3 id="summary-title" class="sr-only">Upgrade Summary</h3>
+        <UpgradeSummary
+          :souls="unwrappedResult.souls"
+          :materials="unwrappedResult.materials"
+          :steps="unwrappedResult.steps"
+          :selected-merchant-id="merchantIdString"
+          :selected-theme="summaryTheme"
+          :icon-path="
+            toolConfig?.icon || 'public/weapon-upgrade-calculator-icon.png'
+          "
+          :terminology="terminology"
+          :total-cost="totalCost"
+        />
+      </section>
+    </main>
   </ErrorBoundary>
 
   <!-- How to Use -->
-  <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-8" />
+  <aside aria-labelledby="how-to-use-title" class="mt-8">
+    <HowToUse :steps="howToUseSteps" :theme="safeTheme" />
+  </aside>
 </template>

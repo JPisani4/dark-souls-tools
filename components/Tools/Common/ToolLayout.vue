@@ -94,7 +94,10 @@
       </aside>
 
       <!-- Main Content - Full width for tools that need it -->
-      <main class="flex-1 w-full px-4">
+      <main
+        class="flex-1 w-full px-4"
+        :aria-labelledby="props.title ? 'tool-title' : undefined"
+      >
         <slot />
       </main>
 

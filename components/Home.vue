@@ -81,13 +81,14 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
 </script>
 
 <template>
-  <UContainer class="max-w-3xl mx-auto flex flex-col items-center">
+  <UContainer class="max-w-3xl mx-auto flex flex-col items-center" role="main">
     <!-- Hero Section -->
     <div
       :class="'w-full mb-12 p-8 md:p-14 rounded-3xl relative flex flex-col items-center justify-center min-h-[200px] mt-8 overflow-hidden'"
       :style="{
         boxShadow: `0 0 12px 3px ${accentColor}, 0 6px 24px 0 rgba(0,0,0,0.10)`,
       }"
+      aria-labelledby="homepage-hero-title"
     >
       <div class="absolute inset-0 z-0 pointer-events-none">
         <picture>
@@ -101,10 +102,12 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
             width="1200"
             height="400"
             style="z-index: 0; inset: 0; position: absolute"
+            aria-hidden="true"
           />
         </picture>
         <div
           :class="`w-full h-full bg-gradient-to-br ${fromClass} ${toClass} to-transparent opacity-5 dark:opacity-10 absolute`"
+          aria-hidden="true"
         ></div>
       </div>
       <HeroSection
@@ -114,6 +117,7 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
         :theme="selectedTheme"
         variant="homepage"
         class="mb-0 z-10"
+        id="homepage-hero-title"
       />
       <div class="z-10 mt-4 flex flex-col items-center">
         <p
@@ -122,15 +126,24 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
         >
           A collection of helpful, modern tools for your Soulsborne playthrough
         </p>
-        <UButton size="xl" @click="goToTools" class="pop-btn">
+        <UButton
+          size="xl"
+          @click="goToTools"
+          class="pop-btn focus:outline focus:ring focus:ring-primary"
+        >
           Browse Tools
         </UButton>
       </div>
     </div>
 
     <!-- Featured Tools -->
-    <section class="w-full mb-10" :style="{ '--accent-color': accentColor }">
+    <section
+      class="w-full mb-10"
+      :style="{ '--accent-color': accentColor }"
+      aria-labelledby="featured-tools-title"
+    >
       <h2
+        id="featured-tools-title"
         class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center"
       >
         Featured Tools
@@ -139,8 +152,10 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
         <UCard
           v-for="tool in featuredTools"
           :key="tool.slug"
-          class="featured-card flex flex-row items-center gap-4 p-4 cursor-pointer border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 min-h-[80px] transition-all duration-150"
-          @click="router.push(`/tools/${tool.gameCategories[0]}/${tool.slug}`)"
+          as="a"
+          :href="`/tools/${tool.gameCategories[0]}/${tool.slug}`"
+          :aria-label="`${tool.title} (${getGameDisplayName(tool.gameCategories[0])})`"
+          class="featured-card flex flex-row items-center gap-4 p-4 cursor-pointer border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 min-h-[80px] transition-all duration-150 focus:outline focus:ring focus:ring-primary"
           :style="{ '--accent-color': accentColor }"
         >
           <div class="flex flex-col flex-1 min-w-0">
@@ -166,6 +181,7 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
                 <Icon
                   :name="tool.icon || 'i-heroicons-sparkles'"
                   class="featured-icon w-7 h-7 flex-shrink-0 text-primary transition-colors duration-150"
+                  aria-hidden="true"
                 />
               </template>
               <span
@@ -194,7 +210,7 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
         <UButton
           size="xl"
           variant="solid"
-          class="pop-btn px-8 py-3 text-lg font-semibold shadow-lg transition-all duration-150"
+          class="pop-btn px-8 py-3 text-lg font-semibold shadow-lg transition-all duration-150 focus:outline focus:ring focus:ring-primary"
           @click="goToTools"
         >
           View All Tools
@@ -203,17 +219,23 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
     </section>
 
     <!-- About Gold Phantom / Jolly Co-operation Section -->
-    <section class="w-full max-w-2xl mx-auto mb-20">
+    <section
+      class="w-full max-w-2xl mx-auto mb-20"
+      aria-labelledby="about-gold-phantom-title"
+    >
       <div
         class="rounded-2xl bg-white/80 dark:bg-gray-900/80 shadow-md p-8 flex flex-col items-center"
       >
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2
+          id="about-gold-phantom-title"
+          class="text-xl font-bold text-gray-900 dark:text-white mb-2"
+        >
           About Gold Phantom
         </h2>
         <p class="text-gray-700 dark:text-gray-300 text-center mb-4">
           Gold Phantom was born out of frustration with the limited and
           scattered tools available for Dark Souls Remastered. I wanted a single
-          place with every useful calculator and feature I wished existed—built
+          place with every useful calculator and feature I wished existed built
           for players, by a player, in the spirit of
           <span class="font-semibold">jolly cooperation</span>.
         </p>
@@ -221,16 +243,18 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
           Have ideas or feedback? Reach out via
           <a
             :href="`mailto:${contactEmail}`"
-            class="text-primary underline hover:opacity-80"
+            class="text-primary underline hover:opacity-80 focus:outline focus:ring focus:ring-primary"
             >email</a
           >
           or
           <a
             :href="githubUrl"
             target="_blank"
-            class="text-primary underline hover:opacity-80"
+            rel="noopener noreferrer"
+            class="text-primary underline hover:opacity-80 focus:outline focus:ring focus:ring-primary"
             >GitHub</a
-          >—your suggestions help make these tools better for everyone.
+          >
+          your suggestions help make these tools better for everyone.
         </p>
       </div>
     </section>

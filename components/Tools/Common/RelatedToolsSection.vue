@@ -27,15 +27,22 @@ const goToTool = (tool: Tool) => {
 </script>
 
 <template>
-  <div class="w-full max-w-4xl mx-auto py-6 px-4">
+  <section
+    class="w-full max-w-4xl mx-auto py-6 px-4"
+    aria-labelledby="related-tools-title"
+  >
     <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2
+          id="related-tools-title"
+          class="text-lg font-semibold text-gray-900 dark:text-white"
+        >
           Related Tools
         </h2>
         <Icon
           name="i-heroicons-puzzle-piece"
           class="w-5 h-5 text-gray-400 dark:text-gray-500"
+          aria-hidden="true"
         />
       </div>
 
@@ -103,11 +110,12 @@ const goToTool = (tool: Tool) => {
         </UCard>
       </div>
 
-      <div v-else class="text-center py-8">
+      <div v-else class="text-center py-8" aria-live="polite">
         <div class="flex flex-col items-center gap-3">
           <Icon
             name="i-heroicons-information-circle"
             class="w-8 h-8 text-gray-400 dark:text-gray-500"
+            aria-hidden="true"
           />
           <p class="text-sm text-gray-500 dark:text-gray-400">
             No related tools found
@@ -115,5 +123,5 @@ const goToTool = (tool: Tool) => {
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>

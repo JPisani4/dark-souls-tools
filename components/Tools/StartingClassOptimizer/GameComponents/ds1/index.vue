@@ -775,417 +775,518 @@ function handleRemovePyromancy(index: number) {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <!-- Main Optimizer Section -->
+  <main role="main" aria-labelledby="tool-title">
     <!-- Top Bar with Reset, Share -->
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex gap-2">
-        <UButton
-          size="sm"
-          variant="solid"
-          :color="
-            randomTheme.icon.includes('blue')
-              ? 'info'
-              : randomTheme.icon.includes('green')
-                ? 'success'
-                : randomTheme.icon.includes('orange')
-                  ? 'warning'
-                  : randomTheme.icon.includes('red')
-                    ? 'error'
-                    : 'primary'
-          "
-          @click="handleClearAll"
-        >
-          <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
-          Reset
-        </UButton>
-        <UButton
-          size="sm"
-          variant="outline"
-          :color="showShareConfirmation ? 'success' : 'secondary'"
-          @click="copyShareUrl"
-          :disabled="showShareConfirmation"
-        >
-          <Icon
-            :name="
-              showShareConfirmation ? 'i-heroicons-check' : 'i-heroicons-link'
+    <section aria-labelledby="controls-title" class="mb-4">
+      <h2 id="controls-title" class="sr-only">Tool Controls</h2>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-2">
+          <UButton
+            size="sm"
+            variant="solid"
+            :color="
+              randomTheme.icon.includes('blue')
+                ? 'info'
+                : randomTheme.icon.includes('green')
+                  ? 'success'
+                  : randomTheme.icon.includes('orange')
+                    ? 'warning'
+                    : randomTheme.icon.includes('red')
+                      ? 'error'
+                      : 'primary'
             "
-            class="w-4 h-4 mr-1"
-          />
-          {{ showShareConfirmation ? "Copied!" : "Share Build" }}
-        </UButton>
-      </div>
-    </div>
-    <!-- Custom Accordion for Equipment/Spell/Armor/Ring Selection -->
-    <!-- Weapon/Shield Selection -->
-    <div
-      :class="[
-        'mb-4',
-        'rounded-lg',
-        'overflow-hidden',
-        'pl-4',
-        randomTheme.border,
-        'border-l-4',
-        'bg-white',
-        'dark:bg-gray-900',
-        'shadow',
-      ]"
-    >
-      <div
-        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
-        @click="toggleSection('weapons')"
-      >
-        <div class="flex items-center gap-2">
-          <Icon
-            :name="
-              sectionOpen.weapons
-                ? 'i-heroicons-chevron-down'
-                : 'i-heroicons-chevron-right'
-            "
-            class="w-5 h-5 text-gray-500"
-          />
-          <h2 class="text-lg font-semibold">
-            Weapons/Shields Selection
-            <span class="text-gray-500">(optional)</span>
-          </h2>
+            @click="handleClearAll"
+            aria-label="Reset all selections and start over"
+          >
+            <Icon
+              name="i-heroicons-arrow-path"
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            Reset
+          </UButton>
+          <UButton
+            size="sm"
+            variant="outline"
+            :color="showShareConfirmation ? 'success' : 'secondary'"
+            @click="copyShareUrl"
+            :disabled="showShareConfirmation"
+            aria-label="Share your build configuration"
+          >
+            <Icon
+              :name="
+                showShareConfirmation ? 'i-heroicons-check' : 'i-heroicons-link'
+              "
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            {{ showShareConfirmation ? "Copied!" : "Share Build" }}
+          </UButton>
         </div>
-        <UButton
-          v-if="
-            state.selectedItems.weapons.length ||
-            state.selectedItems.shields.length ||
-            state.selectedItems.catalysts.length ||
-            state.selectedItems.talismans.length
-          "
-          type="button"
-          size="xs"
-          variant="solid"
-          color="success"
-          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
-          @click.stop="handleClearWeapons"
-        >
-          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
       </div>
-      <div v-if="sectionOpen.weapons" class="p-4 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Weapons -->
+    </section>
+
+    <!-- Equipment Selection Section -->
+    <section aria-labelledby="equipment-title" class="space-y-4">
+      <h2 id="equipment-title" class="sr-only">Equipment Selection</h2>
+
+      <!-- Weapon/Shield Selection -->
+      <div
+        :class="[
+          'mb-4',
+          'rounded-lg',
+          'overflow-hidden',
+          'pl-4',
+          randomTheme.border,
+          'border-l-4',
+          'bg-white',
+          'dark:bg-gray-900',
+          'shadow',
+        ]"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+          @click="toggleSection('weapons')"
+          @keydown.enter="toggleSection('weapons')"
+          @keydown.space.prevent="toggleSection('weapons')"
+          role="button"
+          tabindex="0"
+          :aria-expanded="sectionOpen.weapons"
+          :aria-controls="'weapons-section'"
+        >
+          <div class="flex items-center gap-2">
+            <Icon
+              :name="
+                sectionOpen.weapons
+                  ? 'i-heroicons-chevron-down'
+                  : 'i-heroicons-chevron-right'
+              "
+              class="w-5 h-5 text-gray-500"
+              aria-hidden="true"
+            />
+            <h3 class="text-lg font-semibold">
+              Weapons/Shields Selection
+              <span class="text-gray-500">(optional)</span>
+            </h3>
+          </div>
+          <UButton
+            v-if="
+              state.selectedItems.weapons.length ||
+              state.selectedItems.shields.length ||
+              state.selectedItems.catalysts.length ||
+              state.selectedItems.talismans.length
+            "
+            type="button"
+            size="xs"
+            variant="solid"
+            color="success"
+            class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+            @click.stop="handleClearWeapons"
+            aria-label="Clear all weapons and shields"
+          >
+            <Icon
+              name="i-heroicons-trash"
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            Clear
+          </UButton>
+        </div>
+        <div
+          v-if="sectionOpen.weapons"
+          id="weapons-section"
+          class="p-4 space-y-4"
+          aria-labelledby="weapons-title"
+        >
+          <h4 id="weapons-title" class="sr-only">Weapons and Shields</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Weapons -->
+            <CategorizedItemSelector
+              id="weapons"
+              label="Weapons"
+              placeholder="Select weapons..."
+              :options="weaponOptions"
+              :selected-items="state.selectedItems.weapons"
+              :max-items="
+                4 -
+                (state.selectedItems.shields.length +
+                  state.selectedItems.catalysts.length +
+                  state.selectedItems.talismans.length)
+              "
+              :two-handed="state.selectedItems.twoHanded.weapons"
+              @add="handleAddWeaponSelector"
+              @remove="handleRemoveWeapon"
+              @toggle-two-handed="
+                (index) => {
+                  toggleTwoHandedFor('weapons', index);
+                }
+              "
+            />
+            <!-- Shields -->
+            <CategorizedItemSelector
+              id="shields"
+              label="Shields"
+              placeholder="Select shields..."
+              :options="shieldOptions"
+              :selected-items="state.selectedItems.shields"
+              :max-items="
+                4 -
+                (state.selectedItems.weapons.length +
+                  state.selectedItems.catalysts.length +
+                  state.selectedItems.talismans.length)
+              "
+              :two-handed="state.selectedItems.twoHanded.shields"
+              @add="handleAddShieldSelector"
+              @remove="handleRemoveShield"
+              @toggle-two-handed="
+                (index) => {
+                  toggleTwoHandedFor('shields', index);
+                }
+              "
+            />
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Catalysts -->
+            <CategorizedItemSelector
+              id="catalysts"
+              label="Catalysts"
+              placeholder="Select catalysts..."
+              :options="catalystOptions"
+              :selected-items="state.selectedItems.catalysts"
+              :max-items="
+                4 -
+                (state.selectedItems.weapons.length +
+                  state.selectedItems.shields.length +
+                  state.selectedItems.talismans.length)
+              "
+              :two-handed="state.selectedItems.twoHanded.catalysts"
+              show-special-effects
+              @add="handleAddCatalystSelector"
+              @remove="handleRemoveCatalyst"
+              @toggle-two-handed="
+                (index) => {
+                  toggleTwoHandedFor('catalysts', index);
+                }
+              "
+            />
+            <!-- Talismans -->
+            <CategorizedItemSelector
+              id="talismans"
+              label="Talismans"
+              placeholder="Select talismans..."
+              :options="talismanOptions"
+              :selected-items="state.selectedItems.talismans"
+              :max-items="
+                4 -
+                (state.selectedItems.weapons.length +
+                  state.selectedItems.shields.length +
+                  state.selectedItems.catalysts.length)
+              "
+              :two-handed="state.selectedItems.twoHanded.talismans"
+              show-special-effects
+              @add="handleAddTalismanSelector"
+              @remove="handleRemoveTalisman"
+              @toggle-two-handed="
+                (index) => {
+                  toggleTwoHandedFor('talismans', index);
+                }
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Spell Selection -->
+      <div
+        :class="[
+          'mb-4',
+          'rounded-lg',
+          'overflow-hidden',
+          'pl-4',
+          randomTheme.border,
+          'border-l-4',
+          'bg-white',
+          'dark:bg-gray-900',
+          'shadow',
+        ]"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+          @click="toggleSection('spells')"
+          @keydown.enter="toggleSection('spells')"
+          @keydown.space.prevent="toggleSection('spells')"
+          role="button"
+          tabindex="0"
+          :aria-expanded="sectionOpen.spells"
+          :aria-controls="'spells-section'"
+        >
+          <div class="flex items-center gap-2">
+            <Icon
+              :name="
+                sectionOpen.spells
+                  ? 'i-heroicons-chevron-down'
+                  : 'i-heroicons-chevron-right'
+              "
+              class="w-5 h-5 text-gray-500"
+              aria-hidden="true"
+            />
+            <h3 class="text-lg font-semibold">
+              Spell Selection <span class="text-gray-500">(optional)</span>
+            </h3>
+          </div>
+          <UButton
+            v-if="
+              state.selectedItems.sorceries.length ||
+              state.selectedItems.miracles.length ||
+              state.selectedItems.pyromancies.length
+            "
+            type="button"
+            size="xs"
+            variant="solid"
+            color="success"
+            class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+            @click.stop="handleClearSpells"
+            aria-label="Clear all spells"
+          >
+            <Icon
+              name="i-heroicons-trash"
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            Clear
+          </UButton>
+        </div>
+        <div
+          v-if="sectionOpen.spells"
+          id="spells-section"
+          class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4"
+          aria-labelledby="spells-title"
+        >
+          <h4 id="spells-title" class="sr-only">Spells</h4>
+          <!-- Sorceries -->
           <CategorizedItemSelector
-            id="weapons"
-            label="Weapons"
-            placeholder="Select weapons..."
-            :options="weaponOptions"
-            :selected-items="state.selectedItems.weapons"
-            :max-items="
-              4 -
-              (state.selectedItems.shields.length +
-                state.selectedItems.catalysts.length +
-                state.selectedItems.talismans.length)
-            "
-            :two-handed="state.selectedItems.twoHanded.weapons"
-            @add="handleAddWeaponSelector"
-            @remove="handleRemoveWeapon"
-            @toggle-two-handed="
-              (index) => {
-                toggleTwoHandedFor('weapons', index);
-              }
-            "
+            id="sorceries"
+            label="Sorceries"
+            placeholder="Select sorceries..."
+            :options="sorceryOptions"
+            :selected-items="state.selectedItems.sorceries"
+            :max-items="10"
+            :current-attunement="state.characterStats.attunement"
+            :selected-rings="state.selectedItems.rings"
+            @add="handleAddSorcerySelector"
+            @remove="handleRemoveSorcery"
+            @increase-attunement="handleIncreaseAttunement"
           />
-          <!-- Shields -->
+          <!-- Miracles -->
           <CategorizedItemSelector
-            id="shields"
-            label="Shields"
-            placeholder="Select shields..."
-            :options="shieldOptions"
-            :selected-items="state.selectedItems.shields"
-            :max-items="
-              4 -
-              (state.selectedItems.weapons.length +
-                state.selectedItems.catalysts.length +
-                state.selectedItems.talismans.length)
-            "
-            :two-handed="state.selectedItems.twoHanded.shields"
-            @add="handleAddShieldSelector"
-            @remove="handleRemoveShield"
-            @toggle-two-handed="
-              (index) => {
-                toggleTwoHandedFor('shields', index);
-              }
-            "
+            id="miracles"
+            label="Miracles"
+            placeholder="Select miracles..."
+            :options="miracleOptions"
+            :selected-items="state.selectedItems.miracles"
+            :max-items="10"
+            :current-attunement="state.characterStats.attunement"
+            :selected-rings="state.selectedItems.rings"
+            @add="handleAddMiracleSelector"
+            @remove="handleRemoveMiracle"
+            @increase-attunement="handleIncreaseAttunement"
           />
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Catalysts -->
+          <!-- Pyromancies -->
           <CategorizedItemSelector
-            id="catalysts"
-            label="Catalysts"
-            placeholder="Select catalysts..."
-            :options="catalystOptions"
-            :selected-items="state.selectedItems.catalysts"
-            :max-items="
-              4 -
-              (state.selectedItems.weapons.length +
-                state.selectedItems.shields.length +
-                state.selectedItems.talismans.length)
-            "
-            :two-handed="state.selectedItems.twoHanded.catalysts"
-            show-special-effects
-            @add="handleAddCatalystSelector"
-            @remove="handleRemoveCatalyst"
-            @toggle-two-handed="
-              (index) => {
-                toggleTwoHandedFor('catalysts', index);
-              }
-            "
-          />
-          <!-- Talismans -->
-          <CategorizedItemSelector
-            id="talismans"
-            label="Talismans"
-            placeholder="Select talismans..."
-            :options="talismanOptions"
-            :selected-items="state.selectedItems.talismans"
-            :max-items="
-              4 -
-              (state.selectedItems.weapons.length +
-                state.selectedItems.shields.length +
-                state.selectedItems.catalysts.length)
-            "
-            :two-handed="state.selectedItems.twoHanded.talismans"
-            show-special-effects
-            @add="handleAddTalismanSelector"
-            @remove="handleRemoveTalisman"
-            @toggle-two-handed="
-              (index) => {
-                toggleTwoHandedFor('talismans', index);
-              }
-            "
+            id="pyromancies"
+            label="Pyromancies"
+            placeholder="Select pyromancies..."
+            :options="pyromancyOptions"
+            :selected-items="state.selectedItems.pyromancies"
+            :max-items="10"
+            :current-attunement="state.characterStats.attunement"
+            :selected-rings="state.selectedItems.rings"
+            @add="handleAddPyromancySelector"
+            @remove="handleRemovePyromancy"
+            @increase-attunement="handleIncreaseAttunement"
           />
         </div>
       </div>
-    </div>
-    <!-- Spell Selection -->
-    <div
-      :class="[
-        'mb-4',
-        'rounded-lg',
-        'overflow-hidden',
-        'pl-4',
-        randomTheme.border,
-        'border-l-4',
-        'bg-white',
-        'dark:bg-gray-900',
-        'shadow',
-      ]"
-    >
+
+      <!-- Armor Selection -->
       <div
-        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
-        @click="toggleSection('spells')"
+        :class="[
+          'mb-4',
+          'rounded-lg',
+          'overflow-hidden',
+          'pl-4',
+          randomTheme.border,
+          'border-l-4',
+          'bg-white',
+          'dark:bg-gray-900',
+          'shadow',
+        ]"
       >
-        <div class="flex items-center gap-2">
-          <Icon
-            :name="
-              sectionOpen.spells
-                ? 'i-heroicons-chevron-down'
-                : 'i-heroicons-chevron-right'
-            "
-            class="w-5 h-5 text-gray-500"
-          />
-          <h2 class="text-lg font-semibold">
-            Spell Selection <span class="text-gray-500">(optional)</span>
-          </h2>
-        </div>
-        <UButton
-          v-if="
-            state.selectedItems.sorceries.length ||
-            state.selectedItems.miracles.length ||
-            state.selectedItems.pyromancies.length
-          "
-          type="button"
-          size="xs"
-          variant="solid"
-          color="success"
-          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
-          @click.stop="handleClearSpells"
+        <div
+          class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+          @click="toggleSection('armor')"
+          @keydown.enter="toggleSection('armor')"
+          @keydown.space.prevent="toggleSection('armor')"
+          role="button"
+          tabindex="0"
+          :aria-expanded="sectionOpen.armor"
+          :aria-controls="'armor-section'"
         >
-          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
-      </div>
-      <div
-        v-if="sectionOpen.spells"
-        class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4"
-      >
-        <!-- Sorceries -->
-        <CategorizedItemSelector
-          id="sorceries"
-          label="Sorceries"
-          placeholder="Select sorceries..."
-          :options="sorceryOptions"
-          :selected-items="state.selectedItems.sorceries"
-          :max-items="10"
-          :current-attunement="state.characterStats.attunement"
-          :selected-rings="state.selectedItems.rings"
-          @add="handleAddSorcerySelector"
-          @remove="handleRemoveSorcery"
-          @increase-attunement="handleIncreaseAttunement"
-        />
-        <!-- Miracles -->
-        <CategorizedItemSelector
-          id="miracles"
-          label="Miracles"
-          placeholder="Select miracles..."
-          :options="miracleOptions"
-          :selected-items="state.selectedItems.miracles"
-          :max-items="10"
-          :current-attunement="state.characterStats.attunement"
-          :selected-rings="state.selectedItems.rings"
-          @add="handleAddMiracleSelector"
-          @remove="handleRemoveMiracle"
-          @increase-attunement="handleIncreaseAttunement"
-        />
-        <!-- Pyromancies -->
-        <CategorizedItemSelector
-          id="pyromancies"
-          label="Pyromancies"
-          placeholder="Select pyromancies..."
-          :options="pyromancyOptions"
-          :selected-items="state.selectedItems.pyromancies"
-          :max-items="10"
-          :current-attunement="state.characterStats.attunement"
-          :selected-rings="state.selectedItems.rings"
-          @add="handleAddPyromancySelector"
-          @remove="handleRemovePyromancy"
-          @increase-attunement="handleIncreaseAttunement"
-        />
-      </div>
-    </div>
-    <!-- Armor Selection -->
-    <div
-      :class="[
-        'mb-4',
-        'rounded-lg',
-        'overflow-hidden',
-        'pl-4',
-        randomTheme.border,
-        'border-l-4',
-        'bg-white',
-        'dark:bg-gray-900',
-        'shadow',
-      ]"
-    >
-      <div
-        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
-        @click="toggleSection('armor')"
-      >
-        <div class="flex items-center gap-2">
-          <Icon
-            :name="
-              sectionOpen.armor
-                ? 'i-heroicons-chevron-down'
-                : 'i-heroicons-chevron-right'
-            "
-            class="w-5 h-5 text-gray-500"
-          />
-          <h2 class="text-lg font-semibold">
-            Armor Selection <span class="text-gray-500">(optional)</span>
-          </h2>
+          <div class="flex items-center gap-2">
+            <Icon
+              :name="
+                sectionOpen.armor
+                  ? 'i-heroicons-chevron-down'
+                  : 'i-heroicons-chevron-right'
+              "
+              class="w-5 h-5 text-gray-500"
+              aria-hidden="true"
+            />
+            <h3 class="text-lg font-semibold">
+              Armor Selection <span class="text-gray-500">(optional)</span>
+            </h3>
+          </div>
+          <UButton
+            v-if="state.selectedItems.armor.length > 0"
+            type="button"
+            size="xs"
+            variant="solid"
+            color="success"
+            class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+            @click.stop="handleClearArmor"
+            aria-label="Clear all armor selections"
+          >
+            <Icon
+              name="i-heroicons-trash"
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            Clear
+          </UButton>
         </div>
-        <UButton
-          v-if="state.selectedItems.armor.length > 0"
-          type="button"
-          size="xs"
-          variant="solid"
-          color="success"
-          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
-          @click.stop="handleClearArmor"
+        <div
+          v-if="sectionOpen.armor"
+          id="armor-section"
+          class="p-4"
+          aria-labelledby="armor-title"
         >
-          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
-      </div>
-      <div v-if="sectionOpen.armor" class="p-4">
-        <ArmorSelector
-          :selected-armor="{
-            head: state.selectedItems.armor?.find((a) => a.slot === 'head'),
-            chest: state.selectedItems.armor?.find((a) => a.slot === 'chest'),
-            hands: state.selectedItems.armor?.find((a) => a.slot === 'hands'),
-            legs: state.selectedItems.armor?.find((a) => a.slot === 'legs'),
-          }"
-          :armor-options="armorOnlyOptions"
-          :reset-trigger="resetTrigger"
-          @update-armor="handleArmorUpdate"
-          @clear-armor="handleClearArmor"
-        />
-      </div>
-    </div>
-    <!-- Ring Selection -->
-    <div
-      :class="[
-        'mb-4',
-        'rounded-lg',
-        'overflow-hidden',
-        'pl-4',
-        randomTheme.border,
-        'border-l-4',
-        'bg-white',
-        'dark:bg-gray-900',
-        'shadow',
-      ]"
-    >
-      <div
-        class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
-        @click="toggleSection('rings')"
-      >
-        <div class="flex items-center gap-2">
-          <Icon
-            :name="
-              sectionOpen.rings
-                ? 'i-heroicons-chevron-down'
-                : 'i-heroicons-chevron-right'
-            "
-            class="w-5 h-5 text-gray-500"
+          <h4 id="armor-title" class="sr-only">Armor Selection</h4>
+          <ArmorSelector
+            :selected-armor="{
+              head: state.selectedItems.armor?.find((a) => a.slot === 'head'),
+              chest: state.selectedItems.armor?.find((a) => a.slot === 'chest'),
+              hands: state.selectedItems.armor?.find((a) => a.slot === 'hands'),
+              legs: state.selectedItems.armor?.find((a) => a.slot === 'legs'),
+            }"
+            :armor-options="armorOnlyOptions"
+            :reset-trigger="resetTrigger"
+            @update-armor="handleArmorUpdate"
+            @clear-armor="handleClearArmor"
           />
-          <h2 class="text-lg font-semibold">
-            Ring Selection <span class="text-gray-500">(optional)</span>
-          </h2>
         </div>
-        <UButton
-          v-if="state.selectedItems.rings.length > 0"
-          type="button"
-          size="xs"
-          variant="solid"
-          color="success"
-          class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
-          @click.stop="handleClearRings"
+      </div>
+
+      <!-- Ring Selection -->
+      <div
+        :class="[
+          'mb-4',
+          'rounded-lg',
+          'overflow-hidden',
+          'pl-4',
+          randomTheme.border,
+          'border-l-4',
+          'bg-white',
+          'dark:bg-gray-900',
+          'shadow',
+        ]"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-2 cursor-pointer select-none"
+          @click="toggleSection('rings')"
+          @keydown.enter="toggleSection('rings')"
+          @keydown.space.prevent="toggleSection('rings')"
+          role="button"
+          tabindex="0"
+          :aria-expanded="sectionOpen.rings"
+          :aria-controls="'rings-section'"
         >
-          <Icon name="i-heroicons-trash" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
+          <div class="flex items-center gap-2">
+            <Icon
+              :name="
+                sectionOpen.rings
+                  ? 'i-heroicons-chevron-down'
+                  : 'i-heroicons-chevron-right'
+              "
+              class="w-5 h-5 text-gray-500"
+              aria-hidden="true"
+            />
+            <h3 class="text-lg font-semibold">
+              Ring Selection <span class="text-gray-500">(optional)</span>
+            </h3>
+          </div>
+          <UButton
+            v-if="state.selectedItems.rings.length > 0"
+            type="button"
+            size="xs"
+            variant="solid"
+            color="success"
+            class="rounded-md inline-flex items-center px-2.5 py-1.5 text-xs gap-1.5 text-inverted bg-success hover:bg-success/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success font-medium shadow-sm hover:shadow-md transition-shadow"
+            @click.stop="handleClearRings"
+            aria-label="Clear all ring selections"
+          >
+            <Icon
+              name="i-heroicons-trash"
+              class="w-4 h-4 mr-1"
+              aria-hidden="true"
+            />
+            Clear
+          </UButton>
+        </div>
+        <div
+          v-if="sectionOpen.rings"
+          id="rings-section"
+          class="p-4"
+          aria-labelledby="rings-title"
+        >
+          <h4 id="rings-title" class="sr-only">Ring Selection</h4>
+          <RingSelector
+            :selected-rings="state.selectedItems.rings"
+            :ring-options="ringOnlyOptions"
+            @update-rings="handleRingsUpdate"
+            @clear-rings="handleClearRings"
+          />
+        </div>
       </div>
-      <div v-if="sectionOpen.rings" class="p-4">
-        <RingSelector
-          :selected-rings="state.selectedItems.rings"
-          :ring-options="ringOnlyOptions"
-          @update-rings="handleRingsUpdate"
-          @clear-rings="handleClearRings"
-        />
-      </div>
-    </div>
+    </section>
+
     <!-- Character Stats and Results Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <section
+      aria-labelledby="stats-results-title"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+    >
+      <h2 id="stats-results-title" class="sr-only">
+        Character Stats and Results
+      </h2>
+
       <!-- Character Stats Section -->
       <UCard :class="`border-l-4 ${randomTheme.border}`">
         <template #header>
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Character Stats</h2>
+            <h3 class="text-lg font-semibold">Character Stats</h3>
             <UButton
               size="xs"
               variant="solid"
               color="primary"
               class="ml-2"
               @click="handleReset"
+              aria-label="Reset character stats to minimum requirements"
             >
-              <Icon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1" />
+              <Icon
+                name="i-heroicons-arrow-path"
+                class="w-4 h-4 mr-1"
+                aria-hidden="true"
+              />
               Reset
             </UButton>
           </div>
@@ -1204,38 +1305,53 @@ function handleRemovePyromancy(index: number) {
       </UCard>
 
       <!-- Results Section -->
-      <UCard v-if="showResults" :class="`border-l-4 ${randomTheme.border}`">
+      <UCard
+        v-if="showResults"
+        :class="`border-l-4 ${randomTheme.border}`"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <template #header>
-          <h2 class="text-lg font-semibold">Starting Class Recommendations</h2>
+          <h3 class="text-lg font-semibold">Starting Class Recommendations</h3>
         </template>
 
         <StartingClassResults :results="resultsArray" />
       </UCard>
-    </div>
+    </section>
 
     <!-- Derived Stats Section -->
-    <UCard :class="`border-l-4 ${randomTheme.border}`">
-      <template #header>
-        <h2 class="text-lg font-semibold">Derived Stats</h2>
-      </template>
+    <section aria-labelledby="derived-stats-title">
+      <UCard :class="`border-l-4 ${randomTheme.border}`">
+        <template #header>
+          <h3 id="derived-stats-title" class="text-lg font-semibold">
+            Derived Stats
+          </h3>
+        </template>
 
-      <DerivedStatsDisplay
-        :stats="derivedStats || {}"
-        :can-improve-dodge-roll="canImproveDodgeRoll"
-        @improve-dodge-roll="improveDodgeRoll"
-      />
-    </UCard>
+        <DerivedStatsDisplay
+          :stats="derivedStats || {}"
+          :can-improve-dodge-roll="canImproveDodgeRoll"
+          @improve-dodge-roll="improveDodgeRoll"
+        />
+      </UCard>
+    </section>
 
     <!-- Dodge Roll Reference -->
-    <UCard :class="`border-l-4 ${randomTheme.border}`">
-      <template #header>
-        <h2 class="text-lg font-semibold">Dodge Roll Reference</h2>
-      </template>
+    <section aria-labelledby="dodge-roll-title">
+      <UCard :class="`border-l-4 ${randomTheme.border}`">
+        <template #header>
+          <h3 id="dodge-roll-title" class="text-lg font-semibold">
+            Dodge Roll Reference
+          </h3>
+        </template>
 
-      <DodgeRollReference />
-    </UCard>
+        <DodgeRollReference />
+      </UCard>
+    </section>
 
     <!-- Instructions -->
-    <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-8" />
-  </div>
+    <aside aria-labelledby="how-to-use-title" class="mt-8">
+      <HowToUse :steps="howToUseSteps" :theme="safeTheme" />
+    </aside>
+  </main>
 </template>

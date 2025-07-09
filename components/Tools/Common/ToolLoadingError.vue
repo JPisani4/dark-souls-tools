@@ -1,6 +1,7 @@
 <template>
   <div
     class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"
+    aria-live="polite"
   >
     <div class="max-w-md w-full mx-auto text-center px-4">
       <!-- Error Icon -->
@@ -18,6 +19,7 @@
             decoding="async"
             width="96"
             height="96"
+            aria-hidden="true"
           />
         </picture>
       </div>
@@ -76,6 +78,7 @@
         <UButton
           to="https://github.com/JPisani4/dark-souls-tools/issues"
           target="_blank"
+          rel="noopener noreferrer"
           variant="ghost"
           size="sm"
           class="text-primary-600 dark:text-primary-400"

@@ -125,103 +125,155 @@ const howToUseSteps = [
 </script>
 
 <template>
-  <!-- Calculator Card -->
-  <UCard :class="`border-l-4 ${safeTheme.border}`">
-    <div class="space-y-6">
-      <!-- Input Fields -->
-      <FormSection
-        title=""
-        :description="`Enter your current and desired ${terminology.level?.toLowerCase() || 'level'}s`"
-        :theme="safeTheme"
-      >
-        <NumberField
-          :label="terminology.currentLevel || 'Current Level'"
-          id="currentLevel"
-          :model-value="
-            state.currentLevel ? parseInt(state.currentLevel) : undefined
-          "
-          placeholder="15"
-          :min="LEVEL_MIN"
-          :max="LEVEL_MAX"
+  <!-- Main Calculator Section -->
+  <main role="main" aria-labelledby="tool-title">
+    <!-- Calculator Card -->
+    <section aria-labelledby="calculator-title" class="mb-8">
+      <UCard :class="`border-l-4 ${safeTheme.border}`">
+        <template #header>
+          <h2 id="calculator-title" class="sr-only">Soul Level Calculator</h2>
+        </template>
+
+        <div class="space-y-6">
+          <!-- Input Fields -->
+          <FormSection
+            title=""
+            :description="`Enter your current and desired ${terminology.level?.toLowerCase() || 'level'}s`"
+            :theme="safeTheme"
+          >
+            <NumberField
+              :label="terminology.currentLevel || 'Current Level'"
+              id="currentLevel"
+              :model-value="
+                state.currentLevel ? parseInt(state.currentLevel) : undefined
+              "
+              placeholder="15"
+              :min="LEVEL_MIN"
+              :max="LEVEL_MAX"
+              :theme="safeTheme"
+              aria-describedby="current-level-help"
+              @update:model-value="
+                (val) =>
+                  (state.currentLevel =
+                    val !== undefined && val !== null ? val.toString() : '')
+              "
+            />
+            <div id="current-level-help" class="sr-only">
+              Enter your character's current level between {{ LEVEL_MIN }} and
+              {{ LEVEL_MAX }}
+            </div>
+
+            <NumberField
+              :label="terminology.desiredLevel || 'Desired Level'"
+              id="desiredLevel"
+              :model-value="
+                state.desiredLevel ? parseInt(state.desiredLevel) : undefined
+              "
+              placeholder="25"
+              :min="LEVEL_MIN"
+              :max="LEVEL_MAX"
+              :theme="safeTheme"
+              aria-describedby="desired-level-help"
+              @update:model-value="
+                (val) =>
+                  (state.desiredLevel =
+                    val !== undefined && val !== null ? val.toString() : '')
+              "
+            />
+            <div id="desired-level-help" class="sr-only">
+              Enter the level you want to reach between {{ LEVEL_MIN }} and
+              {{ LEVEL_MAX }}
+            </div>
+          </FormSection>
+
+          <!-- Summary Card for Total Cost -->
+          <section
+            aria-labelledby="summary-title"
+            v-if="totalSoulsCost && totalSoulsCost > 0"
+          >
+            <h3 id="summary-title" class="sr-only">Calculation Summary</h3>
+            <div aria-live="polite" aria-atomic="true">
+              <SummaryCard
+                :value="totalSoulsCost"
+                :label="terminology.totalCost || 'Total Souls Required'"
+                :unit="terminology.souls || 'Souls'"
+                :details="`${terminology.level || 'Level'} ${current} → ${desired} (${filteredLevelsCount} ${terminology.level?.toLowerCase() || 'level'}s)`"
+                :theme="safeTheme"
+                :terminology="terminology"
+              />
+            </div>
+          </section>
+
+          <!-- Clear Button -->
+          <div class="flex justify-end">
+            <UButton
+              color="primary"
+              variant="outline"
+              @click.prevent="resetForm"
+              aria-label="Clear all form fields and reset calculator"
+            >
+              <Icon
+                name="i-heroicons-x-mark"
+                class="w-4 h-4 mr-1"
+                aria-hidden="true"
+              />
+              Clear
+            </UButton>
+          </div>
+        </div>
+      </UCard>
+    </section>
+
+    <!-- Results Section -->
+    <section
+      v-if="filteredLevelsCount > 0"
+      aria-labelledby="results-title"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <UCard :class="`border-l-4 ${safeTheme.border} mt-8`">
+        <template #header>
+          <div class="flex items-center justify-center">
+            <h3 id="results-title" class="text-lg font-semibold">
+              {{ terminology.level || "Level" }} Breakdown
+            </h3>
+          </div>
+        </template>
+
+        <ResultsTable
+          :columns="tableColumns"
+          :data="formattedTableData"
           :theme="safeTheme"
-          @update:model-value="
-            (val) =>
-              (state.currentLevel =
-                val !== undefined && val !== null ? val.toString() : '')
-          "
+          :terminology="terminology"
+          aria-describedby="table-description"
         />
-        <NumberField
-          :label="terminology.desiredLevel || 'Desired Level'"
-          id="desiredLevel"
-          :model-value="
-            state.desiredLevel ? parseInt(state.desiredLevel) : undefined
-          "
-          placeholder="25"
-          :min="LEVEL_MIN"
-          :max="LEVEL_MAX"
-          :theme="safeTheme"
-          @update:model-value="
-            (val) =>
-              (state.desiredLevel =
-                val !== undefined && val !== null ? val.toString() : '')
-          "
-        />
-      </FormSection>
 
-      <!-- Summary Card for Total Cost -->
-      <SummaryCard
-        v-if="totalSoulsCost && totalSoulsCost > 0"
-        :value="totalSoulsCost"
-        :label="terminology.totalCost || 'Total Souls Required'"
-        :unit="terminology.souls || 'Souls'"
-        :details="`${terminology.level || 'Level'} ${current} → ${desired} (${filteredLevelsCount} ${terminology.level?.toLowerCase() || 'level'}s)`"
-        :theme="safeTheme"
-        :terminology="terminology"
-      />
+        <div id="table-description" class="sr-only">
+          Table showing soul costs for each level from {{ current }} to
+          {{ desired }}
+        </div>
+      </UCard>
+    </section>
 
-      <!-- Clear Button -->
-      <div class="flex justify-end">
-        <UButton color="primary" variant="outline" @click.prevent="resetForm">
-          <Icon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" />
-          Clear
-        </UButton>
-      </div>
-    </div>
-  </UCard>
-
-  <!-- Results Table -->
-  <UCard
-    v-if="filteredLevelsCount > 0"
-    :class="`border-l-4 ${safeTheme.border} mt-8`"
-  >
-    <template #header>
-      <div class="flex items-center justify-center">
-        <h3 class="text-lg font-semibold">
-          {{ terminology.level || "Level" }} Breakdown
-        </h3>
-      </div>
-    </template>
-
-    <ResultsTable
-      :columns="tableColumns"
-      :data="formattedTableData"
-      :theme="safeTheme"
-      :terminology="terminology"
-    />
-  </UCard>
-
-  <!-- Pagination -->
-  <div class="flex justify-center mt-4">
-    <CustomPagination
+    <!-- Pagination -->
+    <nav
       v-if="filteredLevelsCount > pageSize"
-      :current-page="currentPage"
-      :total-pages="totalPages"
-      :total-items="filteredLevelsCount"
-      :page-size="pageSize"
-      @update:currentPage="setPage"
-    />
-  </div>
+      aria-labelledby="pagination-title"
+      class="flex justify-center mt-4"
+    >
+      <h4 id="pagination-title" class="sr-only">Results Navigation</h4>
+      <CustomPagination
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-items="filteredLevelsCount"
+        :page-size="pageSize"
+        @update:currentPage="setPage"
+      />
+    </nav>
 
-  <!-- How to Use -->
-  <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-8" />
+    <!-- How to Use -->
+    <aside aria-labelledby="how-to-use-title" class="mt-8">
+      <HowToUse :steps="howToUseSteps" :theme="safeTheme" />
+    </aside>
+  </main>
 </template>

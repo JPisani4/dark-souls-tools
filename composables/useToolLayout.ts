@@ -31,23 +31,33 @@ export function useToolLayout(options: ToolLayoutOptions) {
     return `https://www.goldphantom.com${route.path}`;
   });
 
-  // Use strict SEO metadata for all tool pages
+  // Enhanced SEO metadata for tool pages
   const seoTitle = computed(() => {
+    if (tool?.title) {
+      return `${tool.title} - Dark Souls 1 Tool - Gold Phantom`;
+    }
     return (
       tool?.config?.seo?.title || (tool?.title || title) + " - Gold Phantom"
     );
   });
 
   const seoDescription = computed(() => {
+    if (tool?.description) {
+      return `${tool.description} for Dark Souls 1 and Dark Souls Remastered. Free online tool.`;
+    }
     return tool?.config?.seo?.description || tool?.description || description;
   });
 
   const seoKeywords = computed(() => {
-    return (
-      tool?.config?.seo?.keywords ||
-      tool?.tags?.join(", ") ||
-      "soulsborne, calculator, dark souls, gaming tools"
-    );
+    const baseKeywords =
+      tool?.tags?.join(", ") || "dark souls 1, dark souls remastered";
+    const toolSpecific = tool?.title
+      ? `${tool.title.toLowerCase()}, ${tool.category?.toLowerCase()}`
+      : "";
+    return `${baseKeywords}, ${toolSpecific}, soulsborne calculator, gaming tools`
+      .replace(/,\s*,/g, ",")
+      .replace(/^,\s*/, "")
+      .replace(/\s*,$/, "");
   });
 
   // Use favicon for OG image always
@@ -166,17 +176,11 @@ export function useToolLayout(options: ToolLayoutOptions) {
       },
       {
         property: "article:published_time",
-        content:
-          tool?.config?.lastUpdated ||
-          tool?.createdAt?.toISOString() ||
-          new Date().toISOString(),
+        content: tool?.config?.lastUpdated || new Date().toISOString(),
       },
       {
         property: "article:modified_time",
-        content:
-          tool?.config?.lastUpdated ||
-          tool?.createdAt?.toISOString() ||
-          new Date().toISOString(),
+        content: tool?.config?.lastUpdated || new Date().toISOString(),
       },
       {
         property: "article:section",
@@ -194,6 +198,60 @@ export function useToolLayout(options: ToolLayoutOptions) {
         href: currentUrl.value,
       },
     ],
+    script: tool
+      ? [
+          {
+            type: "application/ld+json",
+            innerHTML: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "@id": `${currentUrl.value}#tool`,
+              name: tool.title,
+              description: tool.description,
+              url: currentUrl.value,
+              applicationCategory: tool.category || "Gaming Tool",
+              operatingSystem: "Web Browser",
+              browserRequirements: "JavaScript enabled",
+              softwareVersion: "1.0",
+              datePublished:
+                tool.config?.lastUpdated || new Date().toISOString(),
+              dateModified:
+                tool.config?.lastUpdated || new Date().toISOString(),
+              author: {
+                "@type": "Person",
+                name: "Gold Phantom",
+                url: "https://www.goldphantom.com",
+              },
+              publisher: {
+                "@type": "Organization",
+                name: "Gold Phantom",
+                url: "https://www.goldphantom.com",
+              },
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
+                url: currentUrl.value,
+              },
+              about: [
+                {
+                  "@type": "Thing",
+                  name: "Dark Souls 1",
+                  alternateName: "Dark Souls Remastered",
+                },
+                {
+                  "@type": "Thing",
+                  name: "Soulsborne Games",
+                },
+              ],
+              featureList: tool.tags || [],
+              screenshot:
+                tool.icon || "https://www.goldphantom.com/favicon.webp",
+            }),
+          },
+        ]
+      : [],
   });
 
   // Set up structured data if tool and game data are provided

@@ -120,6 +120,7 @@ function getHoverShadow(gradient: string | undefined) {
           <Icon
             name="i-heroicons-magnifying-glass"
             class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"
+            aria-hidden="true"
           />
         </div>
       </div>
@@ -160,78 +161,93 @@ function getHoverShadow(gradient: string | undefined) {
     </div>
 
     <!-- Tools List/Grid -->
-    <div
-      class="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-      role="list"
-      aria-label="Available tools"
+    <section
+      class="w-full max-w-4xl mx-auto"
+      aria-labelledby="available-tools-title"
     >
-      <button
-        v-for="(tool, i) in filteredTools"
-        :key="tool.slug"
-        @click="handleToolClick(tool)"
-        @keydown="(e) => handleKeyDown(e, tool)"
-        tabindex="0"
-        class="tool-card group flex flex-col items-center rounded-2xl shadow-md p-3 transition-all duration-150 hover:-translate-y-1 focus:-translate-y-1 cursor-pointer outline-none focus:ring-2 focus:ring-primary-500 min-h-[220px] bg-gradient-to-br"
-        :class="toolGradients[i]"
-        :style="{
-          boxShadow: `0 2px 8px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04)`,
-          '--hover-shadow': getHoverShadow(toolGradients[i]),
-        }"
-        @mouseenter="hoveredIndex = i"
-        @mouseleave="hoveredIndex = null"
-        @focus="hoveredIndex = i"
-        @blur="hoveredIndex = null"
-        :aria-label="`Open ${tool.title}`"
+      <h2 id="available-tools-title" class="sr-only">Available Tools</h2>
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+        role="list"
+        aria-label="Available tools"
       >
-        <!-- Icon/Image -->
-        <div
-          class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 shadow mb-2 mt-1"
+        <a
+          v-for="(tool, i) in filteredTools"
+          :key="tool.slug"
+          :href="
+            availableGames.length === 1
+              ? `/tools/${tool.gameCategories[0]}/${tool.slug}`
+              : `/tools/${tool.gameCategories[0]}/${tool.slug}`
+          "
+          role="listitem"
+          tabindex="0"
+          class="tool-card group flex flex-col items-center rounded-2xl shadow-md p-3 transition-all duration-150 hover:-translate-y-1 focus:-translate-y-1 cursor-pointer outline-none focus:ring-2 focus:ring-primary-500 min-h-[220px] bg-gradient-to-br"
+          :class="toolGradients[i]"
+          :style="{
+            boxShadow: `0 2px 8px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04)`,
+            '--hover-shadow': getHoverShadow(toolGradients[i]),
+          }"
+          @mouseenter="hoveredIndex = i"
+          @mouseleave="hoveredIndex = null"
+          @focus="hoveredIndex = i"
+          @blur="hoveredIndex = null"
+          :aria-label="`Open ${tool.title}`"
         >
-          <picture
-            v-if="tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)"
+          <!-- Icon/Image -->
+          <div
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 shadow mb-2 mt-1"
           >
-            <source
-              v-if="tool.icon.endsWith('.png')"
-              :srcset="
-                tool.icon.replace('.png', '.webp').replace(/^public\//, '/')
-              "
-              type="image/webp"
+            <picture
+              v-if="tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)"
+            >
+              <source
+                v-if="tool.icon.endsWith('.png')"
+                :srcset="
+                  tool.icon.replace('.png', '.webp').replace(/^public\//, '/')
+                "
+                type="image/webp"
+              />
+              <img
+                :src="tool.icon.replace(/^public\//, '/')"
+                :alt="tool.title + ' icon'"
+                class="w-10 h-10 object-contain rounded-full"
+                loading="lazy"
+                decoding="async"
+                width="40"
+                height="40"
+              />
+            </picture>
+            <Icon
+              v-else
+              :name="tool.icon || 'i-heroicons-sparkles'"
+              class="w-10 h-10 text-primary"
+              aria-hidden="true"
             />
-            <img
-              :src="tool.icon.replace(/^public\//, '/')"
-              alt="icon"
-              class="w-12 h-12 object-contain rounded-full"
-              loading="lazy"
-              decoding="async"
-              width="48"
-              height="48"
-            />
-          </picture>
-          <Icon
-            v-else
-            :name="tool.icon || 'i-heroicons-cube'"
-            class="w-10 h-10 text-primary-500"
-          />
-        </div>
-        <!-- Title -->
-        <h2
-          class="text-base font-semibold text-center text-gray-900 dark:text-white mb-1 whitespace-normal"
-        >
-          {{ tool.title }}
-        </h2>
-        <!-- Badges/Chips -->
-        <div class="flex flex-wrap justify-center gap-1 mb-2">
-          <ToolChips :category="tool.category" :games="tool.gameCategories" />
-        </div>
-        <!-- Description -->
-        <p
-          class="text-xs text-center text-gray-700 dark:text-gray-300 mb-2 line-clamp-2"
-        >
-          {{ tool.description }}
-        </p>
-        <!-- No action button; card is fully clickable. -->
-      </button>
-    </div>
+          </div>
+          <div class="flex flex-col items-center gap-1 w-full">
+            <span
+              class="text-lg font-semibold text-gray-900 dark:text-white text-center truncate w-full"
+              >{{ tool.title }}</span
+            >
+            <span class="flex flex-row gap-2 justify-center w-full">
+              <span
+                class="inline-block text-xs rounded-full px-2 py-0.5 bg-primary/10 text-primary font-medium max-w-[110px] truncate"
+                >{{ tool.gameCategories[0] }}</span
+              >
+              <span
+                v-if="tool.category"
+                class="inline-block text-xs rounded-full px-2 py-0.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium max-w-[110px] truncate"
+                >{{ tool.category }}</span
+              >
+            </span>
+            <span
+              class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-1 max-w-full overflow-hidden"
+              >{{ tool.description }}</span
+            >
+          </div>
+        </a>
+      </div>
+    </section>
 
     <!-- Empty State -->
     <div
