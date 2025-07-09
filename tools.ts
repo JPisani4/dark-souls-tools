@@ -11,7 +11,7 @@ export const tools: Tool[] = [
     tags: ["co-op","level range","multiplayer","weapon level","calculator","dark souls","remastered"],
     order: 1,
     loadComponent: () => import('~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Co-op Level Range Calculator",
@@ -65,7 +65,7 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Soul Level Calculator",
@@ -113,7 +113,7 @@ export const tools: Tool[] = [
     tags: ["starting-class-optimizer","character-planner","ds1","planner"],
     order: 1,
     loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Starting Class Optimizer",
@@ -159,7 +159,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Upgrade Calculator",
@@ -213,7 +213,7 @@ export const tools: Tool[] = [
     tags: ["npc","quest","tracker","progress","ds1","dark souls","remastered","questline"],
     order: 10,
     loadComponent: () => import('~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "NPC Quest Tracker",
@@ -267,7 +267,7 @@ export const tools: Tool[] = [
     tags: ["weapon","attack","rating","calculator","scaling","damage","ds1","dark souls","remastered"],
     order: 10,
     loadComponent: () => import('~/components/Tools/WeaponAttackRatingCalculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Attack Rating Calculator",
@@ -329,7 +329,7 @@ export const tools: Tool[] = [
     tags: ["armor","optimizer","planner","defense","poise","weight","ds1","dark souls","remastered"],
     order: 12,
     loadComponent: () => import('~/components/Tools/ArmorOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Armor Optimizer",
@@ -392,7 +392,7 @@ export const tools: Tool[] = [
     tags: ["achievement","tracker","progress","completion","ds1","dark souls","remastered"],
     order: 15,
     loadComponent: () => import('~/components/Tools/AchievementTracker/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T17:52:25.087Z'),
+    createdAt: new Date('2025-07-09T19:59:04.036Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Achievement Tracker",

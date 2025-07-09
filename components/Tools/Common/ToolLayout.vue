@@ -118,7 +118,7 @@
 import { onMounted, onUnmounted } from "vue";
 import { useMobileSidebar } from "~/composables/useMobileSidebar";
 import { useToolLayout } from "~/composables/useToolLayout";
-import type { Tool } from "~/types/tools/tool";
+// import type { Tool } from "~/types/tools/tool";
 import type { GameId, GameData } from "~/types/game";
 import Icon from "~/components/Common/Icon.vue";
 
@@ -129,7 +129,7 @@ interface Props {
   iconPath?: string;
   iconName?: string;
   // New props for structured data
-  tool?: Tool | null;
+  tool?: any;
   gameId?: GameId | null;
   gameData?: GameData | null;
 }

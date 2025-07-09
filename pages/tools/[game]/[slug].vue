@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { useGameToolLoader } from "~/composables/useGameToolLoader";
+import { computed, ref, watch } from "vue";
+import { useAsyncData } from "#app";
 import ToolLayout from "~/components/Tools/Common/ToolLayout.vue";
 import { getRandomTheme } from "~/utils/constants";
 import type { GameId } from "~/types/game";
@@ -11,48 +11,127 @@ import HeroSection from "~/components/Tools/Common/HeroSection.vue";
 import RelatedToolsSection from "~/components/Tools/Common/RelatedToolsSection.vue";
 import WeaponAttackRatingSidebar from "~/components/Tools/WeaponAttackRatingCalculator/GameComponents/Common/WeaponAttackRatingSidebar.vue";
 import ArmorOptimizerSidebar from "~/components/Tools/ArmorOptimizer/GameComponents/Common/ArmorOptimizerSidebar.vue";
-import { useHead } from "#imports";
+import { getGameData, isGameAvailable } from "~/utils/games";
+import type { Tool } from "~/types/tools/tool";
+import type { GameData } from "~/types/game";
 
-// Extract route parameters for game and tool identification
+// Utility: Deeply remove all functions from an object
+function stripFunctions(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(stripFunctions);
+  } else if (obj && typeof obj === "object") {
+    const result: any = {};
+    for (const key in obj) {
+      if (typeof obj[key] !== "function") {
+        result[key] = stripFunctions(obj[key]);
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
+// SSR-safe route params
 const route = useRoute();
 const gameId = computed(() => route.params.game as GameId);
 const slug = computed(() => route.params.slug as string);
 
-// Get a random theme for the tool to provide visual variety
-const selectedTheme = getRandomTheme();
+// Synchronously fetch tool config and game data for SSR/meta tags
+const { data: ssrData, error: ssrError } = await useAsyncData<{
+  tool: Omit<Tool, "loadComponent">;
+  gameData: GameData;
+} | null>(`tool-meta-${gameId.value}-${slug.value}`, () => {
+  const foundTool = tools.find(
+    (t) =>
+      t.slug === slug.value.toLowerCase() &&
+      t.gameCategories.includes(gameId.value)
+  );
+  if (!foundTool) return Promise.resolve(null);
+  if (!isGameAvailable(gameId.value)) return Promise.resolve(null);
+  const gameData = getGameData(gameId.value);
+  // Deeply remove all functions from tool and gameData
+  const serializableTool = stripFunctions(foundTool);
+  const serializableGameData = stripFunctions(gameData);
+  return Promise.resolve({
+    tool: serializableTool,
+    gameData: serializableGameData,
+  });
+});
+
+const tool = ref<
+  (Omit<Tool, "loadComponent"> & { loadComponent?: () => Promise<any> }) | null
+>(ssrData.value?.tool || null);
+const gameData = computed(() => ssrData.value?.gameData || null);
+
+// Computed: tool object for ToolLayout (never includes loadComponent)
+const toolForLayout = computed(() => {
+  if (!tool.value) return null;
+  // Remove loadComponent if present
+  const { loadComponent, ...plainTool } = tool.value;
+  return plainTool;
+});
 
 // Ref to access the tool component instance
 const toolComponentRef = ref();
 // Ref to access the sidebar component
 const sidebarRef = ref();
 
-// Initialize the game tool loader with all necessary state and actions
-const {
-  loading,
-  error,
-  component: ToolComponent,
+// Async load the tool component only after SSR/meta tags are set
+const ToolComponent = ref<any>(null);
+const loading = ref(false);
+const hasComponent = ref(false);
+const hasTool = computed(() => !!tool.value);
+const initialized = ref(false);
+const isLoading = ref(false);
+const hasError = ref(false);
+const error = ref<Error | null>(null);
+
+// Watcher: re-link loadComponent on client as soon as tool is hydrated
+watch(
   tool,
-  gameData,
-  isLoading,
-  hasError,
-  hasComponent,
-  hasTool,
-  loadGameTool,
-  retry,
-  cleanup,
-  initialized,
-} = useGameToolLoader();
+  (val) => {
+    if (process.client && val && typeof val.loadComponent !== "function") {
+      const realTool = tools.find(
+        (t) =>
+          t.slug === slug.value.toLowerCase() &&
+          t.gameCategories.includes(gameId.value)
+      );
+      if (realTool) {
+        val.loadComponent = realTool.loadComponent;
+      }
+    }
+    // Only call loadComponent if the function is present
+    if (val && typeof val.loadComponent === "function") {
+      loadComponent();
+    }
+  },
+  { immediate: true }
+);
 
-// Load tool on mount with the current game and slug
-onMounted(() => {
-  loadGameTool(gameId.value, slug.value);
-  window.scrollTo(0, 0);
-});
+async function loadComponent() {
+  if (!tool.value || typeof tool.value.loadComponent !== "function") return;
+  loading.value = true;
+  try {
+    const mod = await tool.value.loadComponent();
+    ToolComponent.value = mod.default;
+    hasComponent.value = true;
+    initialized.value = true;
+    isLoading.value = false;
+    hasError.value = false;
+    error.value = null;
+  } catch (err: any) {
+    hasComponent.value = false;
+    initialized.value = true;
+    isLoading.value = false;
+    hasError.value = true;
+    error.value = err instanceof Error ? err : new Error(String(err));
+  } finally {
+    loading.value = false;
+  }
+}
 
-// Cleanup on unmount to prevent memory leaks
-onUnmounted(() => {
-  cleanup();
-});
+// Get a random theme for the tool to provide visual variety
+const selectedTheme = getRandomTheme();
 
 // Compute related tools based on shared game and category/tags
 const relatedTools = computed(() => {
@@ -72,8 +151,7 @@ const relatedTools = computed(() => {
     .slice(0, 3); // Limit to 3 related tools
 });
 
-// Meta tags are now handled by useToolLayout composable
-// No need to set them here as they're already being set in the ToolLayout component
+// SSR meta tags via ToolLayout (no change needed)
 </script>
 
 <template>
@@ -81,7 +159,7 @@ const relatedTools = computed(() => {
     :title="tool?.title || 'Tool'"
     :description="tool?.description || 'Soulsborne tool'"
     :icon-path="tool?.icon"
-    :tool="tool"
+    :tool="toolForLayout"
     :game-id="gameId"
     :game-data="gameData || undefined"
   >
@@ -165,7 +243,7 @@ const relatedTools = computed(() => {
         v-else-if="hasError && hasTool"
         :tool-title="tool && tool.title ? tool.title : ''"
         :error-message="error && error.message ? error.message : ''"
-        @retry="retry"
+        @retry="loadComponent"
       />
       <!-- Fallback Error State - Unexpected errors with retry option -->
       <div v-else>
@@ -195,7 +273,7 @@ const relatedTools = computed(() => {
           <p class="text-gray-600 dark:text-gray-300 mb-8">
             Something unexpected happened. Please try refreshing the page.
           </p>
-          <UButton @click="retry" color="primary" size="lg">
+          <UButton @click="loadComponent" color="primary" size="lg">
             <Icon name="i-heroicons-arrow-path" class="w-5 h-5 mr-2" />
             Retry
           </UButton>
