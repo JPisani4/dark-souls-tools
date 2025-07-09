@@ -641,31 +641,4 @@ const equipmentTypes = computed(() => [
       </div>
     </div>
   </UCard>
-
-  <!-- Collapsible Search/Filter Section -->
-  <UCard class="w-full mt-4">
-    <template #header>
-      <div
-        class="flex items-center justify-between cursor-pointer select-none"
-        @click="isFilterExpanded = !isFilterExpanded"
-      >
-        <div class="flex items-center gap-2">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Search & Filter
-          </h2>
-          <Icon
-            :name="
-              isFilterExpanded
-                ? 'i-heroicons-chevron-up'
-                : 'i-heroicons-chevron-down'
-            "
-            class="w-5 h-5"
-          />
-        </div>
-      </div>
-    </template>
-    <div v-if="isFilterExpanded">
-      <!-- TODO: Insert the actual search/filter section content here, or slot it in from parent. -->
-    </div>
-  </UCard>
 </template>
