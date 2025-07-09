@@ -19,9 +19,11 @@ import {
 } from "~/composables/useArmorOptimizerCalculations";
 import ArmorCompareCard from "../Common/ArmorCompareCard.vue";
 import ArmorComparisonModal from "../Common/ArmorComparisonModal.vue";
+import EquipmentConfiguration from "../Common/EquipmentConfiguration.vue";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import { ref as vueRef } from "vue";
 
 interface Props {
   gameData: GameData;
@@ -434,6 +436,7 @@ watch(
     state.sortDescending,
     state.selectedRings,
     state.lockedArmor,
+    state.selectedEquipment,
     // Add any other relevant armor selection state here if needed
   ],
   (newValues, oldValues) => {
@@ -1411,15 +1414,28 @@ const howToUseSteps = computed(() => [
 
 // Get sortArmorSets from the composable instance
 const { sortArmorSets } = useArmorOptimizerCalculations();
+
+// Add ref for searchFilterExpanded
+const searchFilterExpanded = vueRef(true);
 </script>
 
 <template>
   <!-- Main Content -->
   <div class="space-y-6">
+    <!-- Equipment Configuration Section -->
+    <EquipmentConfiguration
+      :state="state"
+      :set-state="setState"
+      :theme="selectedTheme"
+    />
+
     <!-- Search and Filter Section -->
     <UCard class="w-full">
       <template #header>
-        <div class="flex items-center justify-between">
+        <div
+          class="flex items-center justify-between cursor-pointer select-none"
+          @click="searchFilterExpanded = !searchFilterExpanded"
+        >
           <div>
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
               Search and Filter
@@ -1428,19 +1444,29 @@ const { sortArmorSets } = useArmorOptimizerCalculations();
               Find and organize armor pieces
             </p>
           </div>
-          <UButton
-            @click="resetSearchAndFilter"
-            color="success"
-            variant="soft"
-            size="sm"
-            class="flex items-center gap-1"
-          >
-            <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
-          </UButton>
+          <div class="flex items-center gap-2">
+            <Icon
+              :name="
+                searchFilterExpanded
+                  ? 'i-heroicons-chevron-up'
+                  : 'i-heroicons-chevron-down'
+              "
+              class="w-5 h-5"
+            />
+            <UButton
+              @click.stop="resetSearchAndFilter"
+              color="success"
+              variant="soft"
+              size="sm"
+              class="flex items-center gap-1"
+            >
+              <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
+            </UButton>
+          </div>
         </div>
       </template>
 
-      <div class="space-y-4">
+      <div v-show="searchFilterExpanded" class="space-y-4">
         <!-- Search Bar -->
         <div class="flex items-center gap-4">
           <div class="flex-1">
@@ -1495,31 +1521,29 @@ const { sortArmorSets } = useArmorOptimizerCalculations();
           </div>
         </div>
 
-        <!-- Custom Filter Section (collapsible, collapsed by default) -->
-        <div>
+        <!-- Advanced Custom Filter Toggle (moved to bottom) -->
+        <div class="mb-2 mt-4">
           <UButton
-            variant="ghost"
-            size="sm"
-            class="mb-2"
+            color="primary"
+            size="md"
+            class="w-full sm:w-auto font-semibold flex items-center gap-2"
             @click="state.showCustomFilter = !state.showCustomFilter"
           >
+            <Icon name="i-heroicons-funnel" class="w-5 h-5" />
+            Advanced Custom Filter
             <Icon
               :name="
                 state.showCustomFilter
-                  ? 'i-heroicons-chevron-down'
-                  : 'i-heroicons-chevron-right'
+                  ? 'i-heroicons-chevron-up'
+                  : 'i-heroicons-chevron-down'
               "
-              class="w-4 h-4 mr-1"
+              class="w-4 h-4 ml-1"
             />
-            Advanced Custom Filter
-            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {{
-                state.displayMode === "mixmatch"
-                  ? "(Filters & Sorts)"
-                  : "(Sorts Only)"
-              }}
-            </span>
           </UButton>
+        </div>
+
+        <!-- Custom Filter Section (collapsible, collapsed by default) -->
+        <div>
           <div
             v-show="state.showCustomFilter"
             class="p-4 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-4"
@@ -1556,6 +1580,8 @@ const { sortArmorSets } = useArmorOptimizerCalculations();
                       ...state.customFilter,
                       selectedStats: stats,
                     },
+                    sortPrimary: 'custom',
+                    sortSecondary: 'none',
                   });
                 }
               "

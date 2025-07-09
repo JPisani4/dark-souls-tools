@@ -5,7 +5,7 @@ export const config: ToolConfig = {
   description:
     "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
   icon: "i-heroicons-user-group",
-  category: "planner",
+  category: "tracker",
   order: 10,
   tags: [
     "npc",

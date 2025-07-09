@@ -403,8 +403,8 @@ const lautrecQuest: QuestState = {
       isCompleted: false,
       location: "Below Firelink Shrine",
       prerequisites: [
-        "Ring both bells of awakening",
-        "Collect the Undead Parish and Blighttown Firekeeper Souls",
+        "Ring both bells of awakening or collect the Undead Parish and Blighttown Firekeeper Souls",
+        ,
       ],
       rewards: ["Black Eye Orb", "Dingy Set"],
       order: 3,

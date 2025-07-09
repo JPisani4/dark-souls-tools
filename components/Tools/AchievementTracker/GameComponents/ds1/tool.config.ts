@@ -5,7 +5,7 @@ export const config: ToolConfig = {
   description:
     "Track your progress through Dark Souls Remastered achievements. Mark requirements as completed, view progress by category, and monitor your completion percentage for each achievement.",
   icon: "i-heroicons-trophy",
-  category: "planner",
+  category: "tracker",
   order: 15,
   tags: [
     "achievement",

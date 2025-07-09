@@ -373,6 +373,55 @@ const toggleStepCompleted = (
                     {{ step.description }}
                   </div>
                   <div class="flex flex-wrap gap-2 mt-1">
+                    <!-- Prerequisites display, filter out kebab-case -->
+                    <span
+                      v-for="prereq in (step.prerequisites || []).filter(
+                        (p) => !p.includes('-')
+                      )"
+                      :key="'prereq-' + prereq"
+                      class="flex items-center gap-1"
+                    >
+                      <CategoryChip
+                        category="info"
+                        :display-name="
+                          ('Prerequisite: ' + prereq).length > 20
+                            ? 'Prerequisite: ' + prereq.slice(0, 20) + '…'
+                            : 'Prerequisite: ' + prereq
+                        "
+                        size="sm"
+                      />
+                      <SmartTooltip
+                        v-if="('Prerequisite: ' + prereq).length > 20"
+                      >
+                        <template #trigger>
+                          <Icon
+                            name="i-heroicons-information-circle"
+                            class="w-4 h-4 text-info cursor-pointer flex-shrink-0"
+                            tabindex="0"
+                            aria-label="Show full prerequisite"
+                          />
+                        </template>
+                        <div class="flex items-start gap-3">
+                          <Icon
+                            name="i-heroicons-academic-cap"
+                            class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
+                          />
+                          <div class="flex-1">
+                            <div
+                              class="font-medium text-gray-900 dark:text-white mb-2"
+                            >
+                              Prerequisite
+                            </div>
+                            <div
+                              class="text-gray-700 dark:text-gray-300 leading-relaxed"
+                            >
+                              {{ prereq }}
+                            </div>
+                          </div>
+                        </div>
+                      </SmartTooltip>
+                    </span>
+                    <!-- Fail conditions -->
                     <span
                       v-for="fail in step.failConditions || []"
                       :key="'fail-' + fail"
@@ -417,13 +466,19 @@ const toggleStepCompleted = (
                         </div>
                       </SmartTooltip>
                     </span>
-                    <CategoryChip
-                      v-for="reward in step.rewards || []"
-                      :key="'reward-' + reward"
-                      category="reward"
-                      :display-name="'Reward: ' + reward"
-                      size="sm"
-                    />
+                    <!-- Rewards badges on a new line -->
+                    <div
+                      v-if="step.rewards && step.rewards.length"
+                      class="w-full mt-2 flex flex-wrap gap-2"
+                    >
+                      <CategoryChip
+                        v-for="reward in step.rewards"
+                        :key="'reward-' + reward"
+                        category="reward"
+                        :display-name="'Reward: ' + reward"
+                        size="sm"
+                      />
+                    </div>
                   </div>
                 </template>
               </div>
