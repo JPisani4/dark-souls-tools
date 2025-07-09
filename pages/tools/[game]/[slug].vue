@@ -49,7 +49,7 @@ const { data: ssrData, error: ssrError } = await useAsyncData<{
   if (!foundTool) return Promise.resolve(null);
   if (!isGameAvailable(gameId.value)) return Promise.resolve(null);
   const gameData = getGameData(gameId.value);
-  // Deeply remove all functions from tool and gameData
+  // Deeply remove all functions from tool and gameData for SSR
   const serializableTool = stripFunctions(foundTool);
   const serializableGameData = stripFunctions(gameData);
   return Promise.resolve({
@@ -61,7 +61,16 @@ const { data: ssrData, error: ssrError } = await useAsyncData<{
 const tool = ref<
   (Omit<Tool, "loadComponent"> & { loadComponent?: () => Promise<any> }) | null
 >(ssrData.value?.tool || null);
-const gameData = computed(() => ssrData.value?.gameData || null);
+// Use a ref for gameData so we can swap in the real one on client
+const gameData = ref<GameData | null>(ssrData.value?.gameData || null);
+
+// On client, replace with real gameData (with functions) after hydration
+if (process.client) {
+  const realGameData = getGameData(gameId.value);
+  if (realGameData) {
+    gameData.value = realGameData;
+  }
+}
 
 // Computed: tool object for ToolLayout (never includes loadComponent)
 const toolForLayout = computed(() => {
