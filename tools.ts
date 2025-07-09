@@ -11,7 +11,7 @@ export const tools: Tool[] = [
     tags: ["co-op","level range","multiplayer","weapon level","calculator","dark souls","remastered"],
     order: 1,
     loadComponent: () => import('~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Co-op Level Range Calculator",
@@ -65,7 +65,7 @@ export const tools: Tool[] = [
     tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
     loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Soul Level Calculator",
@@ -113,7 +113,7 @@ export const tools: Tool[] = [
     tags: ["starting-class-optimizer","character-planner","ds1","planner"],
     order: 1,
     loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Starting Class Optimizer",
@@ -159,7 +159,7 @@ export const tools: Tool[] = [
     tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
     loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Upgrade Calculator",
@@ -200,7 +200,7 @@ export const tools: Tool[] = [
           "merchant prices",
           "dark souls remastered"
         ],
-        "ogImage": "/weapon-upgrade-calculator-icon.png"
+        "ogImage": "/favicon.webp"
       }
     },
   },
@@ -213,7 +213,7 @@ export const tools: Tool[] = [
     tags: ["npc","quest","tracker","progress","ds1","dark souls","remastered","questline"],
     order: 10,
     loadComponent: () => import('~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "NPC Quest Tracker",
@@ -254,7 +254,7 @@ export const tools: Tool[] = [
           "quest progression",
           "gold phantom"
         ],
-        "ogImage": "/warrior-of-sunlight-covenant-dks.webp"
+        "ogImage": "/favicon.webp"
       }
     },
   },
@@ -267,7 +267,7 @@ export const tools: Tool[] = [
     tags: ["weapon","attack","rating","calculator","scaling","damage","ds1","dark souls","remastered"],
     order: 10,
     loadComponent: () => import('~/components/Tools/WeaponAttackRatingCalculator/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Weapon Attack Rating Calculator",
@@ -292,7 +292,7 @@ export const tools: Tool[] = [
       "gameCategory": "ds1",
       "seo": {
         "title": "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
-        "description": "Calculate and compare weapon attack ratings based on your character stats.",
+        "description": "Calculate and compare weapon attack ratings for all weapons in Dark Souls Remastered. See scaling, requirements, and optimize your build for maximum damage output.",
         "keywords": [
           "weapon attack rating",
           "dark souls remastered",
@@ -316,7 +316,7 @@ export const tools: Tool[] = [
           "weapon damage calculator",
           "gold phantom"
         ],
-        "ogImage": "/Weapons.webp"
+        "ogImage": "/favicon.webp"
       }
     },
   },
@@ -329,7 +329,7 @@ export const tools: Tool[] = [
     tags: ["armor","optimizer","planner","defense","poise","weight","ds1","dark souls","remastered"],
     order: 12,
     loadComponent: () => import('~/components/Tools/ArmorOptimizer/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Armor Optimizer",
@@ -354,7 +354,7 @@ export const tools: Tool[] = [
       "gameCategory": "ds1",
       "seo": {
         "title": "Armor Optimizer - Dark Souls Remastered | Gold Phantom",
-        "description": "Calculate and compare armor based on your character stats and equipment.",
+        "description": "Calculate and compare armor based on your character stats and equipment. Optimize for poise, weight, and defense. Find the best armor sets and mix-match combinations for your build.",
         "keywords": [
           "armor optimizer",
           "dark souls remastered",
@@ -379,7 +379,7 @@ export const tools: Tool[] = [
           "armor efficiency",
           "gold phantom"
         ],
-        "ogImage": "/dark-souls-remastered-icon.png"
+        "ogImage": "/favicon.webp"
       }
     },
   },
@@ -392,7 +392,7 @@ export const tools: Tool[] = [
     tags: ["achievement","tracker","progress","completion","ds1","dark souls","remastered"],
     order: 15,
     loadComponent: () => import('~/components/Tools/AchievementTracker/GameComponents/ds1/index.vue'),
-    createdAt: new Date('2025-07-09T20:05:43.880Z'),
+    createdAt: new Date('2025-07-09T20:25:34.135Z'),
     gameCategories: ["ds1"],
     config: {
       "title": "Achievement Tracker",
@@ -415,7 +415,7 @@ export const tools: Tool[] = [
       "gameCategory": "ds1",
       "seo": {
         "title": "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
-        "description": "Tracks your achievement progress through game cycles.",
+        "description": "Track your achievement progress through all game cycles in Dark Souls Remastered. Never miss a rare weapon, spell, or boss soul. Plan your 100% completion efficiently.",
         "keywords": [
           "dark souls remastered",
           "achievement tracker",
@@ -436,7 +436,7 @@ export const tools: Tool[] = [
           "achievement guide",
           "gold phantom"
         ],
-        "ogImage": "/weapon-upgrade-calculator-icon.webp"
+        "ogImage": "/favicon.webp"
       }
     },
   }

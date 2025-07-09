@@ -25,7 +25,7 @@ export const config: ToolConfig = {
   seo: {
     title: "Armor Optimizer - Dark Souls Remastered | Gold Phantom",
     description:
-      "Calculate and compare armor based on your character stats and equipment.",
+      "Calculate and compare armor based on your character stats and equipment. Optimize for poise, weight, and defense. Find the best armor sets and mix-match combinations for your build.",
     keywords: [
       "armor optimizer",
       "dark souls remastered",
@@ -50,6 +50,6 @@ export const config: ToolConfig = {
       "armor efficiency",
       "gold phantom",
     ],
-    ogImage: "/dark-souls-remastered-icon.png",
+    ogImage: "/favicon.webp",
   },
 };

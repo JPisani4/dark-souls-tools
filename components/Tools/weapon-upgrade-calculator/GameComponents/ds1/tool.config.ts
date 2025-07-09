@@ -34,6 +34,6 @@ export const config: ToolConfig = {
       "merchant prices",
       "dark souls remastered",
     ],
-    ogImage: "/weapon-upgrade-calculator-icon.png",
+    ogImage: "/favicon.webp",
   },
 };

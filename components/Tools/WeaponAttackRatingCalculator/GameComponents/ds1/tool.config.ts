@@ -26,7 +26,7 @@ export const config: ToolConfig = {
     title:
       "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
     description:
-      "Calculate and compare weapon attack ratings based on your character stats.",
+      "Calculate and compare weapon attack ratings for all weapons in Dark Souls Remastered. See scaling, requirements, and optimize your build for maximum damage output.",
     keywords: [
       "weapon attack rating",
       "dark souls remastered",
@@ -50,6 +50,6 @@ export const config: ToolConfig = {
       "weapon damage calculator",
       "gold phantom",
     ],
-    ogImage: "/Weapons.webp",
+    ogImage: "/favicon.webp",
   },
 };

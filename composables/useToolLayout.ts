@@ -50,11 +50,8 @@ export function useToolLayout(options: ToolLayoutOptions) {
     );
   });
 
-  // Use tool-specific OG image if available, otherwise fallback to favicon
+  // Use favicon for OG image always
   const seoImage = computed(() => {
-    if (tool?.config?.seo?.ogImage) {
-      return `https://www.goldphantom.com${tool.config.seo.ogImage}`;
-    }
     return "https://www.goldphantom.com/favicon.webp";
   });
 

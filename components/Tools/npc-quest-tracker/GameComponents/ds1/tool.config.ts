@@ -41,6 +41,6 @@ export const config: ToolConfig = {
       "quest progression",
       "gold phantom",
     ],
-    ogImage: "/warrior-of-sunlight-covenant-dks.webp",
+    ogImage: "/favicon.webp",
   },
 };

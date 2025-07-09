@@ -22,7 +22,8 @@ export const config: ToolConfig = {
   seo: {
     title:
       "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
-    description: "Tracks your achievement progress through game cycles.",
+    description:
+      "Track your achievement progress through all game cycles in Dark Souls Remastered. Never miss a rare weapon, spell, or boss soul. Plan your 100% completion efficiently.",
     keywords: [
       "dark souls remastered",
       "achievement tracker",
@@ -43,6 +44,6 @@ export const config: ToolConfig = {
       "achievement guide",
       "gold phantom",
     ],
-    ogImage: "/weapon-upgrade-calculator-icon.webp",
+    ogImage: "/favicon.webp",
   },
 };
