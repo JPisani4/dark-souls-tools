@@ -15,7 +15,7 @@ const knightsHonor: Achievement = {
   icon: "i-heroicons-shield-check",
   category: "weapons",
   ngRequired: true,
-  totalRequired: 50,
+  totalRequired: 48,
   requirements: [
     // Boss Weapons (from +10 weapons + boss souls)
     {

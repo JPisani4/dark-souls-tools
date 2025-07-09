@@ -68,7 +68,7 @@ const resetCharacterSetup = () => {
   <UCard class="h-full">
     <template #header>
       <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Character Setup</h2>
+        <h2 class="text-lg font-semibold">Character Stats</h2>
         <UButton
           @click="resetCharacterSetup"
           color="success"

@@ -98,18 +98,19 @@ watch(
 // --- Weapon/Shield Lookup ---
 const allWeapons = Object.values(getAllWeapons()).flat();
 const allShields = Object.values(getAllShields()).flat();
-const allItems = [...allWeapons, ...allShields];
+// Add a typeKey property to each item for grouping
+const allItems = [
+  ...allWeapons.map((item) => ({ ...item, typeKey: item.weaponType })),
+  ...allShields.map((item) => ({ ...item, typeKey: item.shieldType })),
+];
+
 const {
   search,
   flatOptions,
   filteredItems,
   getUpgradePaths,
   getValidLevelsForPath,
-} = useItemLookup(
-  allItems,
-  "weaponType" in allWeapons[0] ? "weaponType" : "shieldType",
-  "name"
-);
+} = useItemLookup(allItems, "typeKey", "name");
 
 // --- Co-op Level Calculator ---
 const {
@@ -262,7 +263,9 @@ useToolLayout({
           :options="multiplayerItems"
           :model-value="state.multiplayerItem"
           placeholder="All items"
-          @update:model-value="(val) => (state.multiplayerItem = val)"
+          @update:model-value="
+            (val: string | undefined) => (state.multiplayerItem = val ?? '')
+          "
         />
         <!-- Password Checkbox -->
         <UCheckbox

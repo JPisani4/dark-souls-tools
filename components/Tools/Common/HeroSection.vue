@@ -123,7 +123,9 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  iconPath: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
+  title: "Soulsborne Tools",
+  description: "Essential Tools & Calculators",
+  iconPath: "/favicon.webp",
   iconName: "",
   variant: "default",
   iconZoom: 1,

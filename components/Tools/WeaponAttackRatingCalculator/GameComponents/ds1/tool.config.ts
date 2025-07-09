@@ -3,7 +3,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 export const config: ToolConfig = {
   title: "Weapon Attack Rating Calculator",
   description:
-    "Calculate and compare weapon attack ratings based on your character stats. View total attack power, individual damage types, scaling, and requirements for all weapons in Dark Souls Remastered.",
+    "Calculate and compare weapon attack ratings based on your character stats.",
   icon: "i-heroicons-sword",
   category: "calculator",
   order: 10,
@@ -26,7 +26,7 @@ export const config: ToolConfig = {
     title:
       "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
     description:
-      "Calculate weapon attack ratings and compare damage output for all weapons in Dark Souls Remastered. View total attack power, individual damage types, scaling bonuses, and requirements based on your character stats. Perfect for optimizing your weapon choice and understanding damage calculations.",
+      "Calculate and compare weapon attack ratings based on your character stats.",
     keywords: [
       "weapon attack rating",
       "dark souls remastered",

@@ -3,9 +3,9 @@ import type { ToolConfig } from "~/types/tools/tool";
 export const config: ToolConfig = {
   title: "Armor Optimizer",
   description:
-    "Optimize your armor selection based on endurance level, equipment, and desired dodge roll type. Compare individual pieces, complete sets, and mix-and-match combinations with advanced sorting and ratio calculations.",
+    "Calculate and compare armor based on your character stats and equipment.",
   icon: "i-heroicons-shield-check",
-  category: "planner",
+  category: "calculator",
   order: 12,
   tags: [
     "armor",
@@ -25,7 +25,7 @@ export const config: ToolConfig = {
   seo: {
     title: "Armor Optimizer - Dark Souls Remastered | Gold Phantom",
     description:
-      "Find the best armor combinations for your Dark Souls Remastered character. Compare individual pieces, complete sets, and mix-and-match combinations with advanced sorting, ratio calculations, and dodge roll optimization. Perfect for maximizing defense while maintaining your desired mobility.",
+      "Calculate and compare armor based on your character stats and equipment.",
     keywords: [
       "armor optimizer",
       "dark souls remastered",

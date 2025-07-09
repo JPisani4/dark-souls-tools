@@ -2,8 +2,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 
 export const config: ToolConfig = {
   title: "Achievement Tracker",
-  description:
-    "Track your progress through Dark Souls Remastered achievements. Mark requirements as completed, view progress by category, and monitor your completion percentage for each achievement.",
+  description: "Tracks your achievement progress through game cycles.",
   icon: "i-heroicons-trophy",
   category: "tracker",
   order: 15,
@@ -23,8 +22,7 @@ export const config: ToolConfig = {
   seo: {
     title:
       "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
-    description:
-      "Complete Dark Souls Remastered achievement tracker. Track Knight's Honor, Wisdom of a Sage, Bond of a Pyromancer, and Prayer of a Maiden achievements. Monitor progress, mark completed requirements, and get quest guidance.",
+    description: "Tracks your achievement progress through game cycles.",
     keywords: [
       "dark souls remastered",
       "achievement tracker",

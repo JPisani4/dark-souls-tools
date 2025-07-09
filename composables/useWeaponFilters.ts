@@ -292,6 +292,7 @@ export function useWeaponFilters(
       currentPage: 1,
       expandedWeapons: [],
       expandedCategories: [],
+      filterEquippableOnly: false, // Reset equipable checkbox
     });
   };
 

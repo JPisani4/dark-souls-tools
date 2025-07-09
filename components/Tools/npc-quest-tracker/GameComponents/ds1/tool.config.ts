@@ -2,8 +2,7 @@ import type { ToolConfig } from "~/types/tools/tool";
 
 export const config: ToolConfig = {
   title: "NPC Quest Tracker",
-  description:
-    "Track your progress through NPC questlines in Dark Souls Remastered. Mark steps as completed, view fail conditions, locations, and rewards for each NPC.",
+  description: "Tracks your progress through NPC questlines.",
   icon: "i-heroicons-user-group",
   category: "tracker",
   order: 10,

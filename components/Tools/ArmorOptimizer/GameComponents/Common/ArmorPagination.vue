@@ -39,14 +39,18 @@ const visiblePages = computed(() => {
 </script>
 
 <template>
-  <div class="flex justify-between items-center mt-4">
-    <div class="text-sm text-gray-600 dark:text-gray-400">
+  <div
+    class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2 sm:gap-0"
+  >
+    <div
+      class="order-2 sm:order-1 flex justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-400"
+    >
       <span>
         Showing {{ startItem }} - {{ endItem }} of {{ totalItems }} items
       </span>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="order-1 sm:order-2 flex items-center justify-center gap-2">
       <!-- Previous Page Button -->
       <UButton
         :disabled="!hasPrevious"

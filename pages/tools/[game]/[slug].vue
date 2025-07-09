@@ -46,6 +46,7 @@ const {
 // Load tool on mount with the current game and slug
 onMounted(() => {
   loadGameTool(gameId.value, slug.value);
+  window.scrollTo(0, 0);
 });
 
 // Cleanup on unmount to prevent memory leaks

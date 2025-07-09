@@ -22,6 +22,8 @@ interface Props {
   onPageChange: (category: string, page: number) => void;
   onPreviousPage: (category: string) => void;
   onNextPage: (category: string) => void;
+  expandedSetPieces: Record<string, boolean>;
+  onToggleSetPiecesExpansion: (armorSetName: string) => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -169,6 +171,10 @@ const isArmorSetExpanded = (armorSetName: string) => {
           :sort-primary="sortPrimary"
           :sort-secondary="sortSecondary"
           :mask-of-the-father="maskOfTheFather"
+          :pieces-expanded="expandedSetPieces[armorSet.name] || false"
+          @toggle-pieces-expansion="
+            () => onToggleSetPiecesExpansion(armorSet.name)
+          "
           @toggle-expansion="onToggleArmorSetExpansion(armorSet.name)"
           @toggle-selection="onToggleArmorSetComparison(armorSet.name)"
         />

@@ -54,9 +54,10 @@ export function useItemLookup<T extends Record<string, any>>(
         item,
       });
     });
+    // Sort items alphabetically within each group
     return Object.entries(groups).map(([category, options]) => ({
       category,
-      options,
+      options: options.sort((a, b) => a.label.localeCompare(b.label)),
     }));
   });
 

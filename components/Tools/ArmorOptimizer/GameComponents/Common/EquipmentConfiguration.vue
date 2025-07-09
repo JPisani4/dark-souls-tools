@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 import { useItemLookup } from "~/composables/useItemLookup";
 import { getAllWeapons } from "~/utils/games/ds1/weapons";
@@ -28,7 +28,19 @@ const props = defineProps<Props>();
 const safeTheme = useSafeTheme(props.theme, props.variant);
 
 // Collapsible state
+const LOCAL_STORAGE_KEY = "armor-optimizer-equip-expanded";
 const isExpanded = ref(true);
+
+onMounted(() => {
+  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (saved !== null) {
+    isExpanded.value = saved === "true";
+  }
+});
+
+watch(isExpanded, (val) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, val ? "true" : "false");
+});
 // 1. Add a new ref for the search/filter section collapse
 const isFilterExpanded = ref(true);
 

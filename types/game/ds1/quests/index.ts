@@ -22,7 +22,7 @@ export interface QuestReward {
   id: string;
   name: string;
   type: string;
-  description: string;
+  description?: string;
   isObtained: boolean;
   location?: string;
   prerequisites?: string[]; // IDs of requirements that must be completed first

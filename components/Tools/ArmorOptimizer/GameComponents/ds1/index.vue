@@ -98,6 +98,9 @@ interface ArmorOptimizerState {
     hands: string | null;
     legs: string | null;
   };
+  expandedSetPieces: Record<string, boolean>;
+  expandedMixMatch: string[];
+  expandedMixMatchPieces: string[];
 }
 
 // Tool result interface
@@ -187,6 +190,9 @@ const initialState: ArmorOptimizerState = {
     hands: null,
     legs: null,
   },
+  expandedSetPieces: {},
+  expandedMixMatch: [],
+  expandedMixMatchPieces: [],
 };
 
 // Generate random theme for the tool
@@ -424,30 +430,66 @@ defineExpose({
   reset,
 });
 
-// Watch for state changes and trigger calculation
+// Automatically recalculate results when relevant state changes
 watch(
   () => [
-    state.endurance,
-    state.armorUpgradeLevel,
+    state.maxDodgeRollPercent,
     state.displayMode,
+    state.endurance,
+    state.selectedEquipment,
+    state.selectedRings,
+    state.armorUpgradeLevel,
+    state.customFilter,
     state.searchQuery,
     state.sortPrimary,
     state.sortSecondary,
     state.sortDescending,
-    state.selectedRings,
-    state.lockedArmor,
-    state.selectedEquipment,
-    // Add any other relevant armor selection state here if needed
+    state.lockedArmor, // <-- Added to trigger recalc on armor lock changes
+    // Add more if needed
   ],
-  (newValues, oldValues) => {
+  () => {
     calculate();
   },
-  { deep: true, immediate: true }
+  { deep: true }
 );
 
 // Trigger calculation on mount
 onMounted(() => {
   calculate();
+  // Load selected armor for comparison
+  const savedArmor = localStorage.getItem(SELECTED_ARMOR_FOR_COMPARISON_KEY);
+  if (savedArmor) {
+    try {
+      const arr = JSON.parse(savedArmor);
+      if (Array.isArray(arr)) {
+        persistentSelectedArmorForComparison.value = arr;
+        setState({ selectedArmorForComparison: arr });
+      }
+    } catch {}
+  }
+  // Load selected armor sets for comparison
+  const savedSets = localStorage.getItem(
+    SELECTED_ARMOR_SETS_FOR_COMPARISON_KEY
+  );
+  if (savedSets) {
+    try {
+      const arr = JSON.parse(savedSets);
+      if (Array.isArray(arr)) {
+        persistentSelectedArmorSetsForComparison.value = arr;
+        setState({ selectedArmorSetsForComparison: arr });
+      }
+    } catch {}
+  }
+  // Load selected mixmatch combos for comparison
+  const savedMixMatch = localStorage.getItem(SELECTED_MIXMATCH_COMBOS_KEY);
+  if (savedMixMatch) {
+    try {
+      const arr = JSON.parse(savedMixMatch);
+      if (Array.isArray(arr)) {
+        persistentSelectedMixMatchCombos.value = arr;
+      }
+    } catch {}
+  }
 });
 
 // UI state management
@@ -479,16 +521,83 @@ const toggleCategoryExpansion = (slot: string, category: string) => {
   });
 };
 
+// Persistent selection state for comparison
+const persistentSelectedArmorForComparison = ref<string[]>([]);
+const persistentSelectedArmorSetsForComparison = ref<string[]>([]);
+const persistentSelectedMixMatchCombos = ref<string[]>([]);
+
+// LocalStorage keys
+const SELECTED_ARMOR_FOR_COMPARISON_KEY =
+  "armor-optimizer-selectedArmorForComparison";
+const SELECTED_ARMOR_SETS_FOR_COMPARISON_KEY =
+  "armor-optimizer-selectedArmorSetsForComparison";
+const SELECTED_MIXMATCH_COMBOS_KEY = "armor-optimizer-selectedMixMatchCombos";
+
+// Update persistent selection on user action
 const toggleArmorComparison = (armorName: string) => {
-  const selected = [...state.selectedArmorForComparison];
+  const selected = [...persistentSelectedArmorForComparison.value];
   const index = selected.indexOf(armorName);
   if (index > -1) {
     selected.splice(index, 1);
   } else {
     selected.push(armorName);
   }
+  persistentSelectedArmorForComparison.value = selected;
   setState({ selectedArmorForComparison: selected });
 };
+const toggleArmorSetComparison = (armorSetName: string) => {
+  const selected = [...persistentSelectedArmorSetsForComparison.value];
+  const index = selected.indexOf(armorSetName);
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(armorSetName);
+  }
+  persistentSelectedArmorSetsForComparison.value = selected;
+  setState({ selectedArmorSetsForComparison: selected });
+};
+const toggleMixMatchComboSelection = (id: string) => {
+  const selected = [...persistentSelectedMixMatchCombos.value];
+  const index = selected.indexOf(id);
+  if (index > -1) {
+    selected.splice(index, 1);
+  } else {
+    selected.push(id);
+  }
+  persistentSelectedMixMatchCombos.value = selected;
+};
+
+// Filtered compare pools for current results
+const visibleSelectedArmorForComparison = computed(() => {
+  const current = (state.calculatedArmor || [])
+    .map((item: any) => item.name)
+    .filter((name: string) =>
+      persistentSelectedArmorForComparison.value.includes(name)
+    );
+  // Keep state in sync for UI
+  setState({ selectedArmorForComparison: current });
+  return current;
+});
+const visibleSelectedArmorSetsForComparison = computed(() => {
+  const current = (state.calculatedArmor || [])
+    .map((item: any) => item.name)
+    .filter((name: string) =>
+      persistentSelectedArmorSetsForComparison.value.includes(name)
+    );
+  setState({ selectedArmorSetsForComparison: current });
+  return current;
+});
+const visibleSelectedMixMatchCombos = computed(() => {
+  const current = (paginatedMixMatchResults.value || [])
+    .map((item: any) => item.id)
+    .filter((id: string) =>
+      persistentSelectedMixMatchCombos.value.includes(id)
+    );
+  return current;
+});
+
+// Use visibleSelected... in the compare button/modal and for the count
+// In the template, replace selectedArmorForComparison, selectedArmorSetsForComparison, and selectedMixMatchCombos with their visibleSelected... counterparts for display and comparison purposes.
 
 // Armor expansion functions
 const toggleArmorExpansion = (armorName: string) => {
@@ -523,17 +632,6 @@ const toggleSetCategoryExpansion = (category: string) => {
     expanded.push(category);
   }
   setState({ expandedSetCategories: expanded });
-};
-
-const toggleArmorSetComparison = (armorSetName: string) => {
-  const selected = [...state.selectedArmorSetsForComparison];
-  const index = selected.indexOf(armorSetName);
-  if (index > -1) {
-    selected.splice(index, 1);
-  } else {
-    selected.push(armorSetName);
-  }
-  setState({ selectedArmorSetsForComparison: selected });
 };
 
 // Pagination helper functions
@@ -699,7 +797,7 @@ const getComparisonItems = () => {
       )
       .filter(Boolean);
   } else if (state.displayMode === "mixmatch") {
-    return selectedMixMatchCombos.value
+    return visibleSelectedMixMatchCombos.value
       .map((id) => {
         const combo = (state.calculatedArmor || []).find(
           (combo) => combo.id === id
@@ -890,25 +988,26 @@ const previousMixMatchPage = () => {
 };
 
 // Collapsible state for mixmatch cards
-const expandedMixMatch = ref<string[]>([]);
 const toggleMixMatchExpansion = (id: string) => {
-  const idx = expandedMixMatch.value.indexOf(id);
+  const expanded = [...state.expandedMixMatch];
+  const idx = expanded.indexOf(id);
   if (idx > -1) {
-    expandedMixMatch.value.splice(idx, 1);
+    expanded.splice(idx, 1);
   } else {
-    expandedMixMatch.value.push(id);
+    expanded.push(id);
   }
+  setState({ expandedMixMatch: expanded });
 };
 
 // Collapsible state for individual pieces in mixmatch
-const expandedMixMatchPieces = ref<string[]>([]);
 const toggleMixMatchPiecesExpansion = (comboId: string) => {
-  const idx = expandedMixMatchPieces.value.indexOf(comboId);
-  if (idx > -1) {
-    expandedMixMatchPieces.value.splice(idx, 1);
-  } else {
-    expandedMixMatchPieces.value.push(comboId);
-  }
+  const current = Array.isArray(state.expandedMixMatchPieces)
+    ? state.expandedMixMatchPieces
+    : [];
+  const expanded = current.includes(comboId)
+    ? current.filter((id) => id !== comboId)
+    : [...current, comboId];
+  setState({ expandedMixMatchPieces: expanded });
 };
 
 // Compute the full search combination count for disclaimer
@@ -927,14 +1026,6 @@ const restrictedMixMatchCombinationCount = computed(() => {
 
 // Add state for selected mix and match combos
 const selectedMixMatchCombos = ref<string[]>([]);
-const toggleMixMatchComboSelection = (id: string) => {
-  const idx = selectedMixMatchCombos.value.indexOf(id);
-  if (idx > -1) {
-    selectedMixMatchCombos.value.splice(idx, 1);
-  } else {
-    selectedMixMatchCombos.value.push(id);
-  }
-};
 
 // Helper to calculate ratio for a combo
 function calculateComboRatio(
@@ -1391,7 +1482,7 @@ const howToUseSteps = computed(() => [
   },
   {
     type: "tip" as const,
-    title: "Advanced custom filter",
+    title: "Custom filter",
     description:
       "Select multiple stats, set minimum values, and assign weights to create custom scoring systems.",
     icon: "i-heroicons-funnel",
@@ -1416,7 +1507,127 @@ const howToUseSteps = computed(() => [
 const { sortArmorSets } = useArmorOptimizerCalculations();
 
 // Add ref for searchFilterExpanded
+const SEARCH_FILTER_LOCAL_STORAGE_KEY = "armor-optimizer-searchfilter-expanded";
 const searchFilterExpanded = vueRef(true);
+
+onMounted(() => {
+  const saved = localStorage.getItem(SEARCH_FILTER_LOCAL_STORAGE_KEY);
+  if (saved !== null) {
+    searchFilterExpanded.value = saved === "true";
+  }
+});
+
+watch(searchFilterExpanded, (val) => {
+  localStorage.setItem(SEARCH_FILTER_LOCAL_STORAGE_KEY, val ? "true" : "false");
+});
+
+// Handler to toggle individual pieces expansion for a set
+function onToggleSetPiecesExpansion(armorSetName: string) {
+  setState({
+    expandedSetPieces: {
+      ...state.expandedSetPieces,
+      [armorSetName]: !state.expandedSetPieces[armorSetName],
+    },
+  });
+}
+
+// Expand/Collapse All handlers
+function expandAllCollapsibles() {
+  if (state.displayMode === "individual") {
+    const slots = ["head", "chest", "hands", "legs"];
+    const categories = [
+      "light-armor",
+      "medium-armor",
+      "heavy-armor",
+      "special-armor",
+    ];
+    const armor = state.calculatedArmor || [];
+    const slotsWithItems = slots.filter((slot) =>
+      armor.some((a) => a.slot === slot)
+    );
+    const expandedCategories: Record<string, string[]> = {};
+    slotsWithItems.forEach((slot) => {
+      expandedCategories[slot] = categories.filter((cat) =>
+        armor.some((a) => a.slot === slot && a.armorType === cat)
+      );
+    });
+    setState({
+      expandedSlots: slotsWithItems,
+      expandedCategories,
+      expandedArmor: armor.map((item: any) => item.name),
+    });
+  } else if (state.displayMode === "sets") {
+    setState({
+      expandedArmorSets: (state.calculatedArmor || []).map(
+        (set: any) => set.name
+      ),
+      expandedSetPieces: Object.fromEntries(
+        (state.calculatedArmor || []).map((set: any) => [set.name, true])
+      ),
+    });
+  } else if (state.displayMode === "mixmatch") {
+    setState({
+      expandedMixMatch: (state.calculatedArmor || []).map(
+        (combo: any) => combo.id
+      ),
+      expandedMixMatchPieces: (state.calculatedArmor || []).map(
+        (combo: any) => combo.id
+      ),
+    });
+  }
+}
+function collapseAllCollapsibles() {
+  if (state.displayMode === "individual") {
+    setState({ expandedSlots: [], expandedCategories: {}, expandedArmor: [] });
+  } else if (state.displayMode === "sets") {
+    setState({ expandedArmorSets: [], expandedSetPieces: {} });
+  } else if (state.displayMode === "mixmatch") {
+    setState({ expandedMixMatch: [], expandedMixMatchPieces: [] });
+  }
+}
+
+// Select/Unselect All handlers
+function selectAllResults() {
+  if (state.displayMode === "individual") {
+    const allNames = (state.calculatedArmor || []).map(
+      (item: any) => item.name
+    );
+    persistentSelectedArmorForComparison.value = allNames;
+    setState({ selectedArmorForComparison: allNames });
+  } else if (state.displayMode === "sets") {
+    const allNames = (state.calculatedArmor || []).map((set: any) => set.name);
+    persistentSelectedArmorSetsForComparison.value = allNames;
+    setState({ selectedArmorSetsForComparison: allNames });
+  } else if (state.displayMode === "mixmatch") {
+    const allIds = (state.calculatedArmor || []).map((combo: any) => combo.id);
+    persistentSelectedMixMatchCombos.value = allIds;
+  }
+}
+function unselectAllResults() {
+  if (state.displayMode === "individual") {
+    persistentSelectedArmorForComparison.value = [];
+    setState({ selectedArmorForComparison: [] });
+  } else if (state.displayMode === "sets") {
+    persistentSelectedArmorSetsForComparison.value = [];
+    setState({ selectedArmorSetsForComparison: [] });
+  } else if (state.displayMode === "mixmatch") {
+    persistentSelectedMixMatchCombos.value = [];
+  }
+}
+
+// Watch and persist changes to localStorage
+watch(persistentSelectedArmorForComparison, (val) => {
+  localStorage.setItem(SELECTED_ARMOR_FOR_COMPARISON_KEY, JSON.stringify(val));
+});
+watch(persistentSelectedArmorSetsForComparison, (val) => {
+  localStorage.setItem(
+    SELECTED_ARMOR_SETS_FOR_COMPARISON_KEY,
+    JSON.stringify(val)
+  );
+});
+watch(persistentSelectedMixMatchCombos, (val) => {
+  localStorage.setItem(SELECTED_MIXMATCH_COMBOS_KEY, JSON.stringify(val));
+});
 </script>
 
 <template>
@@ -1530,7 +1741,7 @@ const searchFilterExpanded = vueRef(true);
             @click="state.showCustomFilter = !state.showCustomFilter"
           >
             <Icon name="i-heroicons-funnel" class="w-5 h-5" />
-            Advanced Custom Filter
+            Custom Filter
             <Icon
               :name="
                 state.showCustomFilter
@@ -1659,6 +1870,33 @@ const searchFilterExpanded = vueRef(true);
       </div>
     </UCard>
 
+    <!-- Expand/Collapse All buttons -->
+    <div
+      v-if="state.calculatedArmor && state.calculatedArmor.length > 0"
+      class="flex gap-2 mb-2"
+    >
+      <UButton
+        @click="expandAllCollapsibles"
+        size="sm"
+        color="primary"
+        variant="soft"
+        >Expand All</UButton
+      >
+      <UButton
+        @click="collapseAllCollapsibles"
+        size="sm"
+        color="primary"
+        variant="soft"
+        >Collapse All</UButton
+      >
+      <UButton @click="selectAllResults" size="sm" color="info" variant="soft"
+        >Select All</UButton
+      >
+      <UButton @click="unselectAllResults" size="sm" color="info" variant="soft"
+        >Unselect All</UButton
+      >
+    </div>
+
     <!-- Results Section -->
     <UCard class="w-full">
       <template #header>
@@ -1763,11 +2001,11 @@ const searchFilterExpanded = vueRef(true);
               <UButton
                 v-if="
                   (state.displayMode === 'individual' &&
-                    state.selectedArmorForComparison.length > 0) ||
+                    visibleSelectedArmorForComparison.length > 0) ||
                   (state.displayMode === 'sets' &&
-                    state.selectedArmorSetsForComparison.length > 0) ||
+                    visibleSelectedArmorSetsForComparison.length > 0) ||
                   (state.displayMode === 'mixmatch' &&
-                    selectedMixMatchCombos.length > 0)
+                    visibleSelectedMixMatchCombos.length > 0)
                 "
                 @click="openComparisonModal"
                 color="primary"
@@ -1777,10 +2015,10 @@ const searchFilterExpanded = vueRef(true);
                 Compare Selected (
                 {{
                   state.displayMode === "individual"
-                    ? state.selectedArmorForComparison.length
+                    ? visibleSelectedArmorForComparison.length
                     : state.displayMode === "sets"
-                      ? state.selectedArmorSetsForComparison.length
-                      : selectedMixMatchCombos.length
+                      ? visibleSelectedArmorSetsForComparison.length
+                      : visibleSelectedMixMatchCombos.length
                 }}
                 )
               </UButton>
@@ -1832,12 +2070,15 @@ const searchFilterExpanded = vueRef(true);
           :sort-primary="state.sortPrimary"
           :sort-secondary="state.sortSecondary"
           :sort-descending="state.sortDescending"
+          :expanded-set-pieces="state.expandedSetPieces"
+          :on-toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
           @toggle-category-expansion="toggleSetCategoryExpansion"
           @toggle-armor-set-comparison="toggleArmorSetComparison"
           @toggle-armor-set-expansion="toggleArmorSetExpansion"
           @page-change="goToSetPage"
           @previous-page="previousSetPage"
           @next-page="nextSetPage"
+          @toggle-set-pieces-expansion="onToggleSetPiecesExpansion"
         />
 
         <!-- Mix and Match Display Mode -->
@@ -1858,7 +2099,9 @@ const searchFilterExpanded = vueRef(true);
                   <div class="flex-shrink-0 mt-1">
                     <input
                       type="checkbox"
-                      :checked="selectedMixMatchCombos.includes(combo.id)"
+                      :checked="
+                        persistentSelectedMixMatchCombos.includes(combo.id)
+                      "
                       @click.stop
                       @change.stop="toggleMixMatchComboSelection(combo.id)"
                       class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
@@ -2018,18 +2261,6 @@ const searchFilterExpanded = vueRef(true);
                             >
                           </div>
                         </div>
-                        <div
-                          v-if="combo.totalStaminaRegenReduction"
-                          class="flex items-center gap-1 flex-shrink-0 w-full"
-                        >
-                          <span class="text-yellow-600 dark:text-yellow-400"
-                            >Stamina Regen:</span
-                          >
-                          <span
-                            class="text-yellow-600 dark:text-yellow-400 ml-auto"
-                            >-{{ combo.totalStaminaRegenReduction }}</span
-                          >
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2038,7 +2269,8 @@ const searchFilterExpanded = vueRef(true);
                 <div class="flex-shrink-0">
                   <Icon
                     :name="
-                      expandedMixMatch.includes(combo.id)
+                      Array.isArray(state.expandedMixMatch) &&
+                      state.expandedMixMatch.includes(combo.id)
                         ? 'i-heroicons-chevron-up'
                         : 'i-heroicons-chevron-down'
                     "
@@ -2048,7 +2280,10 @@ const searchFilterExpanded = vueRef(true);
               </div>
               <!-- Expanded Content -->
               <div
-                v-if="expandedMixMatch.includes(combo.id)"
+                v-if="
+                  Array.isArray(state.expandedMixMatch) &&
+                  state.expandedMixMatch.includes(combo.id)
+                "
                 class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
               >
                 <!-- Defense Stats Grid -->
@@ -2231,7 +2466,8 @@ const searchFilterExpanded = vueRef(true);
                     </span>
                     <Icon
                       :name="
-                        expandedMixMatchPieces.includes(combo.id)
+                        Array.isArray(state.expandedMixMatchPieces) &&
+                        state.expandedMixMatchPieces.includes(combo.id)
                           ? 'i-heroicons-chevron-down'
                           : 'i-heroicons-chevron-right'
                       "
@@ -2239,7 +2475,10 @@ const searchFilterExpanded = vueRef(true);
                     />
                   </UButton>
                   <div
-                    v-if="expandedMixMatchPieces.includes(combo.id)"
+                    v-if="
+                      Array.isArray(state.expandedMixMatchPieces) &&
+                      state.expandedMixMatchPieces.includes(combo.id)
+                    "
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                   >
                     <div
@@ -2417,11 +2656,14 @@ const searchFilterExpanded = vueRef(true);
                         </div>
                         <div
                           v-if="combo.pieces[slot].staminaRegenReduction"
-                          class="text-xs text-yellow-600 dark:text-yellow-400"
+                          class="flex justify-between text-xs text-yellow-600 dark:text-yellow-400"
                         >
-                          Stamina Regen: -{{
-                            combo.pieces[slot].staminaRegenReduction
-                          }}
+                          <span>Stamina Regen:</span>
+                          <span class="font-semibold"
+                            >-{{
+                              combo.pieces[slot].staminaRegenReduction
+                            }}</span
+                          >
                         </div>
                       </div>
                     </div>
@@ -2430,8 +2672,12 @@ const searchFilterExpanded = vueRef(true);
               </div>
             </div>
             <!-- Pagination Controls -->
-            <div class="flex justify-between items-center mt-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400">
+            <div
+              class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2 sm:gap-0"
+            >
+              <div
+                class="order-2 sm:order-1 flex justify-center sm:justify-start text-sm text-gray-600 dark:text-gray-400"
+              >
                 Showing {{ (mixMatchPage - 1) * mixMatchItemsPerPage + 1 }} -
                 {{
                   Math.min(
@@ -2441,7 +2687,9 @@ const searchFilterExpanded = vueRef(true);
                 }}
                 of {{ state.calculatedArmor.length }} combinations
               </div>
-              <div class="flex items-center gap-2">
+              <div
+                class="order-1 sm:order-2 flex items-center justify-center gap-2"
+              >
                 <UButton
                   :disabled="mixMatchPage === 1"
                   @click="previousMixMatchPage"
@@ -2479,14 +2727,13 @@ const searchFilterExpanded = vueRef(true);
               No valid combinations found
             </h3>
             <p class="text-gray-600 dark:text-gray-400">
-              Try adjusting your search criteria, character setup, or dodge roll
+              Try adjusting your search criteria, character stats, or dodge roll
               filter.
             </p>
           </div>
         </div>
       </div>
     </UCard>
-
     <!-- Top 3 Performance Disclaimer: only show for mixmatch mode -->
     <div
       v-if="state.displayMode === 'mixmatch'"
@@ -2494,13 +2741,13 @@ const searchFilterExpanded = vueRef(true);
     >
       <span>
         These results are generated from the top 3 pieces per category per slot
-        for your chosen stat/ratio.<br />
+        for your chosen filter.<br />
         A full unrestricted search would require evaluating
         <b>{{ fullMixMatchCombinationCount.toLocaleString() }}</b>
         possible combinations, while this restricted search only considers about
         <b>{{ restrictedMixMatchCombinationCount.toLocaleString() }}</b>
         combinations. This makes the tool much faster while still providing
-        high-quality results.
+        accurate (95%+) results.
       </span>
     </div>
   </div>

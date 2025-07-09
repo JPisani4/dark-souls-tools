@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from "vue";
+import { onMounted, computed, ref, watch } from "vue";
 import { useToolLayout } from "~/composables/useToolLayout";
 import { useSafeTheme } from "~/composables/useSafeTheme";
 import { useWeaponAttackRatingCalculator } from "~/composables/useWeaponAttackRatingCalculator";
@@ -93,8 +93,33 @@ const {
   initializeExpandedCategories,
 } = useWeaponDisplay(filteredWeaponsWithRatings, state, setState);
 
-// Selection state for comparison
-const selectedWeaponsForComparison = ref<string[]>([]);
+const SELECTED_WEAPONS_KEY = "weapon-ar-selected-weapons";
+const persistentSelectedWeaponsForComparison = ref<string[]>([]);
+
+// Load selection from localStorage on mount
+onMounted(() => {
+  initializeExpandedCategories();
+  // Load filtersOpen from localStorage
+  const saved = localStorage.getItem(FILTERS_OPEN_KEY);
+  if (saved !== null) {
+    filtersOpen.value = saved === "true";
+  }
+  const savedSelection = localStorage.getItem(SELECTED_WEAPONS_KEY);
+  if (savedSelection) {
+    try {
+      persistentSelectedWeaponsForComparison.value = JSON.parse(savedSelection);
+    } catch {}
+  }
+});
+
+// Watch and persist selection to localStorage
+watch(
+  persistentSelectedWeaponsForComparison,
+  (val) => {
+    localStorage.setItem(SELECTED_WEAPONS_KEY, JSON.stringify(val));
+  },
+  { deep: true }
+);
 
 // Comparison modal state
 const showComparisonModal = ref(false);
@@ -107,25 +132,69 @@ const closeComparisonModal = () => {
   showComparisonModal.value = false;
 };
 
-// Toggle weapon selection for comparison
+// Toggle weapon selection for comparison (persistent)
 const toggleWeaponSelection = (weaponName: string) => {
-  const selected = [...selectedWeaponsForComparison.value];
+  const selected = [...persistentSelectedWeaponsForComparison.value];
   const index = selected.indexOf(weaponName);
   if (index > -1) {
     selected.splice(index, 1);
   } else {
     selected.push(weaponName);
   }
-  selectedWeaponsForComparison.value = selected;
+  persistentSelectedWeaponsForComparison.value = selected;
 };
 
-// Get selected weapons for comparison
-const getComparisonWeapons = () => {
-  return selectedWeaponsForComparison.value
-    .map((name) =>
-      filteredWeaponsWithRatings.value.find((weapon) => weapon.name === name)
-    )
-    .filter(Boolean);
+// Computed: visible selected weapons for comparison (on current page)
+const visibleSelectedWeaponsForComparison = computed(() => {
+  return paginatedWeapons.value
+    .map((w: { name: string }) => w.name)
+    .filter((name: string) =>
+      persistentSelectedWeaponsForComparison.value.includes(name)
+    );
+});
+
+// Get visible selected weapon objects for comparison modal
+const getVisibleComparisonWeapons = () => {
+  return paginatedWeapons.value.filter((weapon: { name: string }) =>
+    persistentSelectedWeaponsForComparison.value.includes(weapon.name)
+  );
+};
+
+// Expand All Weapons (across all filtered weapons)
+const expandAllWeapons = () => {
+  const allWeaponNames = filteredWeaponsWithRatings.value.map(
+    (w: { name: string }) => w.name
+  );
+  setState({ expandedWeapons: allWeaponNames });
+};
+
+// Collapse All Weapons
+const collapseAllWeapons = () => {
+  setState({ expandedWeapons: [] });
+};
+
+// Select All Weapons (across all filtered weapons, persistent)
+const selectAllWeapons = () => {
+  const allWeaponNames = filteredWeaponsWithRatings.value.map(
+    (w: { name: string }) => w.name
+  );
+  persistentSelectedWeaponsForComparison.value = Array.from(
+    new Set([
+      ...persistentSelectedWeaponsForComparison.value,
+      ...allWeaponNames,
+    ])
+  );
+};
+
+// Unselect All Weapons (across all filtered weapons, persistent)
+const unselectAllWeapons = () => {
+  const allWeaponNames = filteredWeaponsWithRatings.value.map(
+    (w: { name: string }) => w.name
+  );
+  persistentSelectedWeaponsForComparison.value =
+    persistentSelectedWeaponsForComparison.value.filter(
+      (name) => !allWeaponNames.includes(name)
+    );
 };
 
 // Upgrade path options for filter
@@ -147,10 +216,14 @@ const selectedUpgradePathModelValue = computed(() => {
     : "all";
 });
 
-// Initialize expanded categories on mount
-onMounted(() => {
-  initializeExpandedCategories();
-});
+// Collapsible Filters & Search state (persisted)
+const FILTERS_OPEN_KEY = "weapon-ar-filters-open";
+const filtersOpen = ref(true);
+
+function toggleFiltersOpen() {
+  filtersOpen.value = !filtersOpen.value;
+  localStorage.setItem(FILTERS_OPEN_KEY, filtersOpen.value ? "true" : "false");
+}
 
 // Detect mobile (simple approach, can be replaced with a composable if available)
 const isMobile = ref(false);
@@ -215,62 +288,102 @@ const howToUseSteps = computed(() => [
     <UCard>
       <template #header>
         <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer select-none"
+          @click="toggleFiltersOpen"
         >
-          <h3 class="text-lg font-semibold">Filters & Search</h3>
+          <div class="flex items-center gap-2">
+            <h3 class="text-lg font-semibold">Filters & Search</h3>
+            <Icon
+              :name="
+                filtersOpen
+                  ? 'i-heroicons-chevron-up'
+                  : 'i-heroicons-chevron-down'
+              "
+              class="w-4 h-4"
+            />
+          </div>
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500"
               >{{ filteredWeaponsWithRatings.length }} weapons found</span
             >
-            <UButton size="sm" variant="outline" @click="resetFilters">
-              <Icon name="i-heroicons-arrow-path" class="w-3 h-3 mr-1" />
-              Reset
+            <UButton
+              size="sm"
+              variant="outline"
+              @click.stop="resetFilters"
+              :aria-label="'Reset filters'"
+            >
+              <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
             </UButton>
           </div>
         </div>
       </template>
+      <div v-show="filtersOpen">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <TextField
+            label="Search Weapons"
+            id="search"
+            :model-value="state.search"
+            placeholder="Search by weapon name..."
+            :theme="safeTheme"
+            @update:model-value="
+              (val: string) => setState({ search: val, currentPage: 1 })
+            "
+          />
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <TextField
-          label="Search Weapons"
-          id="search"
-          :model-value="state.search"
-          placeholder="Search by weapon name..."
-          :theme="safeTheme"
-          @update:model-value="
-            (val: string) => setState({ search: val, currentPage: 1 })
-          "
-        />
+          <SelectField
+            label="Weapon Category"
+            id="category"
+            :model-value="state.selectedCategory || 'all'"
+            :options="categoryOptions"
+            :theme="safeTheme"
+            @update:model-value="handleCategoryChange"
+          />
 
-        <SelectField
-          label="Weapon Category"
-          id="category"
-          :model-value="state.selectedCategory || 'all'"
-          :options="categoryOptions"
-          :theme="safeTheme"
-          @update:model-value="handleCategoryChange"
-        />
-
-        <SelectField
-          label="Upgrade Path"
-          id="upgradePath"
-          :model-value="selectedUpgradePathModelValue"
-          :options="upgradePathOptions"
-          :theme="safeTheme"
-          @update:model-value="handleUpgradePathChange"
-        />
-      </div>
-      <!-- Equippable Only Checkbox -->
-      <div class="mt-4">
-        <CheckboxField
-          id="equippableOnly"
-          label="Equipable"
-          :model-value="state.filterEquippableOnly"
-          :theme="safeTheme"
-          @update:model-value="handleEquippableFilterChange"
-        />
+          <SelectField
+            label="Upgrade Path"
+            id="upgradePath"
+            :model-value="selectedUpgradePathModelValue"
+            :options="upgradePathOptions"
+            :theme="safeTheme"
+            @update:model-value="handleUpgradePathChange"
+          />
+        </div>
+        <!-- Equippable Only Checkbox -->
+        <div class="mt-4">
+          <CheckboxField
+            id="equippableOnly"
+            label="Equipable"
+            :model-value="state.filterEquippableOnly"
+            :theme="safeTheme"
+            @update:model-value="handleEquippableFilterChange"
+          />
+        </div>
       </div>
     </UCard>
+
+    <!-- Expand/Collapse/Select/Unselect All buttons -->
+    <div v-if="paginatedWeapons.length > 0" class="flex gap-2 mb-2">
+      <UButton
+        @click="expandAllWeapons"
+        size="sm"
+        color="primary"
+        variant="soft"
+        >Expand All</UButton
+      >
+      <UButton
+        @click="collapseAllWeapons"
+        size="sm"
+        color="primary"
+        variant="soft"
+        >Collapse All</UButton
+      >
+      <UButton @click="selectAllWeapons" size="sm" color="info" variant="soft"
+        >Select All</UButton
+      >
+      <UButton @click="unselectAllWeapons" size="sm" color="info" variant="soft"
+        >Unselect All</UButton
+      >
+    </div>
 
     <!-- Results -->
     <UCard>
@@ -322,12 +435,14 @@ const howToUseSteps = computed(() => [
               />
             </UButton>
             <UButton
-              v-if="selectedWeaponsForComparison.length > 0"
+              v-if="visibleSelectedWeaponsForComparison.length > 0"
               size="sm"
               color="primary"
               @click="openComparisonModal"
             >
-              Compare Selected ({{ selectedWeaponsForComparison.length }})
+              Compare Selected ({{
+                visibleSelectedWeaponsForComparison.length
+              }})
             </UButton>
           </div>
         </div>
@@ -350,7 +465,9 @@ const howToUseSteps = computed(() => [
             :has-scaling="hasScaling"
             :get-max-level-for-upgrade-path="getMaxLevelForUpgradePath"
             :state="state"
-            :is-selected="selectedWeaponsForComparison.includes(weapon.name)"
+            :is-selected="
+              persistentSelectedWeaponsForComparison.includes(weapon.name)
+            "
             :on-toggle-selection="() => toggleWeaponSelection(weapon.name)"
             show-checkbox
           />
@@ -391,7 +508,7 @@ const howToUseSteps = computed(() => [
     <!-- Weapon Comparison Modal -->
     <WeaponComparisonModal
       v-model:open="showComparisonModal"
-      :weapons="getComparisonWeapons()"
+      :weapons="getVisibleComparisonWeapons()"
     />
   </div>
 </template>

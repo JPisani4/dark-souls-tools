@@ -646,12 +646,41 @@ const canImproveDodgeRoll = computed(() => {
   return nextEndurance !== null && nextEndurance > currentEndurance;
 });
 
-const sectionOpen = ref({
-  weapons: true,
-  spells: true,
-  armor: true,
-  rings: true,
-});
+const SECTION_OPEN_STORAGE_KEY = "ds1-starting-class-section-open";
+
+function getInitialSectionOpen() {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem(SECTION_OPEN_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only use keys we expect, fallback to true if missing
+        return {
+          weapons: typeof parsed.weapons === "boolean" ? parsed.weapons : true,
+          spells: typeof parsed.spells === "boolean" ? parsed.spells : true,
+          armor: typeof parsed.armor === "boolean" ? parsed.armor : true,
+          rings: typeof parsed.rings === "boolean" ? parsed.rings : true,
+        };
+      }
+    } catch (e) {
+      // Ignore parse errors, fallback to default
+    }
+  }
+  return { weapons: true, spells: true, armor: true, rings: true };
+}
+
+const sectionOpen = ref(getInitialSectionOpen());
+
+watch(
+  sectionOpen,
+  (val) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(SECTION_OPEN_STORAGE_KEY, JSON.stringify(val));
+    }
+  },
+  { deep: true }
+);
+
 function toggleSection(section: "weapons" | "spells" | "armor" | "rings") {
   sectionOpen.value[section] = !sectionOpen.value[section];
 }

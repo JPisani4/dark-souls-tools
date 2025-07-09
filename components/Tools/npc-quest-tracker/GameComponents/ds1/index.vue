@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useBaseTool } from "~/composables/useBaseTool";
 import { useToolLayout } from "~/composables/useToolLayout";
 import { getAllQuests } from "~/utils/games/ds1/quests";
-import type { QuestState } from "~/types/game/ds1/quests";
+import type { QuestState, QuestReward } from "~/types/game/ds1/quests";
 import CheckboxField from "~/components/Tools/Common/forms/CheckboxField.vue";
 import SummaryCard from "~/components/Tools/Common/display/SummaryCard.vue";
 import CategoryChip from "~/components/Tools/Common/ui/CategoryChip.vue";
@@ -15,6 +15,7 @@ import Fuse from "fuse.js";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import HowToUse from "~/components/Tools/Common/HowToUse.vue";
 
 interface Props {
   gameData: GameData;
@@ -177,6 +178,72 @@ const toggleStepCompleted = (
     completedSteps: { ...state.completedSteps, [questId]: updated },
   });
 };
+
+// Helper to find the step where a reward is obtained
+function getRewardStepInfo(npc: QuestState, reward: QuestReward) {
+  if (!npc || !reward) return null;
+  const step = npc.requirements.find(
+    (req: any) =>
+      Array.isArray(req.rewards) && req.rewards.includes(reward.name)
+  );
+  if (!step) return null;
+  return {
+    stepName: step.name,
+    location: step.location || null,
+  };
+}
+
+// Helper to get rewards with step info for display
+function getNpcRewardDisplay(npc: QuestState) {
+  if (!npc || !npc.rewards) return [];
+  return npc.rewards.map((reward) => ({
+    reward,
+    stepInfo: getRewardStepInfo(npc, reward),
+  }));
+}
+
+const safeTheme = useSafeTheme(props.theme, props.variant);
+
+const howToUseSteps = [
+  {
+    type: "step" as const,
+    title: "Search for an NPC or questline",
+    description:
+      "Use the search bar to quickly find NPCs, questlines, or specific rewards.",
+  },
+  {
+    type: "step" as const,
+    title: "Expand an NPC to view quest steps",
+    description:
+      "Click on an NPC card to expand and view all quest steps, locations, fail conditions, and rewards.",
+  },
+  {
+    type: "step" as const,
+    title: "Mark steps as completed",
+    description:
+      "Check off each quest step as you complete it. Your progress is saved automatically in your browser.",
+  },
+  {
+    type: "step" as const,
+    title: "Reset progress",
+    description:
+      "Use the 'Reset All Progress' button to clear all quest progress, or the reset icon on an expanded NPC to reset just that NPC's questline.",
+  },
+  {
+    type: "tip" as const,
+    title: "Track fail conditions",
+    description:
+      "Pay attention to fail conditions listed for each step to avoid missing out on rewards or quest progression.",
+    icon: "i-heroicons-exclamation-triangle",
+  },
+  {
+    type: "tip" as const,
+    title: "Hover for details",
+    description:
+      "Hover over info icons to see full details for locations, prerequisites, or fail conditions that are truncated.",
+    icon: "i-heroicons-information-circle",
+  },
+];
 </script>
 
 <template>
@@ -272,6 +339,55 @@ const toggleStepCompleted = (
               }"
             ></div>
           </div>
+          <!-- Total Quest Rewards Section -->
+          <div
+            v-if="npc.rewards && npc.rewards.length"
+            class="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-100/60 dark:bg-gray-800/40 p-3 mb-2"
+          >
+            <div
+              class="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Total Quest Rewards
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <div
+                v-for="item in getNpcRewardDisplay(npc)"
+                :key="item.reward.id"
+                class="flex flex-col items-start min-w-[120px] max-w-xs bg-transparent rounded p-2 border border-gray-100 dark:border-gray-800"
+              >
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span
+                    class="font-medium text-gray-900 dark:text-white text-sm"
+                    >{{ item.reward.name }}</span
+                  >
+                  <span
+                    v-if="item.reward.type"
+                    class="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300"
+                    >{{ item.reward.type }}</span
+                  >
+                </div>
+                <div
+                  v-if="item.reward.description"
+                  class="text-xs text-gray-600 dark:text-gray-400 mt-0.5"
+                >
+                  {{ item.reward.description }}
+                </div>
+                <div
+                  v-if="item.stepInfo && item.stepInfo.stepName"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                >
+                  Step: {{ item.stepInfo.stepName }}
+                </div>
+                <div
+                  v-if="item.reward.location"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                >
+                  {{ item.reward.location }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Total Quest Rewards Section -->
           <div class="space-y-4">
             <div
               v-for="step in npc.requirements"
@@ -493,5 +609,7 @@ const toggleStepCompleted = (
         No NPCs found.
       </div>
     </div>
+    <!-- How To Use Section -->
+    <HowToUse :steps="howToUseSteps" :theme="safeTheme" class="mt-10" />
   </div>
 </template>

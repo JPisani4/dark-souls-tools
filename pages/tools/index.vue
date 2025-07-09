@@ -17,21 +17,28 @@ const {
 
 <template>
   <ToolLayout
-    title="Soulsborne Tools - Calculators & Tools"
-    description="Browse and use essential Soulsborne tools and calculators. Find soul level calculators, weapon upgrade tools, and more for Dark Souls Remastered."
-    icon-path="/dark-souls-remastered-icon.png"
+    title="Soulsborne Tools"
+    description="Essential Tools & Calculators"
+    icon-path="/favicon.webp"
   >
     <template #hero>
       <div class="flex justify-center mb-8 px-4">
         <div class="flex flex-col items-center gap-3 text-center">
           <div
-            class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex-shrink-0 overflow-hidden"
+            class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex-shrink-0 overflow-hidden"
           >
-            <img
-              src="/dark-souls-remastered-icon.png"
-              alt="Dark Souls Remastered"
-              class="w-full h-full object-cover rounded-full"
-            />
+            <picture>
+              <source srcset="/favicon.webp" type="image/webp" />
+              <img
+                src="/favicon.png"
+                alt="Soulsborne Tools Icon"
+                class="w-12 h-12 object-contain rounded-full"
+                loading="lazy"
+                decoding="async"
+                width="48"
+                height="48"
+              />
+            </picture>
           </div>
           <div class="flex flex-col items-center justify-center min-w-0">
             <h1
@@ -42,7 +49,7 @@ const {
             <p
               class="text-base sm:text-lg text-center text-gray-700 dark:text-white/80 drop-shadow-sm"
             >
-              Essential tools for your Souls playthrough
+              Essential Tools & Calculators
             </p>
           </div>
         </div>

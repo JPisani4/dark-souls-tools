@@ -13,6 +13,7 @@ interface Props {
   maskOfTheFather?: boolean;
   onToggleExpansion?: () => void;
   onToggleSelection?: () => void;
+  piecesExpanded?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -22,17 +23,26 @@ const props = withDefaults(defineProps<Props>(), {
   sortPrimary: "poise",
   sortSecondary: "weight",
   maskOfTheFather: false,
+  piecesExpanded: false,
 });
 
 const emit = defineEmits<{
   toggleExpansion: [];
   toggleSelection: [];
+  togglePiecesExpansion: [];
+  "toggle-pieces-expansion": [];
 }>();
 
 const { cardStyles } = useArmorDisplayTheme();
 
 // State for individual pieces expansion
-const isPiecesExpanded = ref(false);
+// Use prop for expanded state
+const isPiecesExpanded = computed({
+  get: () => props.piecesExpanded,
+  set: (val: boolean) => {
+    if (val !== props.piecesExpanded) emit("toggle-pieces-expansion");
+  },
+});
 
 const handleToggleExpansion = () => {
   emit("toggleExpansion");
@@ -43,7 +53,7 @@ const handleToggleSelection = () => {
 };
 
 const togglePiecesExpansion = () => {
-  isPiecesExpanded.value = !isPiecesExpanded.value;
+  emit("toggle-pieces-expansion");
 };
 
 // Calculate ratio based on sort values
@@ -682,9 +692,12 @@ const specialEffectsString = computed(() =>
             </div>
             <div
               v-if="totalStaminaRegenReduction"
-              class="text-xs text-yellow-600 dark:text-yellow-400"
+              class="flex justify-between text-xs text-yellow-600 dark:text-yellow-400"
             >
-              Stamina Regen: -{{ totalStaminaRegenReduction }}
+              <span>Stamina Regen:</span>
+              <span class="font-semibold"
+                >-{{ totalStaminaRegenReduction }}</span
+              >
             </div>
             <div v-if="specialEffectsString" class="flex justify-between mt-1">
               <span class="text-xs text-green-600 dark:text-green-400"
@@ -878,9 +891,12 @@ const specialEffectsString = computed(() =>
                 </div>
                 <div
                   v-if="piece.armor.staminaRegenReduction"
-                  class="text-xs text-yellow-600 dark:text-yellow-400"
+                  class="flex justify-between text-xs text-yellow-600 dark:text-yellow-400"
                 >
-                  Stamina Regen: -{{ piece.armor.staminaRegenReduction }}
+                  <span>Stamina Regen:</span>
+                  <span class="font-semibold"
+                    >-{{ piece.armor.staminaRegenReduction }}</span
+                  >
                 </div>
               </div>
               <div v-if="piece.armor.specialEffect">

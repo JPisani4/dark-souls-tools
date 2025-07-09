@@ -86,7 +86,6 @@ const siegmeyerQuest: QuestState = {
       location:
         "Her Golden Crystal Golem is in the middle of the garden in front of Crystal Cave's entrance, the garden with lots of other Crystal Golems.",
       prerequisites: ["meet-siegmeyer-firelink"],
-      rewards: ["Pierce Shield"],
       order: 6,
     },
     {
@@ -98,7 +97,6 @@ const siegmeyerQuest: QuestState = {
       isCompleted: false,
       location: "Firelink Shrine",
       prerequisites: ["help-sieglinde-of-catarina"],
-      rewards: ["Pierce Shield"],
       order: 7,
     },
     {
@@ -129,7 +127,6 @@ const siegmeyerQuest: QuestState = {
       isCompleted: false,
       location: "Firelink Shrine",
       prerequisites: ["help-sieglinde-of-catarina"],
-      rewards: ["Pierce Shield"],
       order: 9,
     },
     {
@@ -148,7 +145,7 @@ const siegmeyerQuest: QuestState = {
     {
       id: "tiny-beings-ring",
       name: "Tiny Being's Ring",
-      type: "item",
+      type: "ring",
       description: "Increases maximum hit points by 5%",
       isObtained: false,
       prerequisites: ["help-siegmeyer-anor-londo"],
@@ -185,7 +182,7 @@ const siegmeyerQuest: QuestState = {
     {
       id: "titanite-slab",
       name: "Titanite Slab",
-      type: "item",
+      type: "upgrade material",
       description: "Rare upgrade material.",
       isObtained: false,
       prerequisites: ["meet-sieglinde-firelink-two"],
@@ -284,7 +281,16 @@ const solaireQuest: QuestState = {
     "killing The Fair Lady before you activate the shortcut to the Lost Izalith",
   ],
   isExpanded: false,
-  rewards: [],
+  rewards: [
+    {
+      id: "white-soapstone",
+      name: "White Soapstone",
+      type: "item",
+      description:
+        "Creates a white soul sign that another player can use to summon you into their world for cooperative play.",
+      isObtained: false,
+    },
+  ],
 };
 
 // Reah of Thorolund Questline
@@ -316,7 +322,7 @@ const reahQuest: QuestState = {
       isCompleted: false,
       location: "She lies in the pit which Patches kicks you down.",
       prerequisites: ["meet-reah-firelink"],
-      rewards: ["Replenishment Miracle"],
+      rewards: ["Replenishment"],
       order: 2,
     },
     {
@@ -352,7 +358,6 @@ const reahQuest: QuestState = {
       type: "miracle",
       description: "A miracle that gradually restores HP",
       isObtained: false,
-      location: "Tomb of the Giants",
     },
   ],
   failConditions: [
@@ -404,7 +409,6 @@ const lautrecQuest: QuestState = {
       location: "Below Firelink Shrine",
       prerequisites: [
         "Ring both bells of awakening or collect the Undead Parish and Blighttown Firekeeper Souls",
-        ,
       ],
       rewards: ["Black Eye Orb", "Dingy Set"],
       order: 3,
@@ -432,12 +436,19 @@ const lautrecQuest: QuestState = {
   ],
   rewards: [
     {
+      id: "sunlight-medal",
+      name: "Sunlight Medal",
+      type: "item",
+      description:
+        "Given to the Altar of Sunlight in order to rank up in the Warrior of Sunlight Covenant",
+      isObtained: false,
+    },
+    {
       id: "dingy-set",
       name: "Dingy Set",
-      type: "armor",
+      type: "armor set",
       description: "Fire Keeper Anastacia of Astora's set",
       isObtained: false,
-      location: "Firelink Shrine",
     },
     {
       id: "black-eye-orb",
@@ -445,7 +456,6 @@ const lautrecQuest: QuestState = {
       type: "item",
       description: "An item that enables you to invade Lautrec in Anor Londo",
       isObtained: false,
-      location: "Firelink Shrine",
     },
   ],
   failConditions: ["Lautrec is killed at any point"],
@@ -505,19 +515,13 @@ const patchesQuest: QuestState = {
       id: "humanity",
       name: "Humanity",
       type: "item",
-      description:
-        "Humanity in 'loose form' is added to the counter to increase the Humanity stat point.",
       isObtained: false,
-      location: "The Catacombs",
     },
     {
       id: "twin-humanities",
       name: "Twin Humanities",
       type: "item",
-      description:
-        "Humanity in 'loose form' is added to the counter to increase the Humanity stat point.",
       isObtained: false,
-      location: "Tomb of the Giants",
     },
   ],
   failConditions: [
@@ -572,7 +576,7 @@ const logansQuest: QuestState = {
     },
     {
       id: "meet-logan-dukes-archives-one",
-      name: "Help Big Hat Logan in the Duke's Archives",
+      name: "Meet Big Hat Logan in the Duke's Archives 1",
       description:
         "Defeat Seath the Scaleless and buy all of his sorceries, talk to him several times, and you'll notice that he's clearly gone mad.",
       type: "step",
@@ -584,13 +588,20 @@ const logansQuest: QuestState = {
     },
     {
       id: "meet-logan-dukes-archives-two",
-      name: "Help Big Hat Logan in the Duke's Archives",
+      name: "Meet Big Hat Logan in the Duke's Archives 2",
       description:
         "Defeat him and he'll drop the Big Hat, his Tin Crystallization Catalyst, and the White Dragon Breath spell. Also go back to the area where he was before, where he sells his spells, as there is a new chest containing the rest of his armor set, the Big Hat's set, and Logan's Catalyst.",
       type: "step",
       isCompleted: false,
       location: "Seath the Scaleless' first encounter room",
       prerequisites: ["meet-logan-dukes-archives-one"],
+      rewards: [
+        "Big Hat",
+        "Tin Crystallization Catalyst",
+        "White Dragon Breath",
+        "Logan's Catalyst",
+        "Big Hat's Set",
+      ],
       order: 5,
     },
   ],
@@ -603,7 +614,7 @@ const logansQuest: QuestState = {
     {
       id: "big-hat",
       name: "Big Hat",
-      type: "item",
+      type: "armor",
       description: "Big Hat Logan's set",
       isObtained: false,
       location: "Seath the Scaleless' first encounter room",
@@ -637,7 +648,7 @@ const logansQuest: QuestState = {
     {
       id: "big-hats-set",
       name: "Big Hat's Set",
-      type: "armor",
+      type: "armor set",
       description: "Big Hat Logan's set",
       isObtained: false,
       location:
@@ -697,6 +708,7 @@ const duskQuest: QuestState = {
       location:
         "Her summon sign is right at the edge of the lake where the Hydra was located, a few feet away from the corpse holding the Knight Set",
       order: 4,
+      rewards: ["Antiquated Armor Set"],
       prerequisites: ["meet-dusk-darkroot"],
     },
     {
@@ -720,7 +732,7 @@ const duskQuest: QuestState = {
     {
       id: "antiquated-armor-set",
       name: "Antiquated Armor Set",
-      type: "armor",
+      type: "armor set",
       description: "Dusk of Oolacile's set",
       isObtained: false,
       location:
@@ -729,10 +741,118 @@ const duskQuest: QuestState = {
   ],
 };
 
+// Dusk of Oolacile's Questline
+const kirkQuest: QuestState = {
+  id: "kirk",
+  name: "Kirk, Knight of Thorns",
+  description: "Defeat invader Kirk, Knight of Thorns three times",
+  npcName: "Kirk, Knight of Thorns",
+  npcLocation: "The Depths",
+  status: "not-started",
+  order: 8,
+  requirements: [
+    {
+      id: "defeat-depths",
+      name: "Defeat him in The Depths",
+      description: "Kirk will invade you in The Depths, defeat him.",
+      type: "step",
+      isCompleted: false,
+      location:
+        "Once you have reached the bottom of the sewers from the water fall drop you will see him invade. This should be directly next to the basilisk area.",
+      order: 1,
+      prerequisites: [
+        "defeat-depths",
+        "Must be in Human form",
+        "Must not have defeated the area boss",
+      ],
+    },
+    {
+      id: "defeat-demon-ruins",
+      name: "Defeat him in the Demon ruins",
+      description: "Kirk will invade you in the Demon ruins, defeat him.",
+      type: "step",
+      isCompleted: false,
+      location:
+        "You will find him after defeating the Ceaseless Discharge.  Make your way to the now cooled lava ground, continue to the next area. You will go down some stairs on the side of a cliff and as you do this he will invade.",
+      order: 2,
+      prerequisites: [
+        "defeat-depths",
+        "Must be in Human form",
+        "Must not have defeated the area boss",
+        "Must have placed the Lordvessel on the Firelink Altar",
+      ],
+    },
+    {
+      id: "defeat-lost-izalith",
+      name: "Defeat him in Lost Izalith",
+      description: "Kirk will invade you in Lost Izalith, defeat him.",
+      type: "step",
+      isCompleted: false,
+      location:
+        "You will find him just outside the doorway to the Bed of Chaos boss, where you fight the Daughter of Chaos.",
+      order: 3,
+      prerequisites: [
+        "defeat-demon-ruins",
+        "Must be in Human form",
+        "Must not have defeated the area boss",
+      ],
+    },
+    {
+      id: "loot-set-of-thorns",
+      name: "Loot the Set of Thorns",
+      description: "Go to Kirk's corpse and loot his Set of Thorns.",
+      type: "step",
+      isCompleted: false,
+      location:
+        "His corpse can be found in the back of the Daughter of Chaos bonfire chamber in Quelaag's Domain.",
+      order: 4,
+      prerequisites: ["defeat-lost-izalith"],
+    },
+  ],
+  failConditions: ["Not defeating him in all three unqiue locations"],
+  isExpanded: false,
+  rewards: [
+    {
+      id: "set-of-thorns",
+      name: "Set of Thorns",
+      type: "armor set",
+      description: "Kirk, Knight of Thorns armor set",
+      isObtained: false,
+      location:
+        "On his corpse which can be found in the back of the Daughter of Chaos bonfire chamber in Quelaag's Domain.",
+    },
+    {
+      id: "barbed-straight-sword",
+      name: "Barbed Straight Sword",
+      type: "weapon",
+      description: "Kirk, Knight of Thorns weapon",
+      isObtained: false,
+      location:
+        "Possible drop from Kirk after defeating him at any of the three invasion locations.",
+    },
+    {
+      id: "spiked-shield",
+      name: "Spiked Shield",
+      type: "shield",
+      description: "Kirk, Knight of Thorns shield",
+      isObtained: false,
+      location:
+        "Possible drop from Kirk after defeating him at any of the three invasion locations.",
+    },
+  ],
+};
+
 // Quest data organized by category
 const questData: AllQuests = {
   "main-quest": [siegmeyerQuest, solaireQuest],
-  "side-quest": [lautrecQuest, reahQuest, patchesQuest, duskQuest, logansQuest],
+  "side-quest": [
+    lautrecQuest,
+    reahQuest,
+    patchesQuest,
+    duskQuest,
+    logansQuest,
+    kirkQuest,
+  ],
   covenant: [],
   optional: [],
   secret: [],

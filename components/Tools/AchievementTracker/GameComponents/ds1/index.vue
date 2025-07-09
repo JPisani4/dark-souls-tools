@@ -21,6 +21,8 @@ import Fuse from "fuse.js";
 import type { GameData } from "~/types/game";
 import type { Tool } from "~/types/tools/tool";
 import type { ColorTheme } from "~/utils/themes/colorSystem";
+import HowToUse from "~/components/Tools/Common/HowToUse.vue";
+import { DEFAULT_THEME } from "~/utils/themes/colorSystem";
 
 interface Props {
   gameData: GameData;
@@ -49,9 +51,10 @@ useToolLayout({
   gameData: props.gameData,
 });
 
-// Tool state: completedRequirements is a map of achievementId -> array of completed requirement IDs
+// Tool state: completedRequirements is now a map of achievementId -> cycle -> array of completed requirement IDs
 interface AchievementTrackerState {
-  completedRequirements: Record<string, string[]>;
+  completedRequirements: Record<string, Record<number, string[]>>;
+  currentCycle: Record<string, number>;
   expandedAchievementIds: string[];
   expandedCategoryIds: Record<string, string[]>; // achievementId -> array of expanded category names
   search: string;
@@ -59,6 +62,7 @@ interface AchievementTrackerState {
 
 const initialState: AchievementTrackerState = {
   completedRequirements: {},
+  currentCycle: {},
   expandedAchievementIds: [],
   expandedCategoryIds: {},
   search: "",
@@ -154,14 +158,21 @@ const isCategoryExpanded = (achievementId: string, category: string) => {
 };
 
 const resetAllProgress = () => {
-  setState({ completedRequirements: {} });
+  setState({
+    completedRequirements: {},
+    currentCycle: {},
+  });
 };
 
 const resetAchievementProgress = (achievementId: string) => {
   setState({
     completedRequirements: {
       ...state.completedRequirements,
-      [achievementId]: [],
+      [achievementId]: {},
+    },
+    currentCycle: {
+      ...state.currentCycle,
+      [achievementId]: 0,
     },
   });
 };
@@ -175,9 +186,12 @@ const resetCategoryProgress = (achievementId: string, category: string) => {
   );
   const categoryIds = categoryRequirements.map((req) => req.id);
 
-  const currentCompleted = state.completedRequirements[achievementId] || [];
-  const updatedCompleted = currentCompleted.filter(
-    (id) => !categoryIds.includes(id)
+  const currentCompleted = state.completedRequirements[achievementId] || {};
+  const updatedCompleted = Object.fromEntries(
+    Object.entries(currentCompleted).map(([cycle, completed]) => [
+      cycle,
+      completed.filter((id) => !categoryIds.includes(id)),
+    ])
   );
 
   setState({
@@ -189,17 +203,26 @@ const resetCategoryProgress = (achievementId: string, category: string) => {
 };
 
 const getAchievementProgressData = (achievement: Achievement) => {
-  const completed = state.completedRequirements[achievement.id] || [];
-  return getAchievementProgress(achievement.id, completed);
+  const currentCycle = getCurrentCycle(achievement.id);
+  const completedUpToCycle = getCompletedUpToCycle(
+    achievement.id,
+    currentCycle
+  );
+  return getAchievementProgress(achievement.id, completedUpToCycle);
 };
 
+// Update getCategoryProgress to show cumulative progress up to and including the current cycle
 const getCategoryProgress = (achievement: Achievement, category: string) => {
   const categoryRequirements = achievement.requirements.filter(
     (req) => req.category === category
   );
-  const completed = state.completedRequirements[achievement.id] || [];
+  const currentCycle = getCurrentCycle(achievement.id);
+  const completedUpToCycle = getCompletedUpToCycle(
+    achievement.id,
+    currentCycle
+  );
   const categoryCompleted = categoryRequirements.filter((req) =>
-    completed.includes(req.id)
+    completedUpToCycle.includes(req.id)
   );
 
   return {
@@ -214,17 +237,17 @@ const getCategoryProgress = (achievement: Achievement, category: string) => {
   };
 };
 
+// Update getCategoryTotalCost to only sum costs for requirements remaining in the current cycle
 const getCategoryTotalCost = (achievement: Achievement, category: string) => {
-  const categoryRequirements = achievement.requirements.filter(
-    (req) => req.category === category
-  );
+  // Only consider requirements for the current cycle (not completed in previous cycles)
+  const requirements = getRequirementsForCurrentCycle(achievement, category);
 
   let totalCost = 0;
   let hasCostRange = false;
   let minCost = 0;
   let maxCost = 0;
 
-  categoryRequirements.forEach((req) => {
+  requirements.forEach((req) => {
     const cost = req.price || req.cost;
 
     if (typeof cost === "number") {
@@ -262,9 +285,10 @@ const isRequirementCompleted = (
   achievementId: string,
   requirementId: string
 ) => {
-  return (state.completedRequirements[achievementId] || []).includes(
-    requirementId
-  );
+  const currentCycle = getCurrentCycle(achievementId);
+  const completedForCycle =
+    (state.completedRequirements[achievementId] || {})[currentCycle] ?? [];
+  return completedForCycle.includes(requirementId);
 };
 
 const toggleRequirementCompleted = (
@@ -272,7 +296,9 @@ const toggleRequirementCompleted = (
   requirementId: string,
   checked: boolean
 ) => {
-  const prev = state.completedRequirements[achievementId] || [];
+  const currentCycle = getCurrentCycle(achievementId);
+  const prev =
+    (state.completedRequirements[achievementId] || {})[currentCycle] ?? [];
   let updated: string[];
   if (checked) {
     updated = [...new Set([...prev, requirementId])];
@@ -282,7 +308,10 @@ const toggleRequirementCompleted = (
   setState({
     completedRequirements: {
       ...state.completedRequirements,
-      [achievementId]: updated,
+      [achievementId]: {
+        ...(state.completedRequirements[achievementId] ?? {}),
+        [currentCycle]: updated,
+      },
     },
   });
 };
@@ -374,6 +403,104 @@ const getQuestProgressionNote = (
 
   return `Note: Quest progression requirements must be purchased from: ${locationList.join(", ")}`;
 };
+
+// Cycle navigation helpers
+const getCurrentCycle = (achievementId: string) => {
+  return state.currentCycle[achievementId] ?? 0;
+};
+
+const setCurrentCycle = (achievementId: string, cycle: number) => {
+  setState({
+    currentCycle: {
+      ...state.currentCycle,
+      [achievementId]: cycle,
+    },
+  });
+};
+
+const goToNextCycle = (achievementId: string) => {
+  setCurrentCycle(achievementId, getCurrentCycle(achievementId) + 1);
+};
+
+const goToPreviousCycle = (achievementId: string) => {
+  const current = getCurrentCycle(achievementId);
+  if (current > 0) {
+    setCurrentCycle(achievementId, current - 1);
+  }
+};
+
+// Helper: Get requirements for the current cycle (not completed in previous cycles)
+const getRequirementsForCurrentCycle = (
+  achievement: Achievement,
+  category: string
+) => {
+  const allRequirements = achievement.requirements.filter(
+    (req) => req.category === category
+  );
+  const achievementCompleted =
+    state.completedRequirements[achievement.id] || {};
+  const currentCycle = getCurrentCycle(achievement.id);
+  // Gather all completed IDs from previous cycles
+  let completedInPreviousCycles = new Set<string>();
+  for (let i = 0; i < currentCycle; i++) {
+    (achievementCompleted[i] ?? []).forEach((id) =>
+      completedInPreviousCycles.add(id)
+    );
+  }
+  // Only show requirements not completed in previous cycles
+  return allRequirements.filter(
+    (req) => !completedInPreviousCycles.has(req.id)
+  );
+};
+
+// Helper: Get completed IDs for a specific cycle
+const getCompletedForCycle = (achievementId: string, cycle: number) => {
+  return state.completedRequirements[achievementId]?.[cycle] ?? [];
+};
+
+// Helper: Get all completed IDs up to and including the current cycle
+const getCompletedUpToCycle = (achievementId: string, cycle: number) => {
+  const completed = state.completedRequirements[achievementId] || {};
+  let allCompleted: string[] = [];
+  for (let i = 0; i <= cycle; i++) {
+    allCompleted = allCompleted.concat(completed[i] ?? []);
+  }
+  return allCompleted;
+};
+
+// Helper: Is achievement fully completed across all cycles?
+const isAchievementFullyCompleted = (achievement: Achievement) => {
+  const completed = state.completedRequirements[achievement.id] || {};
+  const allCompleted = Object.values(completed).flat();
+  return (
+    getAchievementProgress(achievement.id, allCompleted).percentage === 100
+  );
+};
+
+// Helper: Is the current cycle fully completed for this achievement?
+const isCurrentCycleCompleted = (achievement: Achievement) => {
+  const currentCycle = getCurrentCycle(achievement.id);
+  const completed = getCompletedForCycle(achievement.id, currentCycle);
+  return getAchievementProgress(achievement.id, completed).percentage === 100;
+};
+
+// Helper: Get the highest created cycle for an achievement
+const getLastCreatedCycle = (achievementId: string) => {
+  const cycles = Object.keys(
+    state.completedRequirements[achievementId] || {}
+  ).map(Number);
+  return cycles.length > 0 ? Math.max(...cycles) : 0;
+};
+
+// Update isNextCycleDisabled to also prevent creating a new cycle if the current cycle is at 100% completion, regardless of navigation
+const isNextCycleDisabled = (achievement: Achievement) => {
+  const currentCycle = getCurrentCycle(achievement.id);
+  const lastCreatedCycle = getLastCreatedCycle(achievement.id);
+  // Only disable if on the last created cycle AND it is 100% complete
+  return (
+    currentCycle === lastCreatedCycle && isCurrentCycleCompleted(achievement)
+  );
+};
 </script>
 
 <template>
@@ -453,6 +580,34 @@ const getQuestProgressionNote = (
           class="px-6 pb-6 pt-0 space-y-4 pt-6"
           style="padding-top: 2.5rem"
         >
+          <!-- Cycle Navigation and Badge -->
+          <div class="flex items-center gap-4 mb-4">
+            <UButton
+              @click.stop="goToPreviousCycle(achievement.id)"
+              size="sm"
+              variant="outline"
+              :disabled="getCurrentCycle(achievement.id) === 0"
+            >
+              Previous Cycle
+            </UButton>
+            <span
+              class="text-sm font-semibold px-3 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700"
+            >
+              {{
+                getCurrentCycle(achievement.id) === 0
+                  ? "New Game"
+                  : `New Game +${getCurrentCycle(achievement.id)}`
+              }}
+            </span>
+            <UButton
+              @click.stop="goToNextCycle(achievement.id)"
+              size="sm"
+              variant="outline"
+              :disabled="isNextCycleDisabled(achievement)"
+            >
+              Next Cycle
+            </UButton>
+          </div>
           <!-- Main Progress Summary -->
           <SummaryCard
             :label="'Achievement Progress'"
@@ -576,7 +731,7 @@ const getQuestProgressionNote = (
                   </div>
                 </div>
                 <div
-                  v-for="requirement in getRequirementsByCategory(
+                  v-for="requirement in getRequirementsForCurrentCycle(
                     achievement,
                     category
                   )"
@@ -615,7 +770,7 @@ const getQuestProgressionNote = (
                         <h5
                           class="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2"
                         >
-                          {{ requirement.name }}
+                          {{ requirement.name ?? "" }}
                           <!-- NG+ badge and info icon with tooltip -->
                           <template
                             v-if="
@@ -681,7 +836,7 @@ const getQuestProgressionNote = (
                           />
                           <div class="flex-1 min-w-0">
                             <span class="block break-words">
-                              {{ formatLocation(requirement.location) }}
+                              {{ formatLocation(requirement.location ?? "") }}
                             </span>
                           </div>
                         </div>
@@ -749,13 +904,13 @@ const getQuestProgressionNote = (
                             v-if="requirement.bossSoul"
                             class="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 px-2 py-1 rounded"
                           >
-                            {{ requirement.bossSoul }}
+                            {{ requirement.bossSoul ?? "" }}
                           </span>
                           <span
                             v-if="requirement.tail"
                             class="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded"
                           >
-                            Tail: {{ requirement.tail }}
+                            Tail: {{ requirement.tail ?? "" }}
                           </span>
                           <span
                             v-if="requirement.quest || requirement.logansQuest"
@@ -766,20 +921,6 @@ const getQuestProgressionNote = (
                         </div>
                       </div>
                     </div>
-
-                    <!-- Minimized view for completed requirements -->
-                    <template
-                      v-if="
-                        isRequirementCompleted(achievement.id, requirement.id)
-                      "
-                    >
-                      <div
-                        class="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm font-semibold mt-2"
-                      >
-                        <Icon name="i-heroicons-check-solid" class="w-5 h-5" />
-                        Completed
-                      </div>
-                    </template>
                   </div>
                 </div>
               </div>
@@ -794,6 +935,51 @@ const getQuestProgressionNote = (
       >
         No achievements found.
       </div>
+    </div>
+
+    <!-- Move HowToUse to the bottom -->
+    <div class="mt-10">
+      <HowToUse
+        :theme="DEFAULT_THEME"
+        :steps="[
+          {
+            type: 'step',
+            title: 'Check off requirements',
+            description:
+              'Check off achievement requirements as you obtain them in your current playthrough (cycle).',
+          },
+          {
+            type: 'step',
+            title: 'Advance to next cycle',
+            description:
+              'When you reach a requirement that can only be obtained in a new game cycle (e.g., boss soul weapons), click Next Cycle to move to the next cycle (NG+1, NG+2, etc.).',
+          },
+          {
+            type: 'tip',
+            title: 'Progress tracking',
+            description:
+              'Each cycle only shows requirements you have not completed in previous cycles, but your progress bar always shows your total progress.',
+          },
+          {
+            type: 'tip',
+            title: 'Cycle navigation',
+            description:
+              'You can freely move back and forth between cycles to review or update your progress.',
+          },
+          {
+            type: 'tip',
+            title: 'Persistence',
+            description:
+              'Progress is saved automatically and will persist between visits.',
+          },
+          {
+            type: 'tip',
+            title: 'Resetting',
+            description:
+              'Use the Reset buttons to clear progress for an individual achievement or all achievements and cycles.',
+          },
+        ]"
+      />
     </div>
   </div>
 </template>
