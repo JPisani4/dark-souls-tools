@@ -74,7 +74,6 @@ export function useArmorOptimizerCustomFilter(options: {
 
   // Debounced calculation for custom filter
   const debouncedCustomFilterUpdate = debounce(() => {
-    if (options.displayMode() !== "mixmatch") return;
     options.onUpdate();
   }, 250);
 

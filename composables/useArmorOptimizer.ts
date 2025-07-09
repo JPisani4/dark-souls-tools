@@ -12,7 +12,6 @@ export interface ArmorOptimizerState {
     talismans: string[];
   };
   selectedRings: string[];
-  maskOfTheFather: boolean;
   armorUpgradeLevel: string;
   displayMode: string;
   sortPrimary: string;
@@ -31,6 +30,7 @@ export interface ArmorOptimizerState {
   selectedArmorSetsForComparison: string[];
   expandedSetCategories: string[];
   maxDodgeRollPercent: number | null;
+  lockedArmor: Record<string, string | null>;
   // Mixmatch
   mixMatchPage?: number;
   mixMatchItemsPerPage?: number;
@@ -119,7 +119,6 @@ export function useArmorOptimizer(options: {
       state.value.sortPrimary,
       state.value.sortSecondary,
       state.value.sortDescending,
-      state.value.maskOfTheFather,
       state.value.selectedEquipment,
       state.value.selectedRings,
       state.value.maxDodgeRollPercent,
@@ -141,7 +140,7 @@ export function useArmorOptimizer(options: {
     const flattenedArmor = Object.values(allArmor).flat();
     return getFullMixMatchCombinationCount(
       flattenedArmor,
-      state.value.maskOfTheFather
+      false // maskOfTheFather is not implemented
     );
   });
 

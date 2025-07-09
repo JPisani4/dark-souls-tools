@@ -9,6 +9,12 @@ import { getWeaponByName } from "~/utils/games/ds1/weapons";
 import { getShieldByName } from "~/utils/games/ds1/shields";
 import { getRingByName } from "~/utils/games/ds1/rings";
 import {
+  getArmorBySlot,
+  getArmorCategories,
+  getArmorByCategory,
+} from "~/utils/games/ds1/armor";
+import type { ComputedRef } from "vue";
+import {
   calculateStamina,
   calculateEquipLoad,
 } from "~/utils/games/ds1/stats/characterStats";
@@ -39,12 +45,17 @@ const defaultState = {
     talismans: [],
   },
   selectedRings: [],
-  maskOfTheFather: false,
   armorUpgradeLevel: "0",
   displayMode: "individual",
   sortPrimary: "poise",
   sortSecondary: "weight",
   sortDescending: true,
+  lockedArmor: {
+    head: null,
+    chest: null,
+    hands: null,
+    legs: null,
+  },
 };
 
 const safeState = computed(() => props.state || defaultState);
@@ -58,6 +69,7 @@ const expandedSections = ref<Record<string, boolean>>({
   rings: true,
   equipment: true,
   stats: false,
+  armorLock: true,
 });
 
 // Reactive variables to track dropdown selections for clearing
@@ -106,9 +118,21 @@ const talismanOptions = computed(() => {
 // Filter rings to only show those that affect endurance, equip load, stamina regen, or dodge rolls
 const ringOptions = computed(() => {
   const rings = Object.values(allRings).flat();
+  // List of rings to always include
+  const alwaysInclude = [
+    "Flame Stoneplate Ring",
+    "Ring of Steel Protection",
+    "Speckled Stoneplate Ring",
+    "Spell Stoneplate Ring",
+    "Thunder Stoneplate Ring",
+    "Wolf Ring",
+  ];
+  // List of rings to always exclude
+  const alwaysExclude = ["Dark Wood Grain Ring"];
   const filteredRings = rings.filter((ring: any) => {
+    if (alwaysExclude.includes(ring.name)) return false;
+    if (alwaysInclude.includes(ring.name)) return true;
     if (!ring.effect) return false;
-
     // Check for endurance, equip load, stamina regen, or dodge roll effects
     const hasEnduranceEffect =
       ring.effect.statBonus?.endurance || ring.effect.statBonus?.staminaBonus;
@@ -116,7 +140,6 @@ const ringOptions = computed(() => {
       ring.effect.equipLoadBonus || ring.effect.statBonus?.equipLoadBonus;
     const hasStaminaRegenEffect = ring.effect.staminaRegenBonus;
     const hasDodgeRollEffect = ring.effect.special === "dark-wood-grain-ring";
-
     return (
       hasEnduranceEffect ||
       hasEquipLoadEffect ||
@@ -124,7 +147,6 @@ const ringOptions = computed(() => {
       hasDodgeRollEffect
     );
   });
-
   const { flatOptions } = useItemLookup(filteredRings, "ringType", "name");
   return flatOptions.value;
 });
@@ -215,13 +237,10 @@ const removeRing = (index: number) => {
   safeSetState({ selectedRings: current });
 };
 
-const toggleMaskOfTheFather = (checked: boolean) => {
-  safeSetState({ maskOfTheFather: checked });
-};
-
 // Reset function for character setup section only
 const resetCharacterSetup = () => {
   safeSetState({
+    endurance: "",
     selectedEquipment: {
       weapons: [],
       shields: [],
@@ -229,8 +248,13 @@ const resetCharacterSetup = () => {
       talismans: [],
     },
     selectedRings: [],
-    maskOfTheFather: false,
     armorUpgradeLevel: "0",
+    lockedArmor: {
+      head: null,
+      chest: null,
+      hands: null,
+      legs: null,
+    },
   });
   // Clear dropdown values
   ringDropdownValue.value = "";
@@ -252,6 +276,69 @@ const getItemDetails = (itemName: string, type: string) => {
 
 const getRingDetails = (ringName: string) => {
   return getRingByName(ringName);
+};
+
+// Helper function to get armor details
+const getArmorDetails = (armorName: string) => {
+  return (
+    getArmorBySlot("head")
+      .concat(
+        getArmorBySlot("chest"),
+        getArmorBySlot("hands"),
+        getArmorBySlot("legs")
+      )
+      .find((a) => a.name === armorName) || null
+  );
+};
+
+// Helper to format category names
+const formatCategoryName = (category: string) => {
+  return category
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+    .trim();
+};
+
+// Helper to create categorized options for a slot
+function createCategorizedArmorOptions(slot: string) {
+  const categories = getArmorCategories();
+  const options: Array<{ label: string; value: string; disabled?: boolean }> =
+    [];
+  categories.forEach((category) => {
+    // Add category header
+    options.push({
+      label: `--- ${formatCategoryName(category)} ---`,
+      value: `category-${category}`,
+      disabled: true,
+    });
+    // Add items in this category for the slot
+    getArmorByCategory(category)
+      .filter((a) => a.slot === slot)
+      .forEach((a) => {
+        options.push({ label: a.name, value: a.name });
+      });
+  });
+  return options;
+}
+
+const armorLockSlots = ["head", "chest", "hands", "legs"];
+const armorLockOptions: Record<
+  string,
+  ComputedRef<{ label: string; value: string; disabled?: boolean }[]>
+> = {
+  head: computed(() => createCategorizedArmorOptions("head")),
+  chest: computed(() => createCategorizedArmorOptions("chest")),
+  hands: computed(() => createCategorizedArmorOptions("hands")),
+  legs: computed(() => createCategorizedArmorOptions("legs")),
+};
+
+const handleArmorLockChange = (slot: string, value: string | null) => {
+  safeSetState({
+    lockedArmor: {
+      ...safeState.value.lockedArmor,
+      [slot]: value || null,
+    },
+  });
 };
 
 // Toggle section expansion
@@ -356,19 +443,6 @@ const CompactItemCard = defineComponent({
           (val) => safeSetState({ armorUpgradeLevel: val?.toString() || '' })
         "
       />
-
-      <!-- Mask of the Father -->
-      <CheckboxField
-        id="maskOfTheFather"
-        label="Mask of the Father"
-        :model-value="safeState.maskOfTheFather"
-        @update:model-value="toggleMaskOfTheFather"
-        :theme="safeTheme"
-      >
-        <template #description>
-          Increases equip load by 5% and removes headgear from calculations
-        </template>
-      </CheckboxField>
 
       <!-- Rings Section -->
       <div class="border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -715,6 +789,73 @@ const CompactItemCard = defineComponent({
                   <Icon name="i-heroicons-x-mark" class="w-3 h-3" />
                 </UButton>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Armor Lock Section -->
+      <div class="border border-gray-200 dark:border-gray-700 rounded-lg">
+        <div
+          class="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+          @click="toggleSection('armorLock')"
+        >
+          <div class="flex items-center gap-2">
+            <Icon
+              name="i-heroicons-chevron-down"
+              :class="expandedSections.armorLock ? 'rotate-0' : '-rotate-90'"
+              class="w-4 h-4 transition-transform"
+            />
+            <span class="font-medium">Armor</span>
+          </div>
+        </div>
+        <div v-if="expandedSections.armorLock" class="p-3 pt-0 space-y-2">
+          <div v-for="slot in armorLockSlots" :key="slot" class="space-y-1">
+            <SelectField
+              :label="slot.charAt(0).toUpperCase() + slot.slice(1)"
+              :id="`armor-lock-${slot}`"
+              :options="armorLockOptions[slot].value"
+              :placeholder="`Select ${slot.charAt(0).toUpperCase() + slot.slice(1)}`"
+              :theme="safeTheme"
+              :model-value="safeState.lockedArmor[slot]"
+              clearable
+              @update:model-value="
+                (val: string | null) => handleArmorLockChange(slot, val)
+              "
+            />
+            <div
+              v-if="safeState.lockedArmor[slot]"
+              class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs mt-1"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="truncate font-medium">
+                  {{ safeState.lockedArmor[slot] }}
+                  <span class="text-gray-400 ml-2">({{ slot }})</span>
+                </div>
+                <div
+                  v-if="
+                    getArmorDetails(safeState.lockedArmor[slot])?.weight !==
+                    undefined
+                  "
+                  class="text-gray-600 dark:text-gray-400"
+                >
+                  {{
+                    getArmorDetails(
+                      safeState.lockedArmor[slot]
+                    )?.weight?.toFixed(1)
+                  }}
+                  weight
+                </div>
+              </div>
+              <UButton
+                size="xs"
+                color="error"
+                variant="soft"
+                @click="handleArmorLockChange(slot, null)"
+                class="flex-shrink-0 ml-2"
+              >
+                <Icon name="i-heroicons-x-mark" class="w-3 h-3" />
+              </UButton>
             </div>
           </div>
         </div>

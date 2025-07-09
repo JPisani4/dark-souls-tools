@@ -498,6 +498,17 @@ const statGrid = [
                 ).toFixed(1)
               }}</span>
             </div>
+            <div
+              v-if="setOrCombo.totalStaminaRegenReduction"
+              class="flex justify-between"
+            >
+              <span class="text-xs text-yellow-600 dark:text-yellow-400"
+                >Stamina Regen:</span
+              >
+              <span class="text-xs text-yellow-600 dark:text-yellow-400"
+                >-{{ setOrCombo.totalStaminaRegenReduction }}</span
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -670,6 +681,17 @@ const statGrid = [
                     >{{
                       setOrCombo.pieces[slot].defense?.curse?.toFixed(1) || 0
                     }}</span
+                  >
+                </div>
+                <div
+                  v-if="setOrCombo.pieces[slot].staminaRegenReduction"
+                  class="flex justify-between"
+                >
+                  <span class="text-xs text-yellow-600 dark:text-yellow-400"
+                    >Stamina Regen:</span
+                  >
+                  <span class="text-xs text-yellow-600 dark:text-yellow-400"
+                    >-{{ setOrCombo.pieces[slot].staminaRegenReduction }}</span
                   >
                 </div>
               </div>

@@ -15,6 +15,7 @@ import Icon from "~/components/Common/Icon.vue";
 import WeaponCard from "../Common/WeaponCard.vue";
 import HowToUse from "../../../Common/HowToUse.vue";
 import WeaponComparisonModal from "../Common/WeaponComparisonModal.vue";
+import CheckboxField from "../../../Common/forms/CheckboxField.vue";
 
 interface Props {
   gameData: GameData;
@@ -77,6 +78,7 @@ const {
   hasAuxiliaryDamage,
   hasScaling,
   getWeaponCategory,
+  handleEquippableFilterChange,
 } = useWeaponFilters(weaponsWithRatings, state, setState);
 
 // Use the weapon display composable
@@ -256,6 +258,16 @@ const howToUseSteps = computed(() => [
           :options="upgradePathOptions"
           :theme="safeTheme"
           @update:model-value="handleUpgradePathChange"
+        />
+      </div>
+      <!-- Equippable Only Checkbox -->
+      <div class="mt-4">
+        <CheckboxField
+          id="equippableOnly"
+          label="Equipable"
+          :model-value="state.filterEquippableOnly"
+          :theme="safeTheme"
+          @update:model-value="handleEquippableFilterChange"
         />
       </div>
     </UCard>

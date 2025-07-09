@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { THEME_COLORS } from "~/utils/themes/colorSystem";
 import { useToolFilters } from "~/composables/useToolFilters";
-import { useMediaQuery } from "@vueuse/core";
 import type { Tool } from "~/types/tools/tool";
 import type { FilterState } from "~/composables/useToolFilters";
 import type { GameId } from "~/types/game";
-import GameSelectionOverlay from "./GameSelectionOverlay.vue";
-import FilterModal from "./FilterModal.vue";
 import ToolChips from "../../Common/ToolChips.vue";
-import { THEME_COLORS, getThemeByIndex } from "~/utils/themes/colorSystem";
 import Icon from "~/components/Common/Icon.vue";
+import { useRoute } from "vue-router";
+import SelectField from "./forms/SelectField.vue";
+import { useMediaQuery } from "@vueuse/core";
 
-// Use the filtering composable
 const {
   filters,
   filteredTools,
@@ -22,350 +21,266 @@ const {
   clearFilters,
 } = useToolFilters();
 
-// Detect if we're on desktop (md and up) with a default value to prevent SSR issues
-const isDesktop = ref(false);
-const mediaQuery = useMediaQuery("(min-width: 768px)");
-
-// Modal state for mobile
-const showFilterModal = ref(false);
-
-// Game selection overlay state
-const showGameSelection = ref(false);
-const selectedTool = ref<Tool | null>(null);
-
-// Update isDesktop when media query resolves, but don't wait for it
-onMounted(() => {
-  // Set initial value based on window width if available
-  if (process.client && window.innerWidth >= 768) {
-    isDesktop.value = true;
-  }
-
-  // Then update based on media query
-  watch(
-    mediaQuery,
-    (value) => {
-      isDesktop.value = value;
-    },
-    { immediate: true }
-  );
+const searchInput = ref(filters.value.search || "");
+watch(searchInput, (val) => {
+  updateFilters({ ...filters.value, search: val });
 });
 
-// Prevent modal from showing during SSR/hydration
-const isMounted = ref(false);
-onMounted(() => {
-  isMounted.value = true;
-});
+const isDesktop = useMediaQuery("(min-width: 768px)");
 
-// Define a palette of Tailwind border, text/icon, and lighter gradient colors for both light and dark mode
-const colorMap = [
-  {
-    border: "border-blue-500",
-    text: "text-blue-700",
-    iconBg: "bg-blue-500",
-    hoverBg: "hover:bg-blue-600",
-    gradient: "from-blue-100 to-blue-200",
-    darkGradient: "dark:from-blue-900 dark:to-gray-900",
-  },
-  {
-    border: "border-green-500",
-    text: "text-green-700",
-    iconBg: "bg-green-500",
-    hoverBg: "hover:bg-green-600",
-    gradient: "from-green-100 to-green-200",
-    darkGradient: "dark:from-green-900 dark:to-gray-900",
-  },
-  {
-    border: "border-yellow-500",
-    text: "text-yellow-700",
-    iconBg: "bg-yellow-500",
-    hoverBg: "hover:bg-yellow-600",
-    gradient: "from-yellow-100 to-yellow-200",
-    darkGradient: "dark:from-yellow-900 dark:to-gray-900",
-  },
-  {
-    border: "border-pink-500",
-    text: "text-pink-700",
-    iconBg: "bg-pink-500",
-    hoverBg: "hover:bg-pink-600",
-    gradient: "from-pink-100 to-pink-200",
-    darkGradient: "dark:from-pink-900 dark:to-gray-900",
-  },
-  {
-    border: "border-purple-500",
-    text: "text-purple-700",
-    iconBg: "bg-purple-500",
-    hoverBg: "hover:bg-purple-600",
-    gradient: "from-purple-100 to-purple-200",
-    darkGradient: "dark:from-purple-900 dark:to-gray-900",
-  },
-  {
-    border: "border-orange-500",
-    text: "text-orange-700",
-    iconBg: "bg-orange-500",
-    hoverBg: "hover:bg-orange-600",
-    gradient: "from-orange-100 to-orange-200",
-    darkGradient: "dark:from-orange-900 dark:to-gray-900",
-  },
-  {
-    border: "border-teal-500",
-    text: "text-teal-700",
-    iconBg: "bg-teal-500",
-    hoverBg: "hover:bg-teal-600",
-    gradient: "from-teal-100 to-teal-200",
-    darkGradient: "dark:from-teal-900 dark:to-gray-900",
-  },
-  {
-    border: "border-red-500",
-    text: "text-red-700",
-    iconBg: "bg-red-500",
-    hoverBg: "hover:bg-red-600",
-    gradient: "from-red-100 to-red-200",
-    darkGradient: "dark:from-red-900 dark:to-gray-900",
-  },
-];
-
-// Memoized color assignment function - stable colors per tool
-const getToolColor = (toolSlug: string) => {
-  // Use a simple hash function to get consistent color for each tool
-  let hash = 0;
-  for (let i = 0; i < toolSlug.length; i++) {
-    const char = toolSlug.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return colorMap[Math.abs(hash) % colorMap.length];
+const handleGameChange = (value: string) => {
+  updateFilters({ ...filters.value, game: value });
 };
-
-// Memoized tool colors - stable per tool
-const toolColors = computed(() =>
-  filteredTools.value.map((tool) => getToolColor(tool.slug))
-);
-
-// Handle filter updates from sidebar/modal
-const handleFilterUpdate = (newFilters: FilterState) => {
-  updateFilters(newFilters);
+const handleCategoryChange = (value: string) => {
+  updateFilters({ ...filters.value, category: value });
 };
-
-// Handle filter clear
-const handleFilterClear = () => {
+const handleClear = () => {
   clearFilters();
+  searchInput.value = "";
 };
 
-// Get the current game filter
+// Generate a random color/gradient for each tool card on every refresh
+const gradients = [
+  "from-blue-100 to-blue-200 dark:from-blue-900 dark:to-gray-900",
+  "from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-gray-900",
+  "from-pink-100 to-pink-200 dark:from-pink-900 dark:to-gray-900",
+  "from-purple-100 to-purple-200 dark:from-purple-900 dark:to-gray-900",
+  "from-orange-100 to-orange-200 dark:from-orange-900 dark:to-gray-900",
+  "from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-gray-900",
+  "from-teal-100 to-teal-200 dark:from-teal-900 dark:to-gray-900",
+  "from-slate-100 to-slate-200 dark:from-gray-900 dark:to-gray-800",
+];
+function getRandomGradients(count: number) {
+  const shuffled = [...gradients].sort(() => Math.random() - 0.5);
+  return Array.from(
+    { length: count },
+    (_, i) => shuffled[i % gradients.length]
+  );
+}
+const toolGradients = ref(getRandomGradients(filteredTools.value.length));
+watch(filteredTools, (tools) => {
+  toolGradients.value = getRandomGradients(tools.length);
+});
+
 const route = useRoute();
 const currentGameFilter = computed(() => route.query.game as string);
-
-// Handle tool action button click
-const handleToolAction = (tool: Tool) => {
+const handleToolClick = (tool: Tool) => {
   const availableGames = tool.gameCategories;
   const currentFilter = currentGameFilter.value;
-
-  // If only one game available, navigate directly
   if (availableGames.length === 1) {
-    navigateToTool(tool, availableGames[0]);
+    navigateTo(`/tools/${availableGames[0]}/${tool.slug}`);
     return;
   }
-
-  // If filtered to a specific game and that game is available, navigate directly
   if (currentFilter && availableGames.includes(currentFilter as GameId)) {
-    navigateToTool(tool, currentFilter as GameId);
+    navigateTo(`/tools/${currentFilter}/${tool.slug}`);
     return;
   }
-
-  // Otherwise, show game selection overlay
-  selectedTool.value = tool;
-  showGameSelection.value = true;
+  navigateTo(`/tools/${availableGames[0]}/${tool.slug}`);
 };
 
-// Navigate to a specific tool and game
-const navigateToTool = (tool: Tool, game: GameId) => {
-  navigateTo(`/tools/${game}/${tool.slug}`);
-};
-
-// Handle game selection from overlay
-const handleGameSelection = (game: string) => {
-  if (selectedTool.value) {
-    navigateToTool(selectedTool.value, game as GameId);
+const handleKeyDown = (e: KeyboardEvent, tool: Tool) => {
+  if (e.key === "Enter" || e.key === " ") {
+    handleToolClick(tool);
   }
-  showGameSelection.value = false;
-  selectedTool.value = null;
 };
 
-// Close game selection overlay
-const closeGameSelection = () => {
-  showGameSelection.value = false;
-  selectedTool.value = null;
-};
+// Add hoveredIndex state and getHoverShadow function
+const hoveredIndex = ref<number | null>(null);
+function getHoverShadow(gradient: string | undefined) {
+  if (!gradient) return "0 8px 32px 0 rgba(30,41,59,0.18)"; // fallback
+  if (gradient.includes("blue")) return "0 8px 32px 0 rgba(59,130,246,0.25)";
+  if (gradient.includes("emerald")) return "0 8px 32px 0 rgba(16,185,129,0.22)";
+  if (gradient.includes("pink")) return "0 8px 32px 0 rgba(236,72,153,0.22)";
+  if (gradient.includes("purple")) return "0 8px 32px 0 rgba(139,92,246,0.22)";
+  if (gradient.includes("orange")) return "0 8px 32px 0 rgba(251,146,60,0.22)";
+  if (gradient.includes("yellow")) return "0 8px 32px 0 rgba(250,204,21,0.22)";
+  if (gradient.includes("teal")) return "0 8px 32px 0 rgba(20,184,166,0.22)";
+  return "0 8px 32px 0 rgba(30,41,59,0.18)"; // slate/gray fallback
+}
 </script>
 
 <template>
-  <section class="py-12">
-    <div>
-      <!-- Results Count and Filter Button (mobile) -->
-      <div class="xl:hidden mb-6 flex items-center justify-between px-4">
-        <span class="text-sm text-gray-500 dark:text-gray-400">
-          {{ filteredTools.length }} tool{{
-            filteredTools.length !== 1 ? "s" : ""
-          }}
-        </span>
-        <div class="flex items-center gap-2">
-          <UButton
-            v-if="activeFilterCount > 0"
-            @click="clearFilters"
-            color="error"
-            variant="outline"
-            size="sm"
-          >
-            <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
-            Clear
-          </UButton>
-          <UButton
-            @click="showFilterModal = true"
-            color="primary"
-            variant="outline"
-            :class="activeFilterCount > 0 ? 'ring-2 ring-primary-500' : ''"
-          >
-            <Icon name="i-heroicons-funnel" class="w-4 h-4" />
-            Filter
-            <span v-if="activeFilterCount > 0" class="ml-1 text-xs">
-              ({{ activeFilterCount }})
-            </span>
-          </UButton>
+  <section class="py-8">
+    <!-- Persistent Filter/Search Bar -->
+    <div
+      class="w-full max-w-4xl mx-auto mb-8 flex flex-col md:flex-row md:items-end gap-4 px-2"
+    >
+      <div class="flex-1 flex flex-col gap-2">
+        <label for="search" class="sr-only">Search tools</label>
+        <div class="relative">
+          <input
+            id="search"
+            v-model="searchInput"
+            type="search"
+            placeholder="Search tools..."
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 pr-10 text-base focus:ring-2 focus:ring-primary-500 focus:outline-none transition"
+            autocomplete="off"
+            aria-label="Search tools"
+          />
+          <Icon
+            name="i-heroicons-magnifying-glass"
+            class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none"
+          />
         </div>
       </div>
-      <!-- Tools Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <UCard
-          v-for="(tool, i) in filteredTools"
-          :key="tool.slug"
-          :class="`relative h-full flex flex-col justify-between shadow-md rounded-xl border-l-8 ${toolColors[i].border} bg-gradient-to-br ${toolColors[i].gradient} ${toolColors[i].darkGradient} overflow-hidden`"
-        >
-          <template #header>
-            <div
-              class="flex items-center gap-3 justify-center mb-2 mt-2 relative z-10"
-            >
-              <div
-                :class="`w-12 h-12 flex items-center justify-center rounded-full shadow overflow-hidden ${toolColors[i].iconBg}`"
-              >
-                <picture
-                  v-if="
-                    tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)
-                  "
-                >
-                  <source
-                    v-if="tool.icon.endsWith('.png')"
-                    :srcset="
-                      tool.icon
-                        .replace('.png', '.webp')
-                        .replace(/^public\//, '/')
-                    "
-                    type="image/webp"
-                  />
-                  <img
-                    :src="tool.icon.replace(/^public\//, '/')"
-                    alt="icon"
-                    class="w-8 h-8 object-contain rounded-full scale-125"
-                    :style="
-                      tool.slug === 'starting-class-optimizer'
-                        ? { transform: 'scale(1.5)' }
-                        : undefined
-                    "
-                    loading="lazy"
-                    decoding="async"
-                    width="32"
-                    height="32"
-                  />
-                </picture>
-                <Icon
-                  v-else
-                  :name="tool.icon || 'i-heroicons-cube'"
-                  class="w-3 h-3 text-white"
-                  :style="
-                    tool.slug === 'starting-class-optimizer'
-                      ? { transform: 'scale(1.5)' }
-                      : undefined
-                  "
-                />
-              </div>
-              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                {{ tool.title }}
-              </h2>
-            </div>
-            <ToolChips
-              :popular="i === 0"
-              :category="tool.category"
-              :games="tool.gameCategories"
-            />
-          </template>
-          <div
-            class="flex flex-1 items-center justify-center pb-6 pt-2 relative z-10"
-          >
-            <p
-              class="text-base font-medium text-gray-700 dark:text-gray-200 text-center leading-relaxed"
-            >
-              {{ tool.description }}
-            </p>
-          </div>
-
-          <!-- Action Button -->
-          <div class="absolute bottom-4 right-4 z-20">
-            <UButton
-              @click="handleToolAction(tool)"
-              :class="`shadow-lg hover:shadow-xl transition-shadow ${toolColors[i].iconBg} ${toolColors[i].hoverBg} text-white`"
-              variant="solid"
-              size="sm"
-              :aria-label="`Open ${tool.title}`"
-            >
-              <Icon name="i-heroicons-arrow-right" class="w-4 h-4" />
-            </UButton>
-          </div>
-
-          <!-- Game Selection Overlay (per card) -->
-          <GameSelectionOverlay
-            v-if="selectedTool && selectedTool.slug === tool.slug"
-            :is-open="showGameSelection"
-            :games="tool.gameCategories"
-            :tool-title="tool.title"
-            :border="toolColors[i].border"
-            :gradient="toolColors[i].gradient"
-            :dark-gradient="toolColors[i].darkGradient"
-            :icon-bg="toolColors[i].iconBg"
-            :hover-bg="toolColors[i].hoverBg"
-            @close="closeGameSelection"
-            @select="handleGameSelection"
-          />
-        </UCard>
-      </div>
-      <!-- Empty State -->
-      <div
-        v-if="filteredTools.length === 0"
-        class="w-full max-w-2xl mx-auto text-center py-12"
-      >
-        <Icon
-          name="i-heroicons-magnifying-glass"
-          class="w-24 h-24 text-gray-400 mx-auto mb-4"
+      <div class="flex gap-2 flex-wrap w-full md:w-auto items-end">
+        <SelectField
+          id="game-select"
+          :model-value="filters.game"
+          :options="availableGames.map((g) => ({ label: g.name, value: g.id }))"
+          @update:model-value="handleGameChange"
+          label="Game"
+          class="min-w-[120px]"
         />
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          No tools found
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-4">
-          Try adjusting your filters or search terms.
-        </p>
-        <UButton @click="clearFilters" color="primary" variant="outline"
-          >Clear all filters</UButton
-        >
+        <SelectField
+          id="category-select"
+          :model-value="filters.category"
+          :options="
+            availableCategories.map((c) => ({ label: c.name, value: c.id }))
+          "
+          @update:model-value="handleCategoryChange"
+          label="Category"
+          class="min-w-[120px]"
+        />
+        <template v-if="activeFilterCount > 0">
+          <label class="sr-only">&nbsp;</label>
+          <button
+            @click="handleClear"
+            class="border border-red-300 dark:border-red-700 bg-white dark:bg-gray-900 px-1 py-0 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 focus:ring-2 focus:ring-red-500 focus:outline-none transition flex items-center gap-0 leading-none h-6 min-h-0 rounded"
+            style="line-height: 1; min-height: 0; height: 1.5rem"
+          >
+            <Icon
+              name="i-heroicons-x-mark"
+              class="w-3 h-3 inline align-middle"
+            />
+            <span class="pl-0.5">Clear</span>
+          </button>
+        </template>
       </div>
     </div>
-  </section>
 
-  <!-- Filter Modal for all <xl screens -->
-  <FilterModal
-    :is-open="showFilterModal"
-    :filters="filters"
-    :available-games="availableGames"
-    :available-categories="availableCategories"
-    @close="showFilterModal = false"
-    @update:filters="handleFilterUpdate"
-    @clear="handleFilterClear"
-  />
+    <!-- Tools List/Grid -->
+    <div
+      class="w-full max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+      role="list"
+      aria-label="Available tools"
+    >
+      <button
+        v-for="(tool, i) in filteredTools"
+        :key="tool.slug"
+        @click="handleToolClick(tool)"
+        @keydown="(e) => handleKeyDown(e, tool)"
+        tabindex="0"
+        class="tool-card group flex flex-col items-center rounded-2xl shadow-md p-3 transition-all duration-150 hover:-translate-y-1 focus:-translate-y-1 cursor-pointer outline-none focus:ring-2 focus:ring-primary-500 min-h-[220px] bg-gradient-to-br"
+        :class="toolGradients[i]"
+        :style="{
+          boxShadow: `0 2px 8px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04)`,
+          '--hover-shadow': getHoverShadow(toolGradients[i]),
+        }"
+        @mouseenter="hoveredIndex = i"
+        @mouseleave="hoveredIndex = null"
+        @focus="hoveredIndex = i"
+        @blur="hoveredIndex = null"
+        :aria-label="`Open ${tool.title}`"
+      >
+        <!-- Icon/Image -->
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 shadow mb-2 mt-1"
+        >
+          <picture
+            v-if="tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)"
+          >
+            <source
+              v-if="tool.icon.endsWith('.png')"
+              :srcset="
+                tool.icon.replace('.png', '.webp').replace(/^public\//, '/')
+              "
+              type="image/webp"
+            />
+            <img
+              :src="tool.icon.replace(/^public\//, '/')"
+              alt="icon"
+              class="w-12 h-12 object-contain rounded-full"
+              loading="lazy"
+              decoding="async"
+              width="48"
+              height="48"
+            />
+          </picture>
+          <Icon
+            v-else
+            :name="tool.icon || 'i-heroicons-cube'"
+            class="w-10 h-10 text-primary-500"
+          />
+        </div>
+        <!-- Title -->
+        <h2
+          class="text-base font-semibold text-center text-gray-900 dark:text-white mb-1 whitespace-normal"
+        >
+          {{ tool.title }}
+        </h2>
+        <!-- Badges/Chips -->
+        <div class="flex flex-wrap justify-center gap-1 mb-2">
+          <ToolChips :category="tool.category" :games="tool.gameCategories" />
+        </div>
+        <!-- Description -->
+        <p
+          class="text-xs text-center text-gray-700 dark:text-gray-300 mb-2 line-clamp-2"
+        >
+          {{ tool.description }}
+        </p>
+        <!-- No action button; card is fully clickable. -->
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div
+      v-if="filteredTools.length === 0"
+      class="w-full max-w-2xl mx-auto text-center py-16"
+    >
+      <Icon
+        name="i-heroicons-magnifying-glass"
+        class="w-20 h-20 text-gray-400 mx-auto mb-4"
+      />
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        No tools found
+      </h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4">
+        Try adjusting your filters or search terms.
+      </p>
+      <button
+        @click="handleClear"
+        class="rounded-lg border border-primary-300 dark:border-primary-700 bg-white dark:bg-gray-900 px-4 py-2 text-base text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900 focus:ring-2 focus:ring-primary-500 focus:outline-none transition"
+      >
+        Clear all filters
+      </button>
+    </div>
+  </section>
 </template>
+
+<style scoped>
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tool-card:hover,
+.tool-card:focus {
+  box-shadow:
+    var(--hover-shadow),
+    0 2px 8px 0 rgba(0, 0, 0, 0.08),
+    0 1.5px 6px 0 rgba(0, 0, 0, 0.04) !important;
+}
+</style>

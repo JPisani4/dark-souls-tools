@@ -384,10 +384,50 @@ export const calculateWeaponAttackRating = (
   // Calculate scaling
   const scaling = calculateWeaponScaling(weapon, stats, selectedUpgradePath);
 
-  // Calculate final damage values
-  const physical = basePhysical + scaling.physicalScaling;
+  // Apply humanity scaling
+  let humanityPhysicalBonus = 0;
+  let humanityFireBonus = 0;
+
+  // Check if weapon has hard-coded humanity scaling
+  if (weapon.humanityScaling) {
+    // For hard-coded scaling, arrays are 1-indexed (humanity 1-10)
+    // Humanity 0 should have no bonus, humanity 1-10 should use indices 0-9
+    const cappedHumanity = Math.max(
+      0,
+      Math.min(10, Math.floor(stats.humanity))
+    );
+
+    // Only apply bonus if humanity > 0
+    if (cappedHumanity > 0) {
+      const arrayIndex = cappedHumanity - 1; // Convert to 0-indexed array access
+
+      if (
+        weapon.humanityScaling.physical &&
+        weapon.humanityScaling.physical[arrayIndex]
+      ) {
+        humanityPhysicalBonus = weapon.humanityScaling.physical[arrayIndex];
+      }
+
+      if (
+        weapon.humanityScaling.fire &&
+        weapon.humanityScaling.fire[arrayIndex]
+      ) {
+        humanityFireBonus = weapon.humanityScaling.fire[arrayIndex];
+      }
+    }
+  }
+  // Check if weapon is on chaos upgrade path (which gets humanity scaling)
+  else if (upgradePath === "chaos") {
+    const humanityScaling = getHumanityScaling(stats.humanity);
+    humanityPhysicalBonus = basePhysical * humanityScaling.phys;
+    humanityFireBonus = baseFire * humanityScaling.fire;
+  }
+
+  // Calculate final damage values with humanity scaling
+  const physical =
+    basePhysical + scaling.physicalScaling + humanityPhysicalBonus;
   const magic = baseMagic + scaling.magicScaling;
-  const fire = baseFire + scaling.fireScaling;
+  const fire = baseFire + scaling.fireScaling + humanityFireBonus;
   const lightning = baseLightning + scaling.lightningScaling;
 
   // Calculate total attack rating

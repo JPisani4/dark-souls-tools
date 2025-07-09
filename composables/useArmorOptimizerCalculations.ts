@@ -20,7 +20,6 @@ export interface ArmorOptimizerState {
     talismans: string[];
   };
   selectedRings: string[];
-  maskOfTheFather: boolean;
   armorUpgradeLevel: string;
   displayMode: string;
   sortPrimary: string;
@@ -28,6 +27,12 @@ export interface ArmorOptimizerState {
   sortDescending: boolean;
   searchQuery: string;
   maxDodgeRollPercent: number | null;
+  lockedArmor: Record<string, string | null>;
+  customFilter?: {
+    selectedStats: string[];
+    minValues: Record<string, number>;
+    weights: Record<string, number>;
+  };
 }
 
 // Helper to compute total possible combinations for a full search
@@ -91,6 +96,46 @@ function getRestrictedMixMatchCombinationCount(
   } else {
     return counts[0] * counts[1] * counts[2] * counts[3];
   }
+}
+
+function getRingStatBonuses(ringEffects: any[]): Record<string, number> {
+  // Sum up relevant statBonus values from all selected rings
+  const bonuses = {
+    magic: 0,
+    fire: 0,
+    lightning: 0,
+    poise: 0,
+    strike: 0,
+    slash: 0,
+    thrust: 0,
+    normal: 0,
+  };
+  ringEffects.forEach((ring) => {
+    const sb = ring.effect?.statBonus || {};
+    // Defensive rings use these keys
+    if (sb.magicDefense) bonuses.magic += sb.magicDefense;
+    if (sb.fireDefense) bonuses.fire += sb.fireDefense;
+    if (sb.lightningDefense) bonuses.lightning += sb.lightningDefense;
+    if (sb.poise) bonuses.poise += sb.poise;
+    // Ring of Steel Protection (+50 Strike, Slash, Thrust)
+    if (sb.strikeDefense) bonuses.strike += sb.strikeDefense;
+    if (sb.slashDefense) bonuses.slash += sb.slashDefense;
+    if (sb.thrustDefense) bonuses.thrust += sb.thrustDefense;
+    // Some rings may use 'phsyicalDefense' or 'physicalDefense' for all physical
+    if (sb.phsyicalDefense) {
+      bonuses.strike += sb.phsyicalDefense;
+      bonuses.slash += sb.phsyicalDefense;
+      bonuses.thrust += sb.phsyicalDefense;
+      bonuses.normal += sb.phsyicalDefense;
+    }
+    if (sb.physicalDefense) {
+      bonuses.strike += sb.physicalDefense;
+      bonuses.slash += sb.physicalDefense;
+      bonuses.thrust += sb.physicalDefense;
+      bonuses.normal += sb.physicalDefense;
+    }
+  });
+  return bonuses;
 }
 
 export function useArmorOptimizerCalculations() {
@@ -431,14 +476,48 @@ export function useArmorOptimizerCalculations() {
       );
     }
 
-    // Filter out headgear if Mask of the Father is selected
-    if (state.maskOfTheFather) {
-      filteredArmor = filteredArmor.filter((item) => item.slot !== "head");
+    // Armor lock: if a slot is locked, only show that piece for that slot
+    if (state.lockedArmor) {
+      const locked = state.lockedArmor;
+      filteredArmor = filteredArmor.filter((item) => {
+        if (locked[item.slot] && locked[item.slot] !== item.name) return false;
+        return true;
+      });
     }
+
+    // Get ring stat bonuses
+    const ringEffects = calculateRingEffects(state.selectedRings);
+    const ringBonuses = getRingStatBonuses(ringEffects);
+
+    // Add ring bonuses to each armor piece's displayed stats
+    const armorWithBonuses = filteredArmor.map((item) => {
+      const newItem = { ...item };
+      if (newItem.defense) {
+        newItem.defense = { ...newItem.defense };
+        newItem.defense.magic =
+          (newItem.defense.magic || 0) + ringBonuses.magic;
+        newItem.defense.fire = (newItem.defense.fire || 0) + ringBonuses.fire;
+        newItem.defense.lightning =
+          (newItem.defense.lightning || 0) + ringBonuses.lightning;
+        newItem.defense.strike =
+          (newItem.defense.strike || 0) + ringBonuses.strike;
+        newItem.defense.slash =
+          (newItem.defense.slash || 0) + ringBonuses.slash;
+        newItem.defense.thrust =
+          (newItem.defense.thrust || 0) + ringBonuses.thrust;
+        newItem.defense.normal =
+          (newItem.defense.normal || 0) + ringBonuses.normal;
+      }
+      if (newItem.effect) {
+        newItem.effect = { ...newItem.effect };
+        newItem.effect.poise = (newItem.effect.poise || 0) + ringBonuses.poise;
+      }
+      return newItem;
+    });
 
     // Sort armor
     const sortedArmor = sortArmor(
-      filteredArmor,
+      armorWithBonuses,
       state.sortPrimary,
       state.sortSecondary,
       state.sortDescending
@@ -462,7 +541,10 @@ export function useArmorOptimizerCalculations() {
       return [];
     }
 
-    // Upgrade armor sets if upgrade level > 0
+    // Get ring stat bonuses
+    const ringEffects = calculateRingEffects(state.selectedRings);
+    const ringBonuses = getRingStatBonuses(ringEffects);
+
     let processedSets = allSets;
     if (upgradeLevel > 0) {
       processedSets = allSets.map((set: any) => {
@@ -488,39 +570,52 @@ export function useArmorOptimizerCalculations() {
 
         // Process each piece in the set
         Object.entries(set.pieces).forEach(([slot, piece]: [string, any]) => {
-          if (piece && piece.upgradePath) {
+          let usePiece = piece;
+          // If lockedArmor for this slot, use that piece instead
+          if (state.lockedArmor && state.lockedArmor[slot]) {
+            const locked = getArmorByName(state.lockedArmor[slot]);
+            if (locked) usePiece = locked;
+          }
+          if (usePiece && usePiece.upgradePath) {
             const upgradedDefense = calculateUpgradedArmorDefense(
-              piece.defense,
-              piece.upgradePath,
+              usePiece.defense,
+              usePiece.upgradePath,
               upgradeLevel
             );
-
             const upgradedPiece = {
-              ...piece,
+              ...usePiece,
               defense: upgradedDefense,
               upgradedLevel: upgradeLevel,
             };
-
             upgradedPieces[slot] = upgradedPiece;
-
             // Add to totals
             Object.keys(upgradedTotalDefense).forEach((key) => {
               const k = key as keyof typeof upgradedTotalDefense;
               upgradedTotalDefense[k] += upgradedDefense[k] || 0;
             });
-            upgradedTotalPoise += piece.effect?.poise || 0;
-            upgradedTotalWeight += piece.weight;
-          } else {
+            upgradedTotalPoise += usePiece.effect?.poise || 0;
+            upgradedTotalWeight += usePiece.weight;
+          } else if (usePiece) {
             // Piece doesn't have upgrade path, keep as is
-            upgradedPieces[slot] = piece;
+            upgradedPieces[slot] = usePiece;
             Object.keys(upgradedTotalDefense).forEach((key) => {
               const k = key as keyof typeof upgradedTotalDefense;
-              upgradedTotalDefense[k] += piece.defense[k] || 0;
+              upgradedTotalDefense[k] += usePiece.defense[k] || 0;
             });
-            upgradedTotalPoise += piece.effect?.poise || 0;
-            upgradedTotalWeight += piece.weight;
+            upgradedTotalPoise += usePiece.effect?.poise || 0;
+            upgradedTotalWeight += usePiece.weight;
           }
         });
+
+        // Add ring bonuses to set totals
+        upgradedTotalDefense.magic += ringBonuses.magic;
+        upgradedTotalDefense.fire += ringBonuses.fire;
+        upgradedTotalDefense.lightning += ringBonuses.lightning;
+        upgradedTotalDefense.strike += ringBonuses.strike;
+        upgradedTotalDefense.slash += ringBonuses.slash;
+        upgradedTotalDefense.thrust += ringBonuses.thrust;
+        upgradedTotalDefense.normal += ringBonuses.normal;
+        upgradedTotalPoise += ringBonuses.poise;
 
         // Update the set with upgraded values
         upgradedSet.pieces = upgradedPieces;
@@ -530,6 +625,59 @@ export function useArmorOptimizerCalculations() {
         upgradedSet.upgradedLevel = upgradeLevel;
 
         return upgradedSet;
+      });
+    } else {
+      // Add ring bonuses to non-upgraded sets and forcibly use lockedArmor
+      processedSets = allSets.map((set: any) => {
+        const newSet = { ...set };
+        const newPieces: any = { ...set.pieces };
+        // Forcibly use lockedArmor for each slot if set
+        for (const slot of ["head", "chest", "hands", "legs"]) {
+          if (state.lockedArmor && state.lockedArmor[slot]) {
+            const locked = getArmorByName(state.lockedArmor[slot]);
+            if (locked) newPieces[slot] = locked;
+          }
+        }
+        newSet.pieces = newPieces;
+        // Recalculate totals
+        let totalDefense = {
+          normal: 0,
+          strike: 0,
+          slash: 0,
+          thrust: 0,
+          magic: 0,
+          fire: 0,
+          lightning: 0,
+          bleed: 0,
+          poison: 0,
+          curse: 0,
+        };
+        let totalPoise = 0;
+        let totalWeight = 0;
+        for (const slot of ["head", "chest", "hands", "legs"]) {
+          const piece = newPieces[slot];
+          if (piece) {
+            Object.keys(totalDefense).forEach((key) => {
+              const k = key as keyof typeof totalDefense;
+              totalDefense[k] += piece.defense[k] || 0;
+            });
+            totalPoise += piece.effect?.poise || 0;
+            totalWeight += piece.weight;
+          }
+        }
+        // Add ring bonuses
+        totalDefense.magic += ringBonuses.magic;
+        totalDefense.fire += ringBonuses.fire;
+        totalDefense.lightning += ringBonuses.lightning;
+        totalDefense.strike += ringBonuses.strike;
+        totalDefense.slash += ringBonuses.slash;
+        totalDefense.thrust += ringBonuses.thrust;
+        totalDefense.normal += ringBonuses.normal;
+        totalPoise += ringBonuses.poise;
+        newSet.totalDefense = totalDefense;
+        newSet.totalPoise = totalPoise;
+        newSet.totalWeight = totalWeight;
+        return newSet;
       });
     }
 
@@ -542,8 +690,11 @@ export function useArmorOptimizerCalculations() {
       );
     }
 
+    // (Do not filter out sets that don't originally include the locked piece)
+
     // Filter out sets that have headgear if Mask of the Father is selected
-    if (state.maskOfTheFather) {
+    if (false) {
+      // Removed maskOfTheFather check
       // Don't filter out sets - let the display components handle the head slot display
     }
 
@@ -651,54 +802,244 @@ export function useArmorOptimizerCalculations() {
     return [null, ...deduped];
   }
 
+  // Helper to check if an armor piece meets custom filter min values
+  function meetsCustomFilter(
+    item: any,
+    selectedStats: string[],
+    minValues: Record<string, number>
+  ): boolean {
+    return selectedStats.every((stat: string) => {
+      const v =
+        item.totalDefense?.[stat] ?? item.defense?.[stat] ?? item[stat] ?? 0;
+      return v >= (minValues[stat] || 0);
+    });
+  }
+
+  function getTopNPerCategoryForSlotFiltered(
+    armor: any[],
+    slot: string,
+    N: number,
+    customFilterStats: string[],
+    customFilterMinValues: Record<string, number>
+  ): any[] {
+    const categories = getArmorCategories();
+    let pieces = [];
+    for (const category of categories) {
+      // Get all armor in this category and slot
+      let catArmor = armor.filter(
+        (item) => item.slot === slot && item.armorType === category
+      );
+      // Apply custom filter min values if any
+      if (customFilterStats.length > 0) {
+        catArmor = catArmor.filter((item) =>
+          meetsCustomFilter(item, customFilterStats, customFilterMinValues)
+        );
+      }
+      // Sort by totalDefense descending for pool selection
+      const sorted = sortArmor(catArmor, "totalDefense", "none", true);
+      pieces.push(...sorted.slice(0, N));
+    }
+    // Deduplicate by name (in case of overlap)
+    const seen = new Set();
+    const deduped = pieces.filter((item) => {
+      if (!item) return false;
+      if (seen.has(item.name)) return false;
+      seen.add(item.name);
+      return true;
+    });
+    // Always include empty
+    return [null, ...deduped];
+  }
+
   function calculateMixMatchArmor(
     armor: any[],
     characterStats: any,
     state: ArmorOptimizerState
   ): any[] {
-    const slots = ["head", "chest", "hands", "legs"];
+    const slots: string[] = ["head", "chest", "hands", "legs"];
     const N = 3;
-    let armorBySlot: Record<string, any[]> = {};
-    if (state.maskOfTheFather) {
-      // Head is always Mask of the Father
-      const mask = getMaskOfTheFather(armor);
-      armorBySlot.head = mask ? [mask] : [];
-      // Other slots: top N per category + empty
-      ["chest", "hands", "legs"].forEach((slot) => {
-        armorBySlot[slot] = getTopNPerCategoryForSlot(
-          armor,
-          slot,
-          state.sortPrimary,
-          state.sortSecondary,
-          state.sortDescending,
-          N
+    // Stat key mapping from filter UI to armor data
+    const statKeyMap: Record<string, string> = {
+      poise: "poise",
+      weight: "weight",
+      totalDefense: "totalDefense", // handled as sum
+      regularDefense: "normal",
+      strikeDefense: "strike",
+      slashDefense: "slash",
+      thrustDefense: "thrust",
+      physical: "physical", // handled as sum
+      physicalDefense: "normal",
+      magicDefense: "magic",
+      fireDefense: "fire",
+      lightningDefense: "lightning",
+      bleedResistance: "bleed",
+      poisonResistance: "poison",
+      curseResistance: "curse",
+      status: "status", // handled as sum
+      statusResistance: "statusResistance", // handled as sum
+      magic: "magic",
+      fire: "fire",
+      lightning: "lightning",
+      bleed: "bleed",
+      poison: "poison",
+      curse: "curse",
+    };
+    // Use custom filter settings for pool filtering
+    const customFilterStats: string[] = state.customFilter?.selectedStats || [];
+    const customFilterMinValues: Record<string, number> =
+      state.customFilter?.minValues || {};
+    const customFilterWeights: Record<string, number> =
+      state.customFilter?.weights || {};
+    // --- Pool Construction ---
+    // For each slot, for each category, select top N by the user's selected filter stats (weighted sum if multiple, or first stat if only one), defaulting to total physical defense
+    function getArmorScoreForFilter(item: any): number {
+      if (customFilterStats.length === 0) {
+        // Default: total physical defense
+        return (
+          (item.defense?.normal || 0) +
+          (item.defense?.strike || 0) +
+          (item.defense?.slash || 0) +
+          (item.defense?.thrust || 0)
         );
-      });
-    } else {
-      // All slots: top N per category + empty
-      slots.forEach((slot) => {
-        armorBySlot[slot] = getTopNPerCategoryForSlot(
-          armor,
-          slot,
-          state.sortPrimary,
-          state.sortSecondary,
-          state.sortDescending,
-          N
-        );
-      });
+      } else if (customFilterStats.length === 1) {
+        // Single stat: use that stat
+        const stat = customFilterStats[0];
+        const mapped = statKeyMap[stat] || stat;
+        if (stat === "poise") return item.effect?.poise || 0;
+        if (stat === "weight") return item.weight || 0;
+        if (stat === "totalDefense" || stat === "physical") {
+          return (
+            (item.defense?.normal || 0) +
+            (item.defense?.strike || 0) +
+            (item.defense?.slash || 0) +
+            (item.defense?.thrust || 0)
+          );
+        }
+        if (stat === "status" || stat === "statusResistance") {
+          return (
+            (item.defense?.bleed || 0) +
+            (item.defense?.poison || 0) +
+            (item.defense?.curse || 0)
+          );
+        }
+        return item.defense?.[mapped] || 0;
+      } else {
+        // Weighted sum
+        let score = 0;
+        for (const stat of customFilterStats) {
+          const w = customFilterWeights[stat] || 1;
+          const mapped = statKeyMap[stat] || stat;
+          let v = 0;
+          if (stat === "poise") v = item.effect?.poise || 0;
+          else if (stat === "weight") v = item.weight || 0;
+          else if (stat === "totalDefense" || stat === "physical") {
+            v =
+              (item.defense?.normal || 0) +
+              (item.defense?.strike || 0) +
+              (item.defense?.slash || 0) +
+              (item.defense?.thrust || 0);
+          } else if (stat === "status" || stat === "statusResistance") {
+            v =
+              (item.defense?.bleed || 0) +
+              (item.defense?.poison || 0) +
+              (item.defense?.curse || 0);
+          } else {
+            v = item.defense?.[mapped] || 0;
+          }
+          score += w * v;
+        }
+        return score;
+      }
     }
-
-    // Generate all combinations
+    const getTopNPerCategoryForSlot = (
+      armor: any[],
+      slot: string,
+      N: number
+    ) => {
+      const categories = getArmorCategories();
+      let pieces: any[] = [];
+      for (const category of categories) {
+        const catArmor = armor.filter(
+          (item) => item.slot === slot && item.armorType === category
+        );
+        const sorted = catArmor.sort(
+          (a: any, b: any) =>
+            getArmorScoreForFilter(b) - getArmorScoreForFilter(a)
+        );
+        pieces.push(...sorted.slice(0, N));
+      }
+      // Deduplicate by name
+      const seen = new Set();
+      const deduped = pieces.filter((item) => {
+        if (!item) return false;
+        if (seen.has(item.name)) return false;
+        seen.add(item.name);
+        return true;
+      });
+      // Always include empty
+      return [null, ...deduped];
+    };
+    let armorBySlot: Record<string, any[]> = {};
+    for (const slot of slots) {
+      const lockedName = state.lockedArmor?.[slot];
+      if (lockedName) {
+        // Use only the locked piece for this slot (from the upgraded armor array)
+        const slotArmor = armor.filter((item) => item.slot === slot);
+        const lockedPiece = slotArmor.find((item) => item.name === lockedName);
+        armorBySlot[slot] = lockedPiece ? [lockedPiece] : [null];
+      } else {
+        // Not locked: use top N per category
+        armorBySlot[slot] = getTopNPerCategoryForSlot(armor, slot, N);
+      }
+      // If the pool for this slot is empty (no valid pieces), return []
+      if (!armorBySlot[slot] || armorBySlot[slot].length === 0) {
+        return [];
+      }
+    }
+    // --- Combination Generation (cartesian product) ---
     const combinations: any[] = [];
-    let generated = 0;
+    const ringEffects = calculateRingEffects(state.selectedRings);
+    const ringBonuses: { [key: string]: number } =
+      getRingStatBonuses(ringEffects);
+    function getStatValue(
+      stat: string,
+      totalDefense: any,
+      totalPoise: number,
+      totalWeight: number
+    ) {
+      const mapped = statKeyMap[stat] || stat;
+      switch (stat) {
+        case "poise":
+          return totalPoise;
+        case "weight":
+          return totalWeight;
+        case "totalDefense":
+        case "physical":
+          return (
+            (totalDefense["normal"] || 0) +
+            (totalDefense["strike"] || 0) +
+            (totalDefense["slash"] || 0) +
+            (totalDefense["thrust"] || 0)
+          );
+        case "status":
+        case "statusResistance":
+          return (
+            (totalDefense["bleed"] || 0) +
+            (totalDefense["poison"] || 0) +
+            (totalDefense["curse"] || 0)
+          );
+        default:
+          return totalDefense[mapped] || 0;
+      }
+    }
+    // Recursive cartesian product
     function generateCombinations(current: any[], slotIndex: number) {
       if (slotIndex >= slots.length) {
-        // At least one piece must be equipped
         if (current.some(Boolean)) {
           const pieces: Record<string, any> = {};
           let totalWeight = 0;
           let totalPoise = 0;
-          const totalDefense: Record<string, number> = {
+          const totalDefense: { [key: string]: number } = {
             normal: 0,
             strike: 0,
             slash: 0,
@@ -710,27 +1051,83 @@ export function useArmorOptimizerCalculations() {
             poison: 0,
             curse: 0,
           };
-          slots.forEach((slot, i) => {
+          let totalStaminaRegenReduction = 0;
+          slots.forEach((slot: string, i: number) => {
             if (current[i]) {
               pieces[slot] = current[i];
               totalWeight += current[i].weight;
               totalPoise += current[i].effect?.poise || 0;
-              Object.keys(totalDefense).forEach((key) => {
+              Object.keys(totalDefense).forEach((key: string) => {
                 totalDefense[key] += current[i].defense[key] || 0;
               });
+              totalStaminaRegenReduction +=
+                current[i].staminaRegenReduction || 0;
             }
           });
-          combinations.push({
-            id: `mixmatch-${combinations.length}`,
-            name: `Mix ${combinations.length + 1}`,
-            pieces,
-            totalWeight,
-            totalPoise,
-            totalDefense,
-            isCombination: true,
-            slotsFilled: slots.filter((_, i) => current[i]).length,
-          });
-          generated++;
+          // Add ring bonuses
+          totalDefense["magic"] += ringBonuses["magic"];
+          totalDefense["fire"] += ringBonuses["fire"];
+          totalDefense["lightning"] += ringBonuses["lightning"];
+          totalDefense["strike"] += ringBonuses["strike"];
+          totalDefense["slash"] += ringBonuses["slash"];
+          totalDefense["thrust"] += ringBonuses["thrust"];
+          totalDefense["normal"] += ringBonuses["normal"];
+          totalPoise += ringBonuses["poise"];
+          // Equip load filter (if set)
+          let valid = true;
+          if (
+            typeof state.maxDodgeRollPercent === "number" &&
+            state.maxDodgeRollPercent !== null &&
+            !isNaN(state.maxDodgeRollPercent) &&
+            characterStats.equipLoad
+          ) {
+            const equippedWeight = characterStats.equippedWeight || 0;
+            const totalEquipLoad = characterStats.equipLoad;
+            const percent =
+              ((equippedWeight + (totalWeight || 0)) / totalEquipLoad) * 100;
+            if (percent > state.maxDodgeRollPercent) valid = false;
+          }
+          // Custom filter min values for the whole combo (if any)
+          if (valid && customFilterStats.length > 0) {
+            valid = customFilterStats.every((stat: string) => {
+              const v = getStatValue(
+                stat,
+                totalDefense,
+                totalPoise,
+                totalWeight
+              );
+              return v >= (customFilterMinValues[stat] || 0);
+            });
+          }
+          if (valid) {
+            // Calculate custom score if custom filter is active
+            let _customScore = 0;
+            if (customFilterStats.length > 0) {
+              customFilterStats.forEach((stat) => {
+                const w = customFilterWeights[stat] || 1;
+                const v = getStatValue(
+                  stat,
+                  totalDefense,
+                  totalPoise,
+                  totalWeight
+                );
+                _customScore += w * v;
+              });
+            }
+            combinations.push({
+              id: `mixmatch-${combinations.length}`,
+              name: `Mix ${combinations.length + 1}`,
+              pieces,
+              totalWeight,
+              totalPoise,
+              totalDefense,
+              totalStaminaRegenReduction,
+              isCombination: true,
+              slotsFilled: slots.filter((_: any, i: number) => current[i])
+                .length,
+              _customScore,
+            });
+          }
         }
         return;
       }
@@ -741,46 +1138,27 @@ export function useArmorOptimizerCalculations() {
       }
     }
     generateCombinations([], 0);
-
-    // Apply search filter
-    let filtered = combinations;
-    if (state.searchQuery) {
-      filtered = filtered.filter(
-        (combo) =>
-          combo.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-          Object.values(combo.pieces).some((piece: any) =>
-            piece?.name?.toLowerCase().includes(state.searchQuery.toLowerCase())
-          )
+    // --- Sorting and Slicing ---
+    let sorted: any[] = [];
+    if (customFilterStats.length > 0) {
+      sorted = combinations.sort(
+        (a: any, b: any) => b._customScore - a._customScore
       );
-    }
-
-    // Apply dodge roll filter if set
-    let maxDodgeRollPercent: number = 100;
-    if (
-      typeof state.maxDodgeRollPercent === "number" &&
-      state.maxDodgeRollPercent !== null &&
-      !isNaN(state.maxDodgeRollPercent) &&
-      characterStats.equipLoad
-    ) {
-      maxDodgeRollPercent = state.maxDodgeRollPercent;
-      const equippedWeight = characterStats.equippedWeight || 0;
-      const totalEquipLoad = characterStats.equipLoad;
-      filtered = filtered.filter((combo: any) => {
-        const percent =
-          ((equippedWeight + (combo.totalWeight || 0)) / totalEquipLoad) * 100;
-        return percent <= maxDodgeRollPercent;
+    } else {
+      sorted = combinations.sort((a: any, b: any) => {
+        const aDef =
+          (a.totalDefense.normal || 0) +
+          (a.totalDefense.strike || 0) +
+          (a.totalDefense.slash || 0) +
+          (a.totalDefense.thrust || 0);
+        const bDef =
+          (b.totalDefense.normal || 0) +
+          (b.totalDefense.strike || 0) +
+          (b.totalDefense.slash || 0) +
+          (b.totalDefense.thrust || 0);
+        return bDef - aDef;
       });
     }
-
-    // Sort combinations
-    const sorted = sortArmorSets(
-      filtered,
-      state.sortPrimary,
-      state.sortSecondary,
-      state.sortDescending
-    );
-
-    // Return only the top 25 combinations
     return sorted.slice(0, 25);
   }
 
@@ -827,6 +1205,16 @@ export function useArmorOptimizerCalculations() {
         "talismans"
       );
 
+      // Get currently equipped armor pieces from lockedArmor
+      const equippedArmor = [
+        state.lockedArmor.head,
+        state.lockedArmor.chest,
+        state.lockedArmor.hands,
+        state.lockedArmor.legs,
+      ]
+        .map((name) => name && getArmorByName(name))
+        .filter(Boolean);
+
       // Calculate equipment weight
       const equipmentWeight = calculateEquipmentWeight(state.selectedEquipment);
 
@@ -834,15 +1222,7 @@ export function useArmorOptimizerCalculations() {
       let ringEffects = calculateRingEffects(state.selectedRings);
 
       // Add Mask of the Father as a virtual ring if selected
-      if (state.maskOfTheFather) {
-        ringEffects.push({
-          name: "Mask of the Father",
-          effect: {
-            equipLoadBonus: 5, // 5% equip load bonus
-            special: "mask-of-the-father",
-          },
-        });
-      }
+      // Removed maskOfTheFather logic
 
       const baseStats = {
         level: 1,
@@ -867,12 +1247,12 @@ export function useArmorOptimizerCalculations() {
         weightClass: "",
       };
 
-      // Calculate all derived stats including equipment and ring effects
+      // Calculate all derived stats including equipment and ring/armor effects
       const characterStats = calculateAllDerivedStats(
         baseStats,
-        [...weapons, ...catalysts, ...talismans], // Include catalysts and talismans as weapons
+        [...weapons, ...catalysts, ...talismans], // weapons
         shields,
-        [], // armor array (empty for now)
+        equippedArmor, // armor array (now includes equipped pieces)
         ringEffects
       );
 

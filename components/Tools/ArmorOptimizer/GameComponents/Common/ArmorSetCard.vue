@@ -296,46 +296,43 @@ const ratioValue = computed(() =>
 );
 
 const adjustedTotalWeight = computed(() => {
-  if (props.maskOfTheFather) {
-    // Remove headgear weight from total
-    const headgearWeight =
-      props.armorSet.pieces?.find((p: any) => p.slot === "head")?.armor
-        ?.weight || 0;
-    return props.armorSet.totalWeight - headgearWeight;
-  }
-  return props.armorSet.totalWeight;
+  // Only remove headgear weight if it's Mask of the Father
+  const headPiece = (Object.values(props.armorSet.pieces) as any[]).find(
+    (p) => p && p.slot === "head" && typeof p.weight === "number"
+  );
+  const headgearWeight =
+    headPiece?.name === "Mask of the Father" ? headPiece?.weight || 0 : 0;
+  return props.armorSet.totalWeight - headgearWeight;
 });
 
 const adjustedTotalPoise = computed(() => {
-  if (props.maskOfTheFather) {
-    // Remove headgear poise from total
-    const headgearPoise =
-      props.armorSet.pieces?.find((p: any) => p.slot === "head")?.armor?.effect
-        ?.poise || 0;
-    return (props.armorSet.totalPoise || 0) - headgearPoise;
-  }
-  return props.armorSet.totalPoise;
+  // Only remove headgear poise if it's Mask of the Father
+  const headPiece = (Object.values(props.armorSet.pieces) as any[]).find(
+    (p) =>
+      p && p.slot === "head" && p.effect && typeof p.effect.poise === "number"
+  );
+  const headgearPoise =
+    headPiece?.name === "Mask of the Father"
+      ? headPiece?.effect?.poise || 0
+      : 0;
+  return (props.armorSet.totalPoise || 0) - headgearPoise;
 });
 
 const adjustedTotalDefense = computed(() => {
-  if (props.maskOfTheFather) {
-    // Remove headgear defense from total
-    const headgearDefense =
-      props.armorSet.pieces?.find((p: any) => p.slot === "head")?.armor
-        ?.defense || {};
-    const result = { ...props.armorSet.totalDefense };
-    Object.keys(result).forEach((key) => {
-      result[key] = (result[key] || 0) - (headgearDefense[key] || 0);
-    });
-    return result;
-  }
-  return props.armorSet.totalDefense;
+  // Remove headgear defense from total
+  const headPiece = (Object.values(props.armorSet.pieces) as any[]).find(
+    (p) => p && p.slot === "head" && p.defense && typeof p.defense === "object"
+  );
+  const headgearDefense = headPiece?.defense || {};
+  const result = { ...props.armorSet.totalDefense };
+  Object.keys(result).forEach((key) => {
+    result[key] = (result[key] || 0) - (headgearDefense[key] || 0);
+  });
+  return result;
 });
 
 const totalDefense = computed(() => {
-  const defense = props.maskOfTheFather
-    ? adjustedTotalDefense.value
-    : props.armorSet.totalDefense;
+  const defense = props.armorSet.totalDefense;
   return (
     (defense?.normal || 0) +
     (defense?.strike || 0) +
@@ -345,9 +342,7 @@ const totalDefense = computed(() => {
 });
 
 const totalElementalDefense = computed(() => {
-  const defense = props.maskOfTheFather
-    ? adjustedTotalDefense.value
-    : props.armorSet.totalDefense;
+  const defense = props.armorSet.totalDefense;
   return (
     (defense?.magic || 0) + (defense?.fire || 0) + (defense?.lightning || 0)
   );
@@ -362,7 +357,8 @@ const armorPieces = computed(() => {
   for (const slot of slots) {
     const piece = props.armorSet.pieces[slot];
     if (piece) {
-      const isDisabled = props.maskOfTheFather && slot === "head";
+      // Only disable if the head slot is actually Mask of the Father
+      const isDisabled = slot === "head" && piece.name === "Mask of the Father";
       pieces.push({
         slot,
         armor: piece,
@@ -373,6 +369,21 @@ const armorPieces = computed(() => {
 
   return pieces;
 });
+
+const totalStaminaRegenReduction = computed(() =>
+  armorPieces.value.reduce(
+    (sum, piece: any) =>
+      sum +
+      (piece.armor?.staminaRegenReduction || piece.staminaRegenReduction || 0),
+    0
+  )
+);
+const specialEffectsString = computed(() =>
+  armorPieces.value
+    .map((piece: any) => piece.armor?.specialEffect || piece.specialEffect)
+    .filter(Boolean)
+    .join(", ")
+);
 </script>
 
 <template>
@@ -427,8 +438,8 @@ const armorPieces = computed(() => {
                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0"
                 :title="`${getSortLabel(isSortOptionObject(sortPrimary) ? sortPrimary.value : sortPrimary)} / ${getSortLabel(isSortOptionObject(sortSecondary) ? sortSecondary.value : sortSecondary)} ratio: ${ratioValue.toFixed(2)}`"
               >
-                <span class="hidden sm:inline">
-                  {{
+                <span class="hidden sm:inline"
+                  >{{
                     getSortLabel(
                       isSortOptionObject(sortPrimary)
                         ? sortPrimary.value
@@ -443,10 +454,10 @@ const armorPieces = computed(() => {
                         : sortSecondary
                     )
                   }}
-                  ratio:
-                </span>
-                <span class="sm:hidden">Ratio:</span>
-                {{ ratioValue.toFixed(2) }}
+                  ratio:&nbsp;{{ ratioValue.toFixed(2) }}</span
+                ><span class="sm:hidden"
+                  >Ratio:&nbsp;{{ ratioValue.toFixed(2) }}</span
+                >
               </span>
             </div>
           </div>
@@ -473,14 +484,7 @@ const armorPieces = computed(() => {
               <div class="flex items-center gap-1 flex-shrink-0">
                 <span class="text-blue-600 dark:text-blue-400">Regular:</span>
                 <span class="font-semibold text-blue-600 dark:text-blue-400">
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.normal || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.normal || 0).toFixed(1) }}
                 </span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
@@ -490,27 +494,13 @@ const armorPieces = computed(() => {
                 <span
                   class="font-semibold text-orange-600 dark:text-orange-400"
                 >
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.strike || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.strike || 0).toFixed(1) }}
                 </span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
                 <span class="text-red-600 dark:text-red-400">Slash:</span>
                 <span class="font-semibold text-red-600 dark:text-red-400">
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.slash || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.slash || 0).toFixed(1) }}
                 </span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
@@ -520,14 +510,7 @@ const armorPieces = computed(() => {
                 <span
                   class="font-semibold text-purple-600 dark:text-purple-400"
                 >
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.thrust || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.thrust || 0).toFixed(1) }}
                 </span>
               </div>
             </div>
@@ -537,14 +520,7 @@ const armorPieces = computed(() => {
                 <span
                   class="font-semibold text-indigo-600 dark:text-indigo-400"
                 >
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.magic || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.magic || 0).toFixed(1) }}
                 </span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
@@ -552,27 +528,13 @@ const armorPieces = computed(() => {
                 <span
                   class="font-semibold text-yellow-600 dark:text-yellow-400"
                 >
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.fire || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.fire || 0).toFixed(1) }}
                 </span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
                 <span class="text-cyan-600 dark:text-cyan-400">Lightning:</span>
                 <span class="font-semibold text-cyan-600 dark:text-cyan-400">
-                  {{
-                    (
-                      (props.maskOfTheFather
-                        ? adjustedTotalDefense
-                        : props.armorSet.totalDefense
-                      )?.lightning || 0
-                    ).toFixed(1)
-                  }}
+                  {{ (props.armorSet.totalDefense?.lightning || 0).toFixed(1) }}
                 </span>
               </div>
             </div>
@@ -605,12 +567,7 @@ const armorPieces = computed(() => {
             <div class="flex justify-between">
               <span class="text-blue-600 dark:text-blue-400">Normal:</span>
               <span class="font-semibold text-blue-600 dark:text-blue-400">{{
-                (
-                  (props.maskOfTheFather
-                    ? adjustedTotalDefense
-                    : props.armorSet.totalDefense
-                  )?.normal || 0
-                ).toFixed(1)
+                (props.armorSet.totalDefense?.normal || 0).toFixed(1)
               }}</span>
             </div>
             <div class="flex justify-between">
@@ -618,24 +575,14 @@ const armorPieces = computed(() => {
               <span
                 class="font-semibold text-orange-600 dark:text-orange-400"
                 >{{
-                  (
-                    (props.maskOfTheFather
-                      ? adjustedTotalDefense
-                      : props.armorSet.totalDefense
-                    )?.strike || 0
-                  ).toFixed(1)
+                  (props.armorSet.totalDefense?.strike || 0).toFixed(1)
                 }}</span
               >
             </div>
             <div class="flex justify-between">
               <span class="text-red-600 dark:text-red-400">Slash:</span>
               <span class="font-semibold text-red-600 dark:text-red-400">{{
-                (
-                  (props.maskOfTheFather
-                    ? adjustedTotalDefense
-                    : props.armorSet.totalDefense
-                  )?.slash || 0
-                ).toFixed(1)
+                (props.armorSet.totalDefense?.slash || 0).toFixed(1)
               }}</span>
             </div>
             <div class="flex justify-between">
@@ -643,12 +590,7 @@ const armorPieces = computed(() => {
               <span
                 class="font-semibold text-purple-600 dark:text-purple-400"
                 >{{
-                  (
-                    (props.maskOfTheFather
-                      ? adjustedTotalDefense
-                      : props.armorSet.totalDefense
-                    )?.thrust || 0
-                  ).toFixed(1)
+                  (props.armorSet.totalDefense?.thrust || 0).toFixed(1)
                 }}</span
               >
             </div>
@@ -666,12 +608,7 @@ const armorPieces = computed(() => {
               <span
                 class="font-semibold text-indigo-600 dark:text-indigo-400"
                 >{{
-                  (
-                    (props.maskOfTheFather
-                      ? adjustedTotalDefense
-                      : props.armorSet.totalDefense
-                    )?.magic || 0
-                  ).toFixed(1)
+                  (props.armorSet.totalDefense?.magic || 0).toFixed(1)
                 }}</span
               >
             </div>
@@ -679,25 +616,13 @@ const armorPieces = computed(() => {
               <span class="text-yellow-600 dark:text-yellow-400">Fire:</span>
               <span
                 class="font-semibold text-yellow-600 dark:text-yellow-400"
-                >{{
-                  (
-                    (props.maskOfTheFather
-                      ? adjustedTotalDefense
-                      : props.armorSet.totalDefense
-                    )?.fire || 0
-                  ).toFixed(1)
-                }}</span
+                >{{ (props.armorSet.totalDefense?.fire || 0).toFixed(1) }}</span
               >
             </div>
             <div class="flex justify-between">
               <span class="text-cyan-600 dark:text-cyan-400">Lightning:</span>
               <span class="font-semibold text-cyan-600 dark:text-cyan-400">{{
-                (
-                  (props.maskOfTheFather
-                    ? adjustedTotalDefense
-                    : props.armorSet.totalDefense
-                  )?.lightning || 0
-                ).toFixed(1)
+                (props.armorSet.totalDefense?.lightning || 0).toFixed(1)
               }}</span>
             </div>
           </div>
@@ -712,23 +637,13 @@ const armorPieces = computed(() => {
             <div class="flex justify-between">
               <span class="text-red-500 dark:text-red-400">Bleed:</span>
               <span class="font-semibold text-red-500 dark:text-red-400">{{
-                (
-                  (props.maskOfTheFather
-                    ? adjustedTotalDefense
-                    : props.armorSet.totalDefense
-                  )?.bleed || 0
-                ).toFixed(1)
+                (props.armorSet.totalDefense?.bleed || 0).toFixed(1)
               }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-green-600 dark:text-green-400">Poison:</span>
               <span class="font-semibold text-green-600 dark:text-green-400">{{
-                (
-                  (props.maskOfTheFather
-                    ? adjustedTotalDefense
-                    : props.armorSet.totalDefense
-                  )?.poison || 0
-                ).toFixed(1)
+                (props.armorSet.totalDefense?.poison || 0).toFixed(1)
               }}</span>
             </div>
             <div class="flex justify-between">
@@ -736,12 +651,7 @@ const armorPieces = computed(() => {
               <span
                 class="font-semibold text-purple-500 dark:text-purple-400"
                 >{{
-                  (
-                    (props.maskOfTheFather
-                      ? adjustedTotalDefense
-                      : props.armorSet.totalDefense
-                    )?.curse || 0
-                  ).toFixed(1)
+                  (props.armorSet.totalDefense?.curse || 0).toFixed(1)
                 }}</span
               >
             </div>
@@ -769,6 +679,20 @@ const armorPieces = computed(() => {
             <div class="flex justify-between">
               <span>Elemental:</span>
               <span>{{ totalElementalDefense.toFixed(1) }}</span>
+            </div>
+            <div
+              v-if="totalStaminaRegenReduction"
+              class="text-xs text-yellow-600 dark:text-yellow-400"
+            >
+              Stamina Regen: -{{ totalStaminaRegenReduction }}
+            </div>
+            <div v-if="specialEffectsString" class="flex justify-between mt-1">
+              <span class="text-xs text-green-600 dark:text-green-400"
+                >Special Effects:</span
+              >
+              <span class="text-xs text-green-600 dark:text-green-400">{{
+                specialEffectsString
+              }}</span>
             </div>
           </div>
         </div>
@@ -952,6 +876,17 @@ const armorPieces = computed(() => {
                     {{ (piece.armor.defense?.curse || 0).toFixed(1) }}
                   </span>
                 </div>
+                <div
+                  v-if="piece.armor.staminaRegenReduction"
+                  class="text-xs text-yellow-600 dark:text-yellow-400"
+                >
+                  Stamina Regen: -{{ piece.armor.staminaRegenReduction }}
+                </div>
+              </div>
+              <div v-if="piece.armor.specialEffect">
+                <span class="text-xs text-green-600 dark:text-green-400">{{
+                  piece.armor.specialEffect
+                }}</span>
               </div>
             </div>
           </div>

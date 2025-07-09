@@ -15,7 +15,6 @@ interface Props {
   expandedArmor: string[];
   sortPrimary?: string;
   sortSecondary?: string;
-  maskOfTheFather?: boolean;
   sortDescending?: boolean;
   onToggleSlotExpansion: (slot: string) => void;
   onToggleCategoryExpansion: (slot: string, category: string) => void;
@@ -29,7 +28,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   sortPrimary: "poise",
   sortSecondary: "weight",
-  maskOfTheFather: false,
   sortDescending: false,
 });
 
@@ -45,9 +43,6 @@ const armorCategories = [
 // Filter slots based on Mask of the Father
 const availableSlots = computed(() => {
   const slots = ["head", "chest", "hands", "legs"];
-  if (props.maskOfTheFather) {
-    return slots.filter((slot) => slot !== "head");
-  }
   return slots;
 });
 
@@ -215,7 +210,14 @@ const isArmorExpanded = (armorName: string) => {
                 show-checkbox
                 @toggle-selection="props.onToggleArmorComparison(armor.name)"
                 @toggle-expansion="props.onToggleArmorExpansion(armor.name)"
-              />
+              >
+                <template #staminaRegenPenalty>
+                  {{ armor.staminaRegenReduction }}
+                </template>
+                <template #specialEffect>
+                  {{ armor.effect }}
+                </template>
+              </ArmorCard>
             </div>
             <ArmorPagination
               v-if="

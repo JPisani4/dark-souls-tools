@@ -37,6 +37,7 @@ const sortOptionsWithCategories = [
       { label: "Total Attack Rating", value: "totalAttackRating" },
       { label: "Total Base Damage", value: "totalBaseDamage" },
       { label: "Magic Adjust", value: "magicAdjust" },
+      { label: "Weapon Type", value: "weaponType" }, // NEW
     ],
   },
   {
@@ -130,6 +131,9 @@ const getSortValue = (weapon: any, sortBy: string) => {
       return weapon.rating.scalingInfo.scalingPercentages.faith;
     case "magicAdjust":
       return weapon.rating.magicAdjustment || 0;
+    case "weaponType":
+      // Use weaponType string for sorting
+      return weapon.weaponType || "";
     default:
       return weapon.rating.totalAttackRating;
   }
@@ -204,16 +208,31 @@ export function useWeaponFilters(
       });
     }
 
-    // Apply search filter with fuzzy matching
+    // Apply filter for equippable weapons only
+    if (state.filterEquippableOnly) {
+      filtered = filtered.filter(
+        (weapon: any) => weapon.rating.meetsRequirements
+      );
+    }
+
+    // Apply search filter with fuzzy matching, but prioritize exact match
     if (state.search) {
-      const fuse = new Fuse(filtered, {
-        keys: ["name", "weaponType"],
-        threshold: 0.4,
-        minMatchCharLength: 2,
-        ignoreLocation: true,
-        useExtendedSearch: false,
-      });
-      filtered = fuse.search(state.search).map((result) => result.item);
+      // Check for exact match first
+      const exact = filtered.find(
+        (w: any) => w.name.toLowerCase() === state.search.toLowerCase()
+      );
+      if (exact) {
+        filtered = [exact];
+      } else {
+        const fuse = new Fuse(filtered, {
+          keys: ["name", "weaponType"],
+          threshold: 0.2, // Lowered threshold for stricter matching
+          minMatchCharLength: 2,
+          ignoreLocation: true,
+          useExtendedSearch: false,
+        });
+        filtered = fuse.search(state.search).map((result) => result.item);
+      }
     }
 
     return filtered;
@@ -276,6 +295,11 @@ export function useWeaponFilters(
     });
   };
 
+  // Handler for equippable filter
+  const handleEquippableFilterChange = (value: boolean) => {
+    setState({ filterEquippableOnly: value, currentPage: 1 });
+  };
+
   return {
     // Computed
     filteredWeapons,
@@ -287,6 +311,7 @@ export function useWeaponFilters(
     handleCategoryChange,
     handleUpgradePathChange,
     resetFilters,
+    handleEquippableFilterChange, // NEW
 
     // Utility functions
     getSortValue,

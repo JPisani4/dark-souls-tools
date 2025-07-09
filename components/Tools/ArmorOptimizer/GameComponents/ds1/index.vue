@@ -60,7 +60,6 @@ interface ArmorOptimizerState {
     talismans: string[];
   };
   selectedRings: string[];
-  maskOfTheFather: boolean;
   armorUpgradeLevel: string;
   displayMode: string;
   sortPrimary: string;
@@ -90,6 +89,13 @@ interface ArmorOptimizerState {
   };
   // UI state
   showCustomFilter: boolean;
+  // Armor lock state
+  lockedArmor: {
+    head: string | null;
+    chest: string | null;
+    hands: string | null;
+    legs: string | null;
+  };
 }
 
 // Tool result interface
@@ -110,7 +116,6 @@ const initialState: ArmorOptimizerState = {
     talismans: [],
   },
   selectedRings: [],
-  maskOfTheFather: false,
   armorUpgradeLevel: "0",
   displayMode: "individual",
   sortPrimary: "poise",
@@ -173,6 +178,13 @@ const initialState: ArmorOptimizerState = {
   },
   // UI state
   showCustomFilter: false,
+  // Armor lock state
+  lockedArmor: {
+    head: null,
+    chest: null,
+    hands: null,
+    legs: null,
+  },
 };
 
 // Generate random theme for the tool
@@ -231,66 +243,98 @@ const {
         } else {
           arr = res.calculatedArmor;
         }
-        // Filter by min values (apply to all modes)
-        let filtered = arr;
-        if (selectedStats.length > 0) {
-          filtered = arr.filter((item) =>
-            selectedStats.every(
-              (stat) =>
-                getComboStatValue(item, stat) >=
-                (state.customFilter.minValues[
-                  stat as keyof typeof state.customFilter.minValues
-                ] || 0)
-            )
-          );
-          // Always set _customScore for all items when custom filter is active
-          filtered = filtered.map((item) => {
-            let score = 0;
-            selectedStats.forEach((stat) => {
-              const w = state.customFilter.weights[stat] || 1;
-              const v = getComboStatValue(item, stat);
-              score += w * v;
-            });
-            return { ...item, _customScore: score };
-          });
-          // Debug: log name, _customScore, and stat values if primary sort is 'custom'
-          if (state.sortPrimary === "custom") {
-            console.log(
-              "Custom Sort Debug:",
-              filtered.map((item) => ({
-                name: item.name || item.id,
-                _customScore: item._customScore,
-                ...Object.fromEntries(
-                  selectedStats.map((stat) => [
-                    stat,
-                    getComboStatValue(item, stat),
-                  ])
-                ),
-              }))
-            );
-            // Sort by weighted sum if primary sort is 'custom'
-            filtered = filtered.sort((a, b) => b._customScore - a._customScore);
-            // Reverse if sortDescending is false
-            if (!state.sortDescending) {
-              filtered = filtered.slice().reverse();
-            }
-            // Debug: log the sorted array
-            console.log(
-              "Sorted Array Debug:",
-              filtered.map((item) => ({
-                name: item.name || item.id,
-                _customScore: item._customScore,
-              }))
-            );
-          }
-        }
-        // Replace the result array for the current mode
+
+        // Apply custom filter logic based on display mode
         if (state.displayMode === "mixmatch") {
+          // For mixmatch mode: filter by min values (existing behavior)
+          let filtered = arr;
+          if (selectedStats.length > 0) {
+            filtered = arr.filter((item) =>
+              selectedStats.every(
+                (stat) =>
+                  getComboStatValue(item, stat) >=
+                  (state.customFilter.minValues[
+                    stat as keyof typeof state.customFilter.minValues
+                  ] || 0)
+              )
+            );
+            // Always set _customScore for all items when custom filter is active
+            filtered = filtered.map((item) => {
+              let score = 0;
+              selectedStats.forEach((stat) => {
+                const w = state.customFilter.weights[stat] || 1;
+                const v = getComboStatValue(item, stat);
+                score += w * v;
+              });
+              return { ...item, _customScore: score };
+            });
+            // Debug: log name, _customScore, and stat values if primary sort is 'custom'
+            if (state.sortPrimary === "custom") {
+              console.log(
+                "Custom Sort Debug:",
+                filtered.map((item) => ({
+                  name: item.name || item.id,
+                  _customScore: item._customScore,
+                  ...Object.fromEntries(
+                    selectedStats.map((stat) => [
+                      stat,
+                      getComboStatValue(item, stat),
+                    ])
+                  ),
+                }))
+              );
+              // Sort by weighted sum if primary sort is 'custom'
+              filtered = filtered.sort(
+                (a, b) => b._customScore - a._customScore
+              );
+              // Reverse if sortDescending is false
+              if (!state.sortDescending) {
+                filtered = filtered.slice().reverse();
+              }
+              // Debug: log the sorted array
+              console.log(
+                "Sorted Array Debug:",
+                filtered.map((item) => ({
+                  name: item.name || item.id,
+                  _customScore: item._customScore,
+                }))
+              );
+            }
+          }
           res.mixMatchResults = filtered;
-        } else if (state.displayMode === "sets") {
-          res.armorSets = filtered;
         } else {
-          res.calculatedArmor = filtered;
+          // For individual pieces and complete sets: use custom filter for sorting only (no filtering)
+          let processed = arr;
+          if (selectedStats.length > 0) {
+            // Calculate custom scores for all items (no filtering)
+            processed = arr.map((item) => {
+              let score = 0;
+              selectedStats.forEach((stat) => {
+                const w = state.customFilter.weights[stat] || 1;
+                const v = getComboStatValue(item, stat);
+                score += w * v;
+              });
+              return { ...item, _customScore: score };
+            });
+
+            // Sort by custom score if primary sort is 'custom'
+            if (state.sortPrimary === "custom") {
+              processed = processed.sort(
+                (a, b) => b._customScore - a._customScore
+              );
+              // Reverse if sortDescending is false
+              if (!state.sortDescending) {
+                processed = processed.slice().reverse();
+              }
+            }
+          }
+
+          // Replace the result array for the current mode
+          if (state.displayMode === "sets") {
+            res.armorSets = processed;
+          } else {
+            res.calculatedArmor = processed;
+          }
         }
       }
       return res;
@@ -388,10 +432,9 @@ watch(
     state.sortPrimary,
     state.sortSecondary,
     state.sortDescending,
-    state.maskOfTheFather,
-    state.selectedEquipment,
     state.selectedRings,
-    state.maxDodgeRollPercent,
+    state.lockedArmor,
+    // Add any other relevant armor selection state here if needed
   ],
   (newValues, oldValues) => {
     calculate();
@@ -654,9 +697,24 @@ const getComparisonItems = () => {
       .filter(Boolean);
   } else if (state.displayMode === "mixmatch") {
     return selectedMixMatchCombos.value
-      .map((id) =>
-        (state.calculatedArmor || []).find((combo) => combo.id === id)
-      )
+      .map((id) => {
+        const combo = (state.calculatedArmor || []).find(
+          (combo) => combo.id === id
+        );
+        if (!combo) return null;
+        // Patch in totalStaminaRegenReduction for comparison modal
+        const totalStaminaRegenReduction = [
+          "head",
+          "chest",
+          "hands",
+          "legs",
+        ].reduce(
+          (sum, slot) =>
+            sum + (combo.pieces?.[slot]?.staminaRegenReduction || 0),
+          0
+        );
+        return { ...combo, totalStaminaRegenReduction };
+      })
       .filter(Boolean);
   }
   return [];
@@ -788,21 +846,31 @@ watch(
   }
 );
 
-// Compute paginated mixmatch results
-const paginatedMixMatchResults = computed(() => {
+// Compute sorted and paginated mixmatch results
+const sortedMixMatchResults = computed(() => {
   if (state.displayMode !== "mixmatch" || !state.calculatedArmor) return [];
-  // Only show the top 25 results, paginated 5 per page
-  const top25 = state.calculatedArmor.slice(0, 25);
+  // Sort all valid combinations by user sort
+  return sortArmorSets(
+    state.calculatedArmor,
+    state.sortPrimary,
+    state.sortSecondary,
+    state.sortDescending
+  );
+});
+
+const paginatedMixMatchResults = computed(() => {
+  const sorted = sortedMixMatchResults.value;
+  const top25 = sorted.slice(0, 25);
   const start = (mixMatchPage.value - 1) * mixMatchItemsPerPage;
   const end = start + mixMatchItemsPerPage;
   return top25.slice(start, end);
 });
 
 const mixMatchTotalPages = computed(() => {
-  if (!state.calculatedArmor) return 1;
+  const sorted = sortedMixMatchResults.value;
   return Math.max(
     1,
-    Math.ceil(Math.min(state.calculatedArmor.length, 25) / mixMatchItemsPerPage)
+    Math.ceil(Math.min(sorted.length, 25) / mixMatchItemsPerPage)
   );
 });
 
@@ -845,17 +913,13 @@ const fullMixMatchCombinationCount = computed(() => {
   // Use the upgraded armor list for accurate count
   const allArmor = getAllArmor();
   const flattenedArmor = Object.values(allArmor).flat();
-  return getFullMixMatchCombinationCount(flattenedArmor, state.maskOfTheFather);
+  return getFullMixMatchCombinationCount(flattenedArmor, false);
 });
 // Add restricted (top 3) mixmatch combination count for disclaimer
 const restrictedMixMatchCombinationCount = computed(() => {
   const allArmor = getAllArmor();
   const flattenedArmor = Object.values(allArmor).flat();
-  return getRestrictedMixMatchCombinationCount(
-    flattenedArmor,
-    3,
-    state.maskOfTheFather
-  );
+  return getRestrictedMixMatchCombinationCount(flattenedArmor, 3, false);
 });
 
 // Add state for selected mix and match combos
@@ -1299,9 +1363,9 @@ const howToUseSteps = computed(() => [
   },
   {
     type: "step" as const,
-    title: "Filter results",
+    title: "Filter and sort results",
     description:
-      "Use search, dodge roll filters, or advanced custom filters to narrow down options.",
+      "Use search, dodge roll filters, or advanced custom filters. In Individual Pieces and Complete Sets modes, custom filters sort all items by your weighted preferences.",
   },
   {
     type: "step" as const,
@@ -1344,6 +1408,9 @@ const howToUseSteps = computed(() => [
     icon: "i-heroicons-squares-2x2",
   },
 ]);
+
+// Get sortArmorSets from the composable instance
+const { sortArmorSets } = useArmorOptimizerCalculations();
 </script>
 
 <template>
@@ -1445,11 +1512,29 @@ const howToUseSteps = computed(() => [
               class="w-4 h-4 mr-1"
             />
             Advanced Custom Filter
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+              {{
+                state.displayMode === "mixmatch"
+                  ? "(Filters & Sorts)"
+                  : "(Sorts Only)"
+              }}
+            </span>
           </UButton>
           <div
             v-show="state.showCustomFilter"
             class="p-4 rounded bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-4"
           >
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <p v-if="state.displayMode === 'mixmatch'">
+                <strong>Mix and Match Mode:</strong> Filters out items below
+                minimum values, then sorts by weighted scores.
+              </p>
+              <p v-else>
+                <strong>Individual Pieces & Complete Sets:</strong> Shows all
+                items sorted by your custom weighted scores. Set Primary Sort to
+                "Custom" to use these weights.
+              </p>
+            </div>
             <SelectField
               label="Select stats to filter and weight"
               id="customFilterStats"
@@ -1488,14 +1573,15 @@ const howToUseSteps = computed(() => [
                     {{ getStatLabel(stat) }}
                   </span>
                   <UButton
-                    icon="i-heroicons-x-mark"
                     size="xs"
                     variant="ghost"
                     color="neutral"
                     class="flex-shrink-0"
                     @click="removeCustomStat(stat)"
                     :aria-label="`Remove ${getStatLabel(stat)}`"
-                  />
+                  >
+                    <Icon name="i-heroicons-x-mark" class="w-4 h-4" />
+                  </UButton>
                 </div>
                 <div
                   class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto"
@@ -1504,7 +1590,15 @@ const howToUseSteps = computed(() => [
                     <label
                       class="text-xs text-gray-500 dark:text-gray-400"
                       :for="`min-${stat}`"
-                      >Min</label
+                      :class="{
+                        'opacity-50': state.displayMode !== 'mixmatch',
+                      }"
+                      >Min
+                      {{
+                        state.displayMode !== "mixmatch"
+                          ? "(Mix & Match only)"
+                          : ""
+                      }}</label
                     >
                     <UInput
                       v-model.number="state.customFilter.minValues[stat]"
@@ -1512,6 +1606,7 @@ const howToUseSteps = computed(() => [
                       :id="`min-${stat}`"
                       placeholder="Min value"
                       class="w-full sm:w-24"
+                      :disabled="state.displayMode !== 'mixmatch'"
                       :aria-label="`Minimum ${getStatLabel(stat)}`"
                     />
                   </div>
@@ -1687,7 +1782,6 @@ const howToUseSteps = computed(() => [
           :sort-primary="state.sortPrimary"
           :sort-secondary="state.sortSecondary"
           :sort-descending="state.sortDescending"
-          :mask-of-the-father="state.maskOfTheFather"
           @toggle-slot-expansion="toggleSlotExpansion"
           @toggle-category-expansion="toggleCategoryExpansion"
           @toggle-armor-comparison="toggleArmorComparison"
@@ -1712,7 +1806,6 @@ const howToUseSteps = computed(() => [
           :sort-primary="state.sortPrimary"
           :sort-secondary="state.sortSecondary"
           :sort-descending="state.sortDescending"
-          :mask-of-the-father="state.maskOfTheFather"
           @toggle-category-expansion="toggleSetCategoryExpansion"
           @toggle-armor-set-comparison="toggleArmorSetComparison"
           @toggle-armor-set-expansion="toggleArmorSetExpansion"
@@ -1784,18 +1877,25 @@ const howToUseSteps = computed(() => [
                           class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0"
                           :title="`${getSortLabel(state.sortPrimary)} / ${getSortLabel(state.sortSecondary)} ratio: ${calculateComboRatio(combo, state.sortPrimary, state.sortSecondary).toFixed(2)}`"
                         >
-                          <span class="hidden sm:inline">
-                            {{ getSortLabel(state.sortPrimary) }} /
-                            {{ getSortLabel(state.sortSecondary) }} ratio:
-                          </span>
-                          <span class="sm:hidden">Ratio:</span>
-                          {{
-                            calculateComboRatio(
-                              combo,
-                              state.sortPrimary,
-                              state.sortSecondary
-                            ).toFixed(2)
-                          }}
+                          <span class="hidden sm:inline"
+                            >{{ getSortLabel(state.sortPrimary) }} /
+                            {{ getSortLabel(state.sortSecondary) }}
+                            ratio:&nbsp;{{
+                              calculateComboRatio(
+                                combo,
+                                state.sortPrimary,
+                                state.sortSecondary
+                              ).toFixed(2)
+                            }}</span
+                          ><span class="sm:hidden"
+                            >Ratio:&nbsp;{{
+                              calculateComboRatio(
+                                combo,
+                                state.sortPrimary,
+                                state.sortSecondary
+                              ).toFixed(2)
+                            }}</span
+                          >
                         </span>
                       </div>
                       <!-- Key Stats Row -->
@@ -1891,6 +1991,18 @@ const howToUseSteps = computed(() => [
                               }}</span
                             >
                           </div>
+                        </div>
+                        <div
+                          v-if="combo.totalStaminaRegenReduction"
+                          class="flex items-center gap-1 flex-shrink-0 w-full"
+                        >
+                          <span class="text-yellow-600 dark:text-yellow-400"
+                            >Stamina Regen:</span
+                          >
+                          <span
+                            class="text-yellow-600 dark:text-yellow-400 ml-auto"
+                            >-{{ combo.totalStaminaRegenReduction }}</span
+                          >
                         </div>
                       </div>
                     </div>
@@ -2053,14 +2165,27 @@ const howToUseSteps = computed(() => [
                         }}</span>
                       </div>
                       <div class="flex justify-between">
-                        <span>Elemental:</span
-                        ><span>{{
+                        <span>Elemental:</span>
+                        <span>{{
                           (
                             combo.totalDefense.magic +
                             combo.totalDefense.fire +
                             combo.totalDefense.lightning
                           ).toFixed(1)
                         }}</span>
+                      </div>
+                      <div
+                        v-if="combo.totalStaminaRegenReduction"
+                        class="flex justify-between"
+                      >
+                        <span
+                          class="text-xs text-yellow-600 dark:text-yellow-400"
+                          >Stamina Regen:</span
+                        >
+                        <span
+                          class="text-xs text-yellow-600 dark:text-yellow-400"
+                          >-{{ combo.totalStaminaRegenReduction }}</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -2263,6 +2388,14 @@ const howToUseSteps = computed(() => [
                               }}</span
                             >
                           </div>
+                        </div>
+                        <div
+                          v-if="combo.pieces[slot].staminaRegenReduction"
+                          class="text-xs text-yellow-600 dark:text-yellow-400"
+                        >
+                          Stamina Regen: -{{
+                            combo.pieces[slot].staminaRegenReduction
+                          }}
                         </div>
                       </div>
                     </div>

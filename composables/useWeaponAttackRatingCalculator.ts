@@ -27,6 +27,7 @@ export interface WeaponCalculatorState {
   expandedCategories: string[];
   sortBy: string;
   sortDescending: boolean;
+  filterEquippableOnly: boolean;
 }
 
 const initialState: WeaponCalculatorState = {
@@ -45,6 +46,7 @@ const initialState: WeaponCalculatorState = {
   expandedCategories: [],
   sortBy: "totalAttackRating",
   sortDescending: true,
+  filterEquippableOnly: false,
 };
 
 // Calculate weapon attack rating using imported function
@@ -166,6 +168,7 @@ export function useWeaponAttackRatingCalculator() {
       expandedCategories: [],
       sortBy: "totalAttackRating",
       sortDescending: true,
+      filterEquippableOnly: false,
     });
   };
 

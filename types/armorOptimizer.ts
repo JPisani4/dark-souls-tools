@@ -9,7 +9,6 @@ export interface ArmorOptimizerState {
     talismans: string[];
   };
   selectedRings: string[];
-  maskOfTheFather: boolean;
   armorUpgradeLevel: string;
   displayMode: string;
   sortPrimary: string;

@@ -11,6 +11,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
+console.log("ComparisonModal items:", props.items, "mode:", props.mode);
+
 const closeModal = () => {
   open.value = false;
 };
@@ -147,6 +149,38 @@ const getStatColorClass = (statKey: string) => {
       return "";
   }
 };
+
+function getStaminaRegen(item: any, mode: string) {
+  if (!item) return 0;
+  if (mode === "individual") return item.staminaRegenReduction || 0;
+  if (mode === "sets") {
+    if (!item.pieces) return 0;
+    return Object.values(item.pieces).reduce(
+      (sum, piece: any) => sum + (piece.staminaRegenReduction || 0),
+      0
+    );
+  }
+  if (mode === "mixmatch") {
+    if (!item.pieces) return 0;
+    return Object.values(item.pieces).reduce(
+      (sum, piece: any) => sum + (piece.staminaRegenReduction || 0),
+      0
+    );
+  }
+  return 0;
+}
+function getSpecialEffect(item: any, mode: string) {
+  if (!item) return "";
+  if (mode === "individual") return item.specialEffect || "";
+  if (mode === "sets" || mode === "mixmatch") {
+    if (!item.pieces) return "";
+    return Object.values(item.pieces)
+      .map((piece: any) => piece.specialEffect)
+      .filter(Boolean)
+      .join(", ");
+  }
+  return "";
+}
 </script>
 
 <template>
@@ -217,6 +251,46 @@ const getStatColorClass = (statKey: string) => {
                   <span :class="getStatColorClass(row.key)">
                     {{ getStat(item, row.key, props.mode) }}
                   </span>
+                </td>
+              </tr>
+              <tr
+                v-if="
+                  props.items.some((item) => getStaminaRegen(item, props.mode))
+                "
+              >
+                <td
+                  class="px-4 py-3 text-sm font-medium text-yellow-600 dark:text-yellow-400 text-left"
+                >
+                  Stamina Regen
+                </td>
+                <td
+                  v-for="item in props.items"
+                  :key="item.name || item.id + '-stamina'"
+                  class="px-4 py-3 text-sm text-yellow-600 dark:text-yellow-400"
+                >
+                  <span v-if="getStaminaRegen(item, props.mode)"
+                    >-{{ getStaminaRegen(item, props.mode) }}</span
+                  >
+                </td>
+              </tr>
+              <tr
+                v-if="
+                  props.items.some((item) => getSpecialEffect(item, props.mode))
+                "
+              >
+                <td
+                  class="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 text-left"
+                >
+                  Special Effects
+                </td>
+                <td
+                  v-for="item in props.items"
+                  :key="item.name || item.id + '-special'"
+                  class="px-4 py-3 text-sm text-green-600 dark:text-green-400 text-right"
+                >
+                  <span v-if="getSpecialEffect(item, props.mode)">{{
+                    getSpecialEffect(item, props.mode)
+                  }}</span>
                 </td>
               </tr>
             </tbody>

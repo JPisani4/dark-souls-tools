@@ -3,75 +3,92 @@ import HeroSection from "./Tools/Common/HeroSection.vue";
 import { tools } from "~/tools";
 import { ref, computed } from "vue";
 import { getRandomTheme } from "~/utils/themes/colorSystem";
-import Icon from "~/components/Common/Icon.vue";
-
-// Generate random theme for the hero section
-const selectedTheme = getRandomTheme();
-
-// Extract gradient classes for dynamic styling
-const [fromClass, toClass] = selectedTheme.bg.split(" ");
-
-// Simplified color mapping for hero shadow effects
-const tailwindColorMap: Record<string, string> = {
-  "text-blue-700": "#1d4ed8",
-  "text-blue-600": "#2563eb",
-  "text-purple-700": "#7c3aed",
-  "text-purple-600": "#8b5cf6",
-  "text-green-600": "#16a34a",
-  "text-orange-600": "#ea580c",
-  "text-red-600": "#dc2626",
-  "text-yellow-600": "#ca8a04",
-  "text-indigo-600": "#4f46e5",
-  "text-primary": "#22d3ee",
+// Expanded Tailwind color mapping for all theme colors
+const TAILWIND_HEX: Record<string, string> = {
+  "blue-500": "#3b82f6",
+  "green-500": "#22c55e",
+  "yellow-500": "#eab308",
+  "pink-500": "#ec4899",
+  "purple-500": "#a21caf",
+  "orange-500": "#f97316",
+  "teal-500": "#14b8a6",
+  "red-500": "#ef4444",
+  // fallback
+  default: "#22d3ee",
 };
+import Icon from "~/components/Common/Icon.vue";
+import { useRouter } from "vue-router";
+import type { Tool } from "~/types/tools/tool";
 
-// Compute hero shadow color based on theme icon
+const router = useRouter();
+
+// Featured tools (top 3 most important)
+const featuredToolSlugs = [
+  "starting-class-optimizer",
+  "weapon-attack-rating-calculator",
+  "armor-optimizer",
+];
+const featuredTools = computed<Tool[]>(() =>
+  (tools as Tool[])
+    .filter((tool) => featuredToolSlugs.includes(tool.slug))
+    .slice(0, 3)
+);
+
+// Theme for hero section
+const selectedTheme = getRandomTheme();
+const [fromClass, toClass] = selectedTheme.bg.split(" ");
 const heroShadowColor = computed(() => {
   const iconClass = selectedTheme?.icon;
-  return tailwindColorMap[iconClass] || "#22d3ee";
+  return (
+    {
+      "text-blue-700": "#1d4ed8",
+      "text-blue-600": "#2563eb",
+      "text-purple-700": "#7c3aed",
+      "text-purple-600": "#8b5cf6",
+      "text-green-600": "#16a34a",
+      "text-orange-600": "#ea580c",
+      "text-red-600": "#dc2626",
+      "text-yellow-600": "#ca8a04",
+      "text-indigo-600": "#4f46e5",
+      "text-primary": "#22d3ee",
+    }[iconClass] || "#22d3ee"
+  );
 });
 
-// Generate themes for different sections to maintain visual variety
-const updatesTheme = getRandomTheme();
-const linksTheme = getRandomTheme();
-
-// Get latest tools for updates section (tools created in last 30 days)
-const latestTools = computed(() => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  return tools
-    .filter((tool) => tool.createdAt && tool.createdAt > thirtyDaysAgo)
-    .sort((a, b) => {
-      if (!a.createdAt || !b.createdAt) return 0;
-      return b.createdAt.getTime() - a.createdAt.getTime();
-    })
-    .slice(0, 2);
-});
-
-// Map game categories to display names for better UX
+// Game display names
 const getGameDisplayName = (gameCategory: string): string => {
   const gameNames: Record<string, string> = {
-    ds1: "DS1",
-    ds2: "DS2",
-    ds3: "DS3",
-    bb: "BB",
-    er: "ER",
+    ds1: "Dark Souls 1",
+    ds2: "Dark Souls 2",
+    ds3: "Dark Souls 3",
+    bb: "Bloodborne",
+    er: "Elden Ring",
   };
   return gameNames[gameCategory] || gameCategory.toUpperCase();
 };
+
+// Feedback/contact
+const contactEmail = "contact@goldphantom.com";
+const githubUrl = "https://github.com/JPisani4/dark-souls-tools/issues";
+
+function goToTools() {
+  router.push("/tools");
+}
+
+// Extract the color part from selectedTheme.border (e.g., 'border-blue-500' -> 'blue-500')
+const borderColorClass = selectedTheme.border.replace("border-", "");
+const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
 </script>
 
 <template>
   <UContainer class="max-w-3xl mx-auto flex flex-col items-center">
-    <!-- Hero Section with dynamic background and shadow effects -->
+    <!-- Hero Section -->
     <div
       :class="'w-full mb-12 p-8 md:p-14 rounded-3xl relative flex flex-col items-center justify-center min-h-[200px] mt-8 overflow-hidden'"
       :style="{
-        boxShadow: `0 0 12px 3px ${heroShadowColor}, 0 6px 24px 0 rgba(0,0,0,0.10)`,
+        boxShadow: `0 0 12px 3px ${accentColor}, 0 6px 24px 0 rgba(0,0,0,0.10)`,
       }"
     >
-      <!-- Hero background overlay with gradient and image -->
       <div class="absolute inset-0 z-0 pointer-events-none">
         <picture>
           <source srcset="/soulsborne-tools-hero.webp" type="image/webp" />
@@ -92,134 +109,174 @@ const getGameDisplayName = (gameCategory: string): string => {
       </div>
       <HeroSection
         :title="'Gold Phantom'"
-        :description="'A library of helpful tools for your Dark Souls Remastered playthrough'"
+        :description="'Essential Soulsborne Tools & Calculators'"
         :icon-path="'/favicon.png'"
         :theme="selectedTheme"
         variant="homepage"
         class="mb-0 z-10"
       />
+      <div class="z-10 mt-4 flex flex-col items-center">
+        <p
+          class="text-lg text-center max-w-xl mb-4 inline-block rounded-xl px-3 py-1 text-white/90"
+          :style="`${$colorMode.value === 'dark' ? 'background:rgba(0,0,0,0.10);' : 'background:rgba(0,0,0,0.04);'}`"
+        >
+          A collection of helpful, modern tools for your Soulsborne playthrough
+        </p>
+        <UButton size="xl" @click="goToTools" class="pop-btn">
+          Browse Tools
+        </UButton>
+      </div>
     </div>
 
-    <!-- Main content grid with updates and links sections -->
-    <div class="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-8 w-full mb-8">
-      <!-- Latest Updates Section - Shows recently added tools -->
-      <UCard
-        :class="`shadow-md rounded-xl bg-gradient-to-br ${updatesTheme.gradient} ${updatesTheme.darkGradient} w-full h-full p-0 border-l-4 ${updatesTheme.border}`"
+    <!-- Featured Tools -->
+    <section class="w-full mb-10" :style="{ '--accent-color': accentColor }">
+      <h2
+        class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center"
       >
-        <div class="flex flex-row items-center gap-4 px-6 pt-6 pb-2">
-          <div
-            :class="`w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br ${updatesTheme.iconBg}`"
-          >
-            <Icon
-              name="i-heroicons-calendar"
-              class="w-2 h-2 text-white"
-              aria-label="Recent updates"
-            />
-          </div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Recent Tools
-          </h2>
-        </div>
-        <div class="flex flex-col items-start px-6 pb-6 pt-2 w-full">
-          <ul
-            v-if="latestTools.length > 0"
-            class="divide-y divide-gray-200 dark:divide-gray-700 w-full"
-          >
-            <li v-for="tool in latestTools" :key="tool.slug" class="py-3">
-              <div class="flex items-center gap-2">
-                <span
-                  :class="`text-[10px] font-medium ${updatesTheme.text} bg-white border ${updatesTheme.border} rounded-full px-1.5 h-5 flex items-center min-w-0 whitespace-nowrap overflow-hidden leading-none text-center`"
-                  aria-label="Game category"
-                  >{{ getGameDisplayName(tool.gameCategories[0]) }}</span
-                >
-                <span
-                  class="text-lg md:text-xl font-bold text-gray-900 dark:text-white"
-                  >{{ tool.title }}</span
-                >
-              </div>
-              <div
-                class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-1"
+        Featured Tools
+      </h2>
+      <div class="flex flex-col gap-4">
+        <UCard
+          v-for="tool in featuredTools"
+          :key="tool.slug"
+          class="featured-card flex flex-row items-center gap-4 p-4 cursor-pointer border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 min-h-[80px] transition-all duration-150"
+          @click="router.push(`/tools/${tool.gameCategories[0]}/${tool.slug}`)"
+          :style="{ '--accent-color': accentColor }"
+        >
+          <div class="flex flex-col flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5 min-w-0 flex-wrap">
+              <template
+                v-if="
+                  tool.icon &&
+                  (tool.icon.endsWith('.png') ||
+                    tool.icon.endsWith('.jpg') ||
+                    tool.icon.endsWith('.webp'))
+                "
               >
-                <span class="text-sm text-gray-700 dark:text-gray-300">{{
-                  tool.description
-                }}</span>
-                <NuxtLink
-                  :to="`/tools?search=${encodeURIComponent(tool.title)}`"
-                  :class="`inline-flex items-center justify-center px-2.5 py-2 rounded-md ${updatesTheme.iconBg} text-white hover:opacity-80 transition shadow-sm w-9 h-9`"
-                  aria-label="Search for tool"
-                >
-                  <Icon
-                    name="i-heroicons-arrow-right"
-                    class="w-3 h-3"
-                    aria-label="Go to tool"
-                  />
-                </NuxtLink>
-              </div>
-            </li>
-          </ul>
-          <div v-else class="py-6 text-center w-full">
-            <p class="text-gray-500 dark:text-gray-400 text-sm">
-              No new tools added recently. Check back soon for updates!
-            </p>
+                <img
+                  :src="tool.icon"
+                  :alt="tool.title + ' icon'"
+                  class="featured-icon w-7 h-7 flex-shrink-0 object-contain"
+                  style="width: 28px; height: 28px"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </template>
+              <template v-else>
+                <Icon
+                  :name="tool.icon || 'i-heroicons-sparkles'"
+                  class="featured-icon w-7 h-7 flex-shrink-0 text-primary transition-colors duration-150"
+                />
+              </template>
+              <span
+                class="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[60vw] sm:max-w-xs md:max-w-sm"
+                >{{ tool.title }}</span
+              >
+              <span
+                class="inline-block text-xs rounded-full px-2 py-0.5 bg-primary/10 text-primary font-medium flex-shrink-0 max-w-[110px] truncate"
+                >{{ getGameDisplayName(tool.gameCategories[0]) }}</span
+              >
+              <span
+                v-if="tool.category"
+                class="inline-block text-xs rounded-full px-2 py-0.5 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium flex-shrink-0 max-w-[110px] truncate"
+                >{{ tool.category }}</span
+              >
+            </div>
+            <div
+              class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-1 max-w-full overflow-hidden"
+            >
+              {{ tool.description }}
+            </div>
           </div>
-        </div>
-      </UCard>
+        </UCard>
+      </div>
+      <div class="w-full flex justify-center mt-8">
+        <UButton
+          size="xl"
+          variant="solid"
+          class="pop-btn px-8 py-3 text-lg font-semibold shadow-lg transition-all duration-150"
+          @click="goToTools"
+        >
+          View All Tools
+        </UButton>
+      </div>
+    </section>
 
-      <!-- Useful Links Section - External resources for players -->
-      <UCard
-        :class="`shadow-md rounded-xl bg-gradient-to-br ${linksTheme.gradient} ${linksTheme.darkGradient} w-full h-full p-0 border-l-4 ${linksTheme.border}`"
+    <!-- About Gold Phantom / Jolly Co-operation Section -->
+    <section class="w-full max-w-2xl mx-auto mb-20">
+      <div
+        class="rounded-2xl bg-white/80 dark:bg-gray-900/80 shadow-md p-8 flex flex-col items-center"
       >
-        <div class="flex flex-row items-center gap-4 px-6 pt-6 pb-2">
-          <div
-            :class="`w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br ${linksTheme.iconBg}`"
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          About Gold Phantom
+        </h2>
+        <p class="text-gray-700 dark:text-gray-300 text-center mb-4">
+          Gold Phantom was born out of frustration with the limited and
+          scattered tools available for Dark Souls Remastered. I wanted a single
+          place with every useful calculator and feature I wished existed—built
+          for players, by a player, in the spirit of
+          <span class="font-semibold">jolly cooperation</span>.
+        </p>
+        <p class="text-gray-700 dark:text-gray-300 text-center mb-4">
+          Have ideas or feedback? Reach out via
+          <a
+            :href="`mailto:${contactEmail}`"
+            class="text-primary underline hover:opacity-80"
+            >email</a
           >
-            <Icon
-              name="i-heroicons-link"
-              class="w-2 h-2 text-white"
-              aria-label="Useful links"
-            />
-          </div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Useful Links
-          </h2>
-        </div>
-        <div class="flex flex-col items-start px-6 pb-6 pt-2 w-full">
-          <ul class="divide-y divide-gray-200 dark:divide-gray-700 w-full">
-            <li class="py-3">
-              <NuxtLink
-                to="https://darksouls.wikidot.com/"
-                target="_blank"
-                class="flex items-center gap-2 text-base font-medium text-blue-700 dark:text-blue-300 hover:underline hover:text-blue-900 transition"
-              >
-                WikiDot
-                <Icon
-                  name="i-heroicons-arrow-top-right-on-square"
-                  class="w-3 h-3"
-                />
-              </NuxtLink>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                A wiki for various information.
-              </div>
-            </li>
-            <li class="py-3">
-              <NuxtLink
-                to="https://darksouls.wiki.fextralife.com/Dark+Souls+Wiki"
-                target="_blank"
-                class="flex items-center gap-2 text-base font-medium text-blue-700 dark:text-blue-300 hover:underline hover:text-blue-900 transition"
-              >
-                FextraLife
-                <Icon
-                  name="i-heroicons-arrow-top-right-on-square"
-                  class="w-3 h-3"
-                />
-              </NuxtLink>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                A wiki for various information.
-              </div>
-            </li>
-          </ul>
-        </div>
-      </UCard>
-    </div>
+          or
+          <a
+            :href="githubUrl"
+            target="_blank"
+            class="text-primary underline hover:opacity-80"
+            >GitHub</a
+          >—your suggestions help make these tools better for everyone.
+        </p>
+      </div>
+    </section>
   </UContainer>
 </template>
+
+<style scoped>
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-card {
+  transition:
+    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s;
+}
+.featured-card:hover {
+  box-shadow:
+    0 8px 32px 0 var(--accent-color, #22d3ee33),
+    0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-color, #22d3ee);
+  transform: translateY(-2px) scale(1.03);
+}
+.featured-card:hover .featured-icon {
+  color: var(--accent-color, #22d3ee);
+}
+
+.pop-btn {
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+/* Force a slightly darker green background on the homepage hero Browse Tools button on hover, overriding Nuxt UI's UButton styles */
+.pop-btn:hover,
+.pop-btn:focus-visible {
+  background: #16a34a !important; /* Tailwind green-600 */
+  color: #fff !important;
+  box-shadow:
+    0 8px 32px 0 rgba(34, 211, 238, 0.15),
+    0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px) scale(1.03);
+}
+</style>

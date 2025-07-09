@@ -322,8 +322,8 @@ function isSortOptionObject(
                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0"
                 :title="`${getSortLabel(isSortOptionObject(sortPrimary) ? sortPrimary.value : sortPrimary)} / ${getSortLabel(isSortOptionObject(sortSecondary) ? sortSecondary.value : sortSecondary)} ratio: ${calculateRatio(armor, isSortOptionObject(sortPrimary) ? sortPrimary.value : sortPrimary, isSortOptionObject(sortSecondary) ? sortSecondary.value : sortSecondary).toFixed(2)}`"
               >
-                <span class="hidden sm:inline">
-                  {{
+                <span class="hidden sm:inline"
+                  >{{
                     getSortLabel(
                       isSortOptionObject(sortPrimary)
                         ? sortPrimary.value
@@ -338,20 +338,30 @@ function isSortOptionObject(
                         : sortSecondary
                     )
                   }}
-                  ratio:
-                </span>
-                <span class="sm:hidden">Ratio:</span>
-                {{
-                  calculateRatio(
-                    armor,
-                    isSortOptionObject(sortPrimary)
-                      ? sortPrimary.value
-                      : sortPrimary,
-                    isSortOptionObject(sortSecondary)
-                      ? sortSecondary.value
-                      : sortSecondary
-                  ).toFixed(2)
-                }}
+                  ratio:&nbsp;{{
+                    calculateRatio(
+                      armor,
+                      isSortOptionObject(sortPrimary)
+                        ? sortPrimary.value
+                        : sortPrimary,
+                      isSortOptionObject(sortSecondary)
+                        ? sortSecondary.value
+                        : sortSecondary
+                    ).toFixed(2)
+                  }}</span
+                ><span class="sm:hidden"
+                  >Ratio:&nbsp;{{
+                    calculateRatio(
+                      armor,
+                      isSortOptionObject(sortPrimary)
+                        ? sortPrimary.value
+                        : sortPrimary,
+                      isSortOptionObject(sortSecondary)
+                        ? sortSecondary.value
+                        : sortSecondary
+                    ).toFixed(2)
+                  }}</span
+                >
               </span>
             </div>
 
@@ -537,6 +547,20 @@ function isSortOptionObject(
             </div>
             <div v-if="armor.upgradedLevel">
               Upgrade Level: +{{ armor.upgradedLevel }}
+            </div>
+            <div
+              v-if="armor.staminaRegenReduction"
+              class="text-xs text-yellow-600 dark:text-yellow-400"
+            >
+              Stamina Regen: -{{ armor.staminaRegenReduction }}
+            </div>
+            <div v-if="armor.specialEffect" class="flex justify-between">
+              <span class="text-xs text-green-600 dark:text-green-400"
+                >Special Effect:</span
+              >
+              <span class="text-xs text-green-600 dark:text-green-400">{{
+                armor.specialEffect
+              }}</span>
             </div>
             <div v-if="armor.effect?.special">
               Special: {{ armor.effect.special }}

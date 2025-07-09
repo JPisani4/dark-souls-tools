@@ -61,35 +61,42 @@
         </svg>
       </div>
       <div class="flex flex-col items-center justify-center min-w-0">
-        <h1
+        <div
           v-if="variant === 'homepage'"
-          :class="[
-            'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
-            'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]',
-          ]"
+          class="flex flex-col items-center gap-2"
         >
-          {{ title }}
-        </h1>
-        <h2
-          v-else
-          :class="[
-            'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
-            'text-gray-900 dark:text-white drop-shadow-sm',
-          ]"
-        >
-          {{ title }}
-        </h2>
-        <p
-          :class="[
-            'text-base sm:text-lg text-center',
-            'max-w-xl',
-            variant === 'homepage'
-              ? 'text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]'
-              : 'text-gray-700 dark:text-white/80 drop-shadow-sm',
-          ]"
-        >
-          {{ description }}
-        </p>
+          <span
+            class="inline-block rounded-2xl px-5 py-1.5 max-w-xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-0 text-center"
+            :style="`${$colorMode?.value === 'dark' ? 'background:rgba(0,0,0,0.16);' : 'background:rgba(0,0,0,0.06);'}`"
+          >
+            {{ title }}
+          </span>
+          <span
+            class="inline-block rounded-xl px-3 py-0.5 max-w-xl text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] text-base sm:text-lg text-center"
+            :style="`${$colorMode?.value === 'dark' ? 'background:rgba(0,0,0,0.10);' : 'background:rgba(0,0,0,0.04);'}`"
+          >
+            {{ description }}
+          </span>
+        </div>
+        <template v-else>
+          <h2
+            :class="[
+              'text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 text-center',
+              'text-gray-900 dark:text-white drop-shadow-sm',
+            ]"
+          >
+            {{ title }}
+          </h2>
+          <p
+            :class="[
+              'text-base sm:text-lg text-center',
+              'max-w-xl',
+              'text-gray-700 dark:text-white/80 drop-shadow-sm',
+            ]"
+          >
+            {{ description }}
+          </p>
+        </template>
       </div>
     </div>
   </div>

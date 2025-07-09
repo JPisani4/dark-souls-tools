@@ -95,19 +95,6 @@
 
       <!-- Main Content - Full width for tools that need it -->
       <main class="flex-1 w-full px-4">
-        <!-- Sidebar Toggle Button for viewports smaller than 1280px -->
-        <div v-if="$slots.sidebar" class="mb-4 2xl:hidden">
-          <UButton
-            @click="openLeftSidebar"
-            variant="outline"
-            size="sm"
-            class="flex items-center gap-2"
-          >
-            <Icon name="i-heroicons-bars-3" class="w-4 h-4" />
-            <span>Show Sidebar</span>
-          </UButton>
-        </div>
-
         <slot />
       </main>
 

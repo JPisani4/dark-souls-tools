@@ -48,15 +48,8 @@ const {
         </div>
       </div>
     </template>
-    <template #sidebar>
-      <ToolFilterSidebar
-        :filters="filters"
-        :available-games="availableGames"
-        :available-categories="availableCategories"
-        @update:filters="updateFilters"
-        @clear="clearFilters"
-      />
-    </template>
+    <!-- Sidebar slot intentionally left empty: filtering is now handled in ToolList -->
+    <template #sidebar></template>
     <template #right-sidebar></template>
     <ToolList />
   </ToolLayout>
