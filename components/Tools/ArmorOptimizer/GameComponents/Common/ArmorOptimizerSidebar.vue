@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useSafeTheme } from "~/composables/useSafeTheme";
-import {
-  calculateStamina,
-  calculateEquipLoad,
-} from "~/utils/games/ds1/stats/characterStats";
+import { calculateEquipLoad } from "~/utils/games/ds1/stats/characterStats";
+import { calculateStamina } from "~/utils/games/ds1/enduranceStamina";
 import NumberField from "../../../Common/forms/NumberField.vue";
 import Icon from "~/components/Common/Icon.vue";
 

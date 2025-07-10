@@ -3,7 +3,7 @@ import { useRoute } from "vue-router";
 import { computed, ref, watch } from "vue";
 import { useAsyncData } from "#app";
 import ToolLayout from "~/components/Tools/Common/ToolLayout.vue";
-import { getRandomTheme } from "~/utils/constants";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import type { GameId } from "~/types/game";
 import Icon from "~/components/Common/Icon.vue";
 import { tools } from "~/tools";

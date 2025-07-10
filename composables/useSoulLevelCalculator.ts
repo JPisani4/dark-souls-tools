@@ -24,7 +24,6 @@ import {
 } from "~/utils/performance";
 import {
   ICONS,
-  getRandomTheme,
   SOUL_LEVEL_MIN,
   SOUL_LEVEL_MAX,
   SOUL_LEVEL_PAGE_SIZE,
@@ -35,6 +34,7 @@ import {
   DEBOUNCE_DELAYS,
   VALIDATION_MESSAGES,
 } from "~/utils/constants";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import type { ColorTheme, ValidationResult } from "~/types/common";
 
 export interface SoulLevelState {

@@ -26,3 +26,11 @@ export interface LoadingState {
   error?: AppError;
   retry?: () => void;
 }
+
+// Item option interface for dropdowns and selectors
+export interface ItemOption<T = any> {
+  value: string;
+  label: string;
+  category: string;
+  item: T;
+}

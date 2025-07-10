@@ -146,20 +146,3 @@ export const getAvailableArmorSets = (): string[] => {
     });
   return Array.from(sets).sort();
 };
-
-// Export armor sets functionality
-export {
-  getAllArmorSets,
-  getArmorSetsByCategory,
-  getArmorSetById,
-  getArmorSetByName,
-  getArmorSetsByType,
-  searchArmorSets,
-  getArmorSetOptions,
-  getArmorSetOptionsByCategory,
-  getArmorPiecesFromSet,
-  calculateArmorSetStats,
-  getArmorSetsByWeightRange,
-  getArmorSetsByPoiseRange,
-  getArmorSetsByDefenseType,
-};

@@ -3,7 +3,7 @@ import ToolLayout from "~/components/Tools/Common/ToolLayout.vue";
 import ToolList from "~/components/Tools/Common/ToolList.vue";
 import ToolFilterSidebar from "~/components/Tools/Common/ToolFilterSidebar.vue";
 import { useToolFilters } from "~/composables/useToolFilters";
-import { getRandomTheme } from "~/utils/constants";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import { useHead } from "#imports";
 import { tools } from "~/tools";
 

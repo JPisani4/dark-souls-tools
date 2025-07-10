@@ -1,14 +1,5 @@
 import { computed, ref } from "vue";
-
-/**
- * Generic item option for dropdowns.
- */
-export interface ItemOption<T = any> {
-  value: string;
-  label: string;
-  category: string;
-  item: T;
-}
+import type { ItemOption } from "~/types/common";
 
 /**
  * Grouped options for dropdowns (with category headers).

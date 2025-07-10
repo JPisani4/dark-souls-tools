@@ -95,7 +95,6 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
           src="/soulsborne-tools-hero.webp"
           alt="Soulsborne tools hero background with dark fantasy aesthetic"
           class="w-full h-full object-cover object-center absolute"
-          format="webp"
           preload
           style="z-index: 0; inset: 0; position: absolute"
           aria-hidden="true"

@@ -1,6 +1,6 @@
 import { ref, computed, onMounted } from "vue";
 import { useSeoMeta, useHead } from "#imports";
-import { getRandomTheme } from "~/utils/constants";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import { getPerformanceMetrics } from "~/utils/performance";
 import { useToolStructuredData } from "~/composables/useToolStructuredData";
 import type { ColorTheme } from "~/utils/themes/colorSystem";

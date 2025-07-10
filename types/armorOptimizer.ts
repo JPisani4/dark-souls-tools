@@ -27,6 +27,17 @@ export interface ArmorOptimizerState {
   selectedArmorSetsForComparison: string[];
   expandedSetCategories: string[];
   maxDodgeRollPercent: number | null;
+  lockedArmor: Record<string, string | null>;
+  customFilter?: {
+    selectedStats: string[];
+    minValues: Record<string, number>;
+    weights: Record<string, number>;
+  };
+  // Mixmatch
+  mixMatchPage?: number;
+  mixMatchItemsPerPage?: number;
+  expandedMixMatch?: string[];
+  selectedMixMatchCombos?: string[];
 }
 
 export interface ArmorOptimizerResult {

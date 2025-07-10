@@ -4,7 +4,8 @@
 <script lang="ts" setup>
 import { useUpgradeSummary } from "~/composables/useUpgradeSummary";
 import type { UpgradeSummaryProps } from "~/types/game/upgradeSummary";
-import { getRandomTheme, ICONS } from "~/utils/constants";
+import { ICONS } from "~/utils/constants";
+import { getRandomTheme } from "~/utils/themes/colorSystem";
 import { watch, toRefs } from "vue";
 import { computed } from "vue";
 import SummaryCards from "./SummaryCards.vue";

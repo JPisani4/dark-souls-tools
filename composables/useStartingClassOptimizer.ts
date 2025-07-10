@@ -9,6 +9,7 @@ import type {
   CharacterStats,
   StartingCharacter,
 } from "~/types/game/ds1/characters";
+import type { ItemOption } from "~/types/common";
 import { getAllWeapons, getWeaponByName } from "~/utils/games/ds1/weapons";
 import { getAllShields, getShieldByName } from "~/utils/games/ds1/shields";
 import { getAllSorceries, getSorceryByName } from "~/utils/games/ds1/sorceries";
@@ -56,8 +57,8 @@ import {
   getPyromancyByName,
 } from "~/utils/games/ds1/pyromancies";
 
-// Ensure DEFAULT_CHARACTER_STATS has all required properties for CharacterStats
-export const DEFAULT_CHARACTER_STATS: CharacterStats = {
+// Use the DEFAULT_CHARACTER_STATS from constants with proper typing
+const DEFAULT_CHARACTER_STATS: CharacterStats = {
   ...RAW_DEFAULT_CHARACTER_STATS,
   movementSpeed: (RAW_DEFAULT_CHARACTER_STATS as any).movementSpeed || "Normal",
   weightClass: (RAW_DEFAULT_CHARACTER_STATS as any).weightClass || "Normal",
@@ -266,13 +267,6 @@ export interface StartingClassResult {
 export interface StartingClassResults {
   results: StartingClassResult[];
   timestamp: Date;
-}
-
-export interface ItemOption {
-  value: string;
-  label: string;
-  category: string;
-  item: Weapon | Shield | Sorcery | Miracle | Pyromancy | Armor | Ring;
 }
 
 export interface StartingClassOptimizerValidation {

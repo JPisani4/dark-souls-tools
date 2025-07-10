@@ -9,31 +9,10 @@ import { getAllShields, getShieldByName } from "~/utils/games/ds1/shields";
 import { getAllRings, getRingByName } from "~/utils/games/ds1/rings";
 import { getWeaponByName } from "~/utils/games/ds1/weapons";
 import { calculateAllDerivedStats } from "~/utils/games/ds1/stats/characterStats";
-import type { ArmorOptimizerResult } from "~/types/armorOptimizer";
-
-export interface ArmorOptimizerState {
-  endurance: string;
-  selectedEquipment: {
-    weapons: string[];
-    shields: string[];
-    catalysts: string[];
-    talismans: string[];
-  };
-  selectedRings: string[];
-  armorUpgradeLevel: string;
-  displayMode: string;
-  sortPrimary: string;
-  sortSecondary: string;
-  sortDescending: boolean;
-  searchQuery: string;
-  maxDodgeRollPercent: number | null;
-  lockedArmor: Record<string, string | null>;
-  customFilter?: {
-    selectedStats: string[];
-    minValues: Record<string, number>;
-    weights: Record<string, number>;
-  };
-}
+import type {
+  ArmorOptimizerResult,
+  ArmorOptimizerState,
+} from "~/types/armorOptimizer";
 
 // Helper to compute total possible combinations for a full search
 function getFullMixMatchCombinationCount(

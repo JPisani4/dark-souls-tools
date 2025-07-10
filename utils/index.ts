@@ -2,10 +2,9 @@
 // This file exports all utility functions for easy discovery and importing
 
 // Game Data Utilities - Core game mechanics calculations and data processing
-export * from "./game-data/soulCosts";
-export * from "./game-data/upgradeCosts";
-export * from "./game-data/upgradePaths";
-export * from "./game-data/merchantAnalysis";
+export * from "./games/ds1/soulCosts";
+export * from "./games/ds1/upgradeCosts";
+export * from "./games/ds1/upgradePaths";
 
 // UI Utilities - Visual formatting and color management
 export * from "./ui/upgradeColors";

@@ -259,9 +259,6 @@ export const ERROR_BOUNDARY_CONFIG = {
   FALLBACK_MESSAGE: "Something went wrong. Please try refreshing the page.",
 } as const;
 
-// Re-export getRandomTheme from the theme system
-export { getRandomTheme } from "~/utils/themes/colorSystem";
-
 // Game categories and display names
 export const GAME_CATEGORIES = {
   ds1: "Dark Souls Remastered",

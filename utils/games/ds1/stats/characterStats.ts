@@ -3,6 +3,13 @@
 
 import type { CharacterStats } from "~/types/game/ds1/characters";
 import { vitalityHp } from "~/utils/games/ds1/vitalityHp";
+import { calculateStamina } from "~/utils/games/ds1/enduranceStamina";
+import {
+  HP_PER_VITALITY,
+  STAMINA_PER_ENDURANCE,
+  EQUIP_LOAD_PER_ENDURANCE,
+  EQUIP_LOAD_START_LEVEL,
+} from "~/utils/constants";
 
 // Base stats for calculations
 export const BASE_HP = 300; // Base HP at level 1
@@ -10,20 +17,14 @@ export const BASE_STAMINA = 80; // Base stamina at level 1
 export const BASE_EQUIP_LOAD = 50; // Base equip load at endurance level 10
 
 // HP calculation constants
-export const HP_PER_VITALITY = 30; // HP gained per vitality level
 export const HP_SOFT_CAP_1 = 30; // First soft cap for vitality
 export const HP_SOFT_CAP_2 = 50; // Second soft cap for vitality
 export const HP_REDUCTION_AFTER_CAP_1 = 0.5; // HP gain reduction after first cap
 export const HP_REDUCTION_AFTER_CAP_2 = 0.25; // HP gain reduction after second cap
 
 // Stamina calculation constants
-export const STAMINA_PER_ENDURANCE = 2; // Stamina gained per endurance level
 export const STAMINA_SOFT_CAP = 40; // Soft cap for endurance (stamina stops increasing here)
 export const STAMINA_REDUCTION_AFTER_CAP = 0.5; // Stamina gain reduction after cap (unused now)
-
-// Equip Load calculation constants
-export const EQUIP_LOAD_PER_ENDURANCE = 1; // Equip load gained per endurance level
-export const EQUIP_LOAD_START_LEVEL = 10; // Endurance level where equip load starts
 
 // Starting class endurance values
 export const STARTING_CLASS_ENDURANCE: Record<string, number> = {
@@ -267,28 +268,6 @@ export function calculateHP(vitality: number): number {
   if (vitality <= 0) return vitalityHp[1] || 400;
   if (vitality > 99) return vitalityHp[99] || 1900;
   return vitalityHp[vitality] || 400;
-}
-
-/**
- * Calculate stamina based on endurance level
- * @param endurance - The character's endurance level
- * @returns The calculated stamina value
- */
-export function calculateStamina(endurance: number): number {
-  if (endurance <= 0) return BASE_STAMINA;
-
-  let stamina = BASE_STAMINA;
-
-  if (endurance <= STAMINA_SOFT_CAP) {
-    // Before soft cap (up to level 40)
-    stamina += endurance * STAMINA_PER_ENDURANCE;
-  } else {
-    // After soft cap (level 40+), stamina stops increasing
-    stamina += STAMINA_SOFT_CAP * STAMINA_PER_ENDURANCE;
-    // No additional stamina gain after level 40
-  }
-
-  return Math.floor(stamina);
 }
 
 /**

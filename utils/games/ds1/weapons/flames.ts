@@ -3,7 +3,7 @@
 
 import type { Weapon } from "~/types/game/ds1/weapons";
 
-export const talismans: Weapon[] = [
+export const flames: Weapon[] = [
   {
     icon: "/weapons/flames/pyromancy-flame.png",
     name: "Pyromancy Flame",
