@@ -4,7 +4,6 @@ import { upgradeCosts, merchants as merchantsArray } from "./upgradeCosts";
 import { upgradePaths as upgradePathsObject } from "./upgradePaths";
 import * as stats from "./stats";
 import * as quests from "./quests";
-import * as vitalityHp from "./vitalityHp";
 import * as enduranceStamina from "./enduranceStamina";
 import {
   MULTIPLAYER_ITEMS,
@@ -133,7 +132,7 @@ export { stats };
 export { quests };
 
 // Export vitality HP utilities
-export { vitalityHp };
+// Removed to avoid naming conflicts - import directly from ./vitalityHp instead
 
 // Export endurance stamina utilities
 export { enduranceStamina };
