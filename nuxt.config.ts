@@ -89,7 +89,7 @@ export default defineNuxtConfig({
         },
         { property: "og:url", content: "https://www.goldphantom.com" },
         { property: "og:site_name", content: "Gold Phantom" },
-        { property: "og:image", content: "/soulsborne-tools-hero.png" },
+        { property: "og:image", content: "/soulsborne-tools-hero.webp" },
         { property: "og:image:width", content: "1200" },
         { property: "og:image:height", content: "630" },
         {
@@ -109,7 +109,7 @@ export default defineNuxtConfig({
           content:
             "Essential Soulsborne tools and calculators for your playthrough. Calculate soul levels, weapon upgrades, and more.",
         },
-        { name: "twitter:image", content: "/soulsborne-tools-hero.png" },
+        { name: "twitter:image", content: "/soulsborne-tools-hero.webp" },
         {
           name: "twitter:image:alt",
           content: "Gold Phantom - Soulsborne Tools",
@@ -124,7 +124,7 @@ export default defineNuxtConfig({
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
         },
-        { rel: "preload", as: "image", href: "/soulsborne-tools-hero.png" },
+        { rel: "preload", as: "image", href: "/soulsborne-tools-hero.webp" },
         { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
         { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
       ],

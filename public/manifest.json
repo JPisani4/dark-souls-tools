@@ -26,9 +26,9 @@
   ],
   "screenshots": [
     {
-      "src": "/soulsborne-tools-hero.png",
+      "src": "/soulsborne-tools-hero.webp",
       "sizes": "1280x720",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "wide",
       "label": "Gold Phantom Tools Dashboard"
     }

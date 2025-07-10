@@ -5,6 +5,7 @@ import type { CharacterStats } from "~/types/game/ds1/characters";
 import { vitalityHp } from "~/utils/games/ds1/vitalityHp";
 import { calculateStamina } from "~/utils/games/ds1/enduranceStamina";
 import {
+  BASE_EQUIP_LOAD,
   HP_PER_VITALITY,
   STAMINA_PER_ENDURANCE,
   EQUIP_LOAD_PER_ENDURANCE,
@@ -14,7 +15,6 @@ import {
 // Base stats for calculations
 export const BASE_HP = 300; // Base HP at level 1
 export const BASE_STAMINA = 80; // Base stamina at level 1
-export const BASE_EQUIP_LOAD = 50; // Base equip load at endurance level 10
 
 // HP calculation constants
 export const HP_SOFT_CAP_1 = 30; // First soft cap for vitality

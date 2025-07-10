@@ -5,8 +5,8 @@ import type {
 } from "~/types/game/upgradeSummary";
 import { merchants as originalMerchants } from "./upgradeCosts";
 
-// Export merchants in the new format
-export const merchants: Record<
+// Create merchants object in the new format for internal use
+const merchantsObject: Record<
   string,
   {
     name: string;
