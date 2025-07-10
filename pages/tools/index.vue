@@ -109,18 +109,16 @@ useHead({
           <div
             class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex-shrink-0 overflow-hidden"
           >
-            <picture>
-              <source srcset="/favicon.webp" type="image/webp" />
-              <img
-                src="/favicon.png"
-                alt="Soulsborne Tools Icon"
-                class="w-12 h-12 object-contain rounded-full"
-                loading="lazy"
-                decoding="async"
-                width="48"
-                height="48"
-              />
-            </picture>
+            <NuxtImg
+              src="/favicon.webp"
+              alt="Soulsborne Tools Icon"
+              class="w-12 h-12 object-contain rounded-full"
+              format="webp"
+              loading="lazy"
+              decoding="async"
+              width="48"
+              height="48"
+            />
           </div>
           <div class="flex flex-col items-center justify-center min-w-0">
             <h1

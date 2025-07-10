@@ -276,38 +276,6 @@ const {
               });
               return { ...item, _customScore: score };
             });
-            // Debug: log name, _customScore, and stat values if primary sort is 'custom'
-            if (state.sortPrimary === "custom") {
-              console.log(
-                "Custom Sort Debug:",
-                filtered.map((item) => ({
-                  name: item.name || item.id,
-                  _customScore: item._customScore,
-                  ...Object.fromEntries(
-                    selectedStats.map((stat) => [
-                      stat,
-                      getComboStatValue(item, stat),
-                    ])
-                  ),
-                }))
-              );
-              // Sort by weighted sum if primary sort is 'custom'
-              filtered = filtered.sort(
-                (a, b) => b._customScore - a._customScore
-              );
-              // Reverse if sortDescending is false
-              if (!state.sortDescending) {
-                filtered = filtered.slice().reverse();
-              }
-              // Debug: log the sorted array
-              console.log(
-                "Sorted Array Debug:",
-                filtered.map((item) => ({
-                  name: item.name || item.id,
-                  _customScore: item._customScore,
-                }))
-              );
-            }
           }
           res.mixMatchResults = filtered;
         } else {
@@ -1278,11 +1246,6 @@ const customFilterStatOptionsFlat = computed(() => {
 
 // Helper to get stat value from a combo
 function getComboStatValue(combo: any, stat: string): number {
-  // Debug: log the structure of the first item to understand the data format
-  if (combo && !combo.totalDefense && combo.defense) {
-    console.log("Individual piece structure:", combo);
-  }
-
   switch (stat) {
     case "poise":
       return combo.totalPoise || combo.effect?.poise || 0;

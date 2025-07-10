@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@nuxtjs/robots",
     "@nuxtjs/sitemap",
+    "@nuxt/image",
   ],
   css: ["~/assets/css/main.css"],
   ui: {
@@ -69,6 +70,11 @@ export default defineNuxtConfig({
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "msapplication-TileColor", content: "#1e293b" },
         { name: "msapplication-config", content: "/browserconfig.xml" },
+        {
+          "http-equiv": "Content-Security-Policy",
+          content:
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.iconify.design; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';",
+        },
 
         // Open Graph
         { property: "og:type", content: "website" },

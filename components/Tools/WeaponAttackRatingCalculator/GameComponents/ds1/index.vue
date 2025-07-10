@@ -314,7 +314,10 @@ const howToUseSteps = computed(() => [
               />
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-sm text-gray-500" aria-live="polite">
+              <span
+                class="text-sm text-gray-700 dark:text-gray-300 font-medium"
+                aria-live="polite"
+              >
                 {{ filteredWeaponsWithRatings.length }} weapons found
               </span>
               <UButton
@@ -354,7 +357,7 @@ const howToUseSteps = computed(() => [
             </div>
 
             <SelectField
-              label="Weapon Category"
+              label="Weapon Category (filter by weapon type)"
               id="category"
               :model-value="state.selectedCategory || 'all'"
               :options="categoryOptions"
@@ -367,7 +370,7 @@ const howToUseSteps = computed(() => [
             </div>
 
             <SelectField
-              label="Upgrade Path"
+              label="Upgrade Path (filter by weapon upgrade type)"
               id="upgradePath"
               :model-value="selectedUpgradePathModelValue"
               :options="upgradePathOptions"
@@ -462,15 +465,19 @@ const howToUseSteps = computed(() => [
               <template v-if="isMobile">
                 <SelectField
                   id="sortBy"
+                  label="Sort weapons by attack rating"
                   :model-value="state.sortBy"
                   :options="sortOptions"
                   :theme="safeTheme"
                   class="text-xs py-1.5"
-                  aria-label="Sort weapons by"
+                  aria-describedby="sort-help"
                   @update:model-value="
                     (val: string) => setState({ sortBy: val })
                   "
                 />
+                <div id="sort-help" class="sr-only">
+                  Choose how to sort the weapon results
+                </div>
               </template>
               <template v-else>
                 <USelectMenu
@@ -478,10 +485,10 @@ const howToUseSteps = computed(() => [
                   :items="sortOptions"
                   value-key="value"
                   label-key="label"
-                  placeholder="Sort by"
+                  placeholder="Sort weapons by attack rating"
                   size="sm"
                   class="w-full sm:w-48"
-                  aria-label="Sort weapons by"
+                  aria-label="Sort weapons by attack rating"
                   @update:model-value="
                     (value: string) => setState({ sortBy: value })
                   "

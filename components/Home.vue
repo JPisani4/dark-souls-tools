@@ -91,20 +91,15 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
       aria-labelledby="homepage-hero-title"
     >
       <div class="absolute inset-0 z-0 pointer-events-none">
-        <picture>
-          <source srcset="/soulsborne-tools-hero.webp" type="image/webp" />
-          <img
-            src="/soulsborne-tools-hero.png"
-            alt="Soulsborne tools hero background with dark fantasy aesthetic"
-            class="w-full h-full object-cover object-center absolute"
-            loading="eager"
-            decoding="async"
-            width="1200"
-            height="400"
-            style="z-index: 0; inset: 0; position: absolute"
-            aria-hidden="true"
-          />
-        </picture>
+        <NuxtImg
+          src="/soulsborne-tools-hero.webp"
+          alt="Soulsborne tools hero background with dark fantasy aesthetic"
+          class="w-full h-full object-cover object-center absolute"
+          format="webp"
+          preload
+          style="z-index: 0; inset: 0; position: absolute"
+          aria-hidden="true"
+        />
         <div
           :class="`w-full h-full bg-gradient-to-br ${fromClass} ${toClass} to-transparent opacity-5 dark:opacity-10 absolute`"
           aria-hidden="true"
@@ -113,7 +108,7 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
       <HeroSection
         :title="'Gold Phantom'"
         :description="'Essential Soulsborne Tools & Calculators'"
-        :icon-path="'/favicon.png'"
+        :icon-path="'/favicon.webp'"
         :theme="selectedTheme"
         variant="homepage"
         class="mb-0 z-10"
@@ -168,11 +163,12 @@ const accentColor = TAILWIND_HEX[borderColorClass] || TAILWIND_HEX["default"];
                     tool.icon.endsWith('.webp'))
                 "
               >
-                <img
+                <NuxtImg
                   :src="tool.icon"
                   :alt="tool.title + ' icon'"
                   class="featured-icon w-7 h-7 flex-shrink-0 object-contain"
                   style="width: 28px; height: 28px"
+                  format="webp"
                   loading="lazy"
                   decoding="async"
                 />

@@ -56,6 +56,7 @@ const formatCategoryName = (category: string) => {
           <input
             type="checkbox"
             :checked="isSelected"
+            :aria-label="`Select ${weapon.name} for comparison`"
             class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
           />
         </div>
@@ -64,9 +65,9 @@ const formatCategoryName = (category: string) => {
           <div class="mb-2">
             <div class="flex items-center gap-3 mb-1">
               <div class="flex items-center gap-2">
-                <h5 class="font-semibold text-lg text-gray-900 dark:text-white">
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">
                   {{ weapon.name }}
-                </h5>
+                </h3>
                 <!-- Special tooltip for Enchanted Club bug -->
                 <SmartTooltip
                   v-if="
@@ -186,9 +187,9 @@ const formatCategoryName = (category: string) => {
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
-          <h6 class="font-semibold text-gray-900 dark:text-white mb-2">
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
             Requirements
-          </h6>
+          </h4>
           <div class="space-y-1 text-gray-600 dark:text-gray-400">
             <div class="flex items-center gap-2">
               <span
@@ -218,9 +219,9 @@ const formatCategoryName = (category: string) => {
         </div>
 
         <div>
-          <h6 class="font-semibold text-gray-900 dark:text-white mb-2">
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
             Details
-          </h6>
+          </h4>
           <div class="space-y-1 text-gray-600 dark:text-gray-400">
             <div>Weight: {{ weapon.weight }}</div>
             <div>Critical: {{ weapon.criticalDamage }}</div>
@@ -348,9 +349,9 @@ const formatCategoryName = (category: string) => {
 
       <!-- Scaling Information -->
       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h6 class="font-semibold text-gray-900 dark:text-white mb-2">
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
           Scaling
-        </h6>
+        </h4>
         <div
           v-if="hasScaling(weapon)"
           class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm"
@@ -429,7 +430,7 @@ const formatCategoryName = (category: string) => {
       </div>
 
       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h6 class="font-semibold text-gray-900 dark:text-white mb-2">
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
           Base Damage
           <span v-if="weapon.rating.hasUpgradePath">
             (Level
@@ -459,7 +460,7 @@ const formatCategoryName = (category: string) => {
               })()
             }})
           </span>
-        </h6>
+        </h4>
         <div class="flex gap-4 text-sm">
           <div class="flex items-center gap-1">
             <span class="text-gray-600 dark:text-gray-400">Total:</span>

@@ -3,7 +3,7 @@
     <!-- Ring Selection using CategorizedItemSelector -->
     <CategorizedItemSelector
       id="rings"
-      label="Rings (optional)"
+      label="Select Rings"
       placeholder="Select rings..."
       :options="ringOptions"
       :selected-items="selectedRings"

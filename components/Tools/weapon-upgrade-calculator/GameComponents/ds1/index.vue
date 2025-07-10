@@ -201,7 +201,9 @@ const howToUseSteps = [
             <!-- Weapon Path Selection -->
             <FormSection title="" :theme="calculatorTheme">
               <SelectField
-                :label="terminology.currentWeaponPath || 'Current Weapon Path'"
+                :label="
+                  terminology.currentWeaponPath || 'Select Current Weapon Path'
+                "
                 id="currentWeaponPath"
                 :model-value="currentWeaponPathSelectModel"
                 :options="currentWeaponPathItems"
@@ -217,7 +219,9 @@ const howToUseSteps = [
               </div>
 
               <SelectField
-                :label="terminology.desiredWeaponPath || 'Desired Weapon Path'"
+                :label="
+                  terminology.desiredWeaponPath || 'Select Desired Weapon Path'
+                "
                 id="upgradePath"
                 :model-value="upgradePathSelectModel"
                 :options="upgradePathItems"
@@ -236,7 +240,7 @@ const howToUseSteps = [
             <!-- Merchant -->
             <FormSection title="" :theme="calculatorTheme">
               <SelectField
-                :label="terminology.merchant || 'Merchant'"
+                :label="terminology.merchant || 'Select Merchant (optional)'"
                 id="merchants"
                 :model-value="merchantSelectModel"
                 :options="merchantItems"
@@ -256,10 +260,9 @@ const howToUseSteps = [
             <!-- Clear Button -->
             <div class="flex justify-end">
               <UButton
-                color="primary"
+                color="success"
                 variant="outline"
                 @click.prevent="clearForm"
-                :class="`${calculatorTheme.iconBg} ${calculatorTheme.hoverBg} text-white border-${calculatorTheme.border.split('-')[1]}-300 hover:border-${calculatorTheme.border.split('-')[1]}-400`"
                 aria-label="Clear all form fields and reset calculator"
               >
                 <Icon

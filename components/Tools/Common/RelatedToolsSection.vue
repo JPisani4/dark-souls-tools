@@ -65,10 +65,12 @@ const goToTool = (tool: Tool) => {
             <!-- Tool Icon and Title -->
             <div class="flex items-start gap-3 mb-3">
               <div class="flex-shrink-0">
-                <img
+                <NuxtImg
                   v-if="tool.icon && !tool.icon.startsWith('i-heroicons')"
                   :src="tool.icon"
                   :alt="tool.title"
+                  loading="lazy"
+                  format="webp"
                   class="w-8 h-8 rounded-md object-cover bg-gray-100 dark:bg-gray-700"
                 />
                 <Icon

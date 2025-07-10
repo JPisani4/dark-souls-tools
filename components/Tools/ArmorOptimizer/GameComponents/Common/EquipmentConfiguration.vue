@@ -367,6 +367,7 @@ const equipmentTypes = computed(() => [
           variant="soft"
           size="sm"
           class="flex items-center gap-1"
+          aria-label="Reset equipment configuration"
         >
           <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
         </UButton>
@@ -477,17 +478,8 @@ const equipmentTypes = computed(() => [
                 :placeholder="`Select ${type.label.toLowerCase()}...`"
                 :theme="safeTheme"
                 :disabled="totalEquipmentCount >= 4"
-                :model-value="
-                  type.key === 'weapons'
-                    ? weaponDropdownValue
-                    : type.key === 'shields'
-                      ? shieldDropdownValue
-                      : type.key === 'catalysts'
-                        ? catalystDropdownValue
-                        : type.key === 'talismans'
-                          ? talismanDropdownValue
-                          : ''
-                "
+                :model-value="type.dropdownValue.value"
+                role="combobox"
                 @update:model-value="
                   (val: string) => {
                     if (type.key === 'weapons') weaponDropdownValue = val;

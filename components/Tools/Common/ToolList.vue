@@ -130,7 +130,7 @@ function getHoverShadow(gradient: string | undefined) {
           :model-value="filters.game"
           :options="availableGames.map((g) => ({ label: g.name, value: g.id }))"
           @update:model-value="handleGameChange"
-          label="Game"
+          label="Filter by Game"
           class="min-w-[120px]"
         />
         <SelectField
@@ -140,7 +140,7 @@ function getHoverShadow(gradient: string | undefined) {
             availableCategories.map((c) => ({ label: c.name, value: c.id }))
           "
           @update:model-value="handleCategoryChange"
-          label="Category"
+          label="Filter by Category"
           class="min-w-[120px]"
         />
         <template v-if="activeFilterCount > 0">
@@ -149,6 +149,7 @@ function getHoverShadow(gradient: string | undefined) {
             @click="handleClear"
             class="border border-red-300 dark:border-red-700 bg-white dark:bg-gray-900 px-1 py-0 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 focus:ring-2 focus:ring-red-500 focus:outline-none transition flex items-center gap-0 leading-none h-6 min-h-0 rounded"
             style="line-height: 1; min-height: 0; height: 1.5rem"
+            aria-label="Clear all filters"
           >
             <Icon
               name="i-heroicons-x-mark"
@@ -168,7 +169,7 @@ function getHoverShadow(gradient: string | undefined) {
       <h2 id="available-tools-title" class="sr-only">Available Tools</h2>
       <div
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-        role="list"
+        role="region"
         aria-label="Available tools"
       >
         <a
@@ -179,7 +180,7 @@ function getHoverShadow(gradient: string | undefined) {
               ? `/tools/${tool.gameCategories[0]}/${tool.slug}`
               : `/tools/${tool.gameCategories[0]}/${tool.slug}`
           "
-          role="listitem"
+          role="article"
           tabindex="0"
           class="tool-card group flex flex-col items-center rounded-2xl shadow-md p-3 transition-all duration-150 hover:-translate-y-1 focus:-translate-y-1 cursor-pointer outline-none focus:ring-2 focus:ring-primary-500 min-h-[220px] bg-gradient-to-br"
           :class="toolGradients[i]"
@@ -197,26 +198,17 @@ function getHoverShadow(gradient: string | undefined) {
           <div
             class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 shadow mb-2 mt-1"
           >
-            <picture
+            <NuxtImg
               v-if="tool.icon && /\.(png|jpe?g|gif|svg|webp)$/i.test(tool.icon)"
-            >
-              <source
-                v-if="tool.icon.endsWith('.png')"
-                :srcset="
-                  tool.icon.replace('.png', '.webp').replace(/^public\//, '/')
-                "
-                type="image/webp"
-              />
-              <img
-                :src="tool.icon.replace(/^public\//, '/')"
-                :alt="tool.title + ' icon'"
-                class="w-10 h-10 object-contain rounded-full"
-                loading="lazy"
-                decoding="async"
-                width="40"
-                height="40"
-              />
-            </picture>
+              :src="tool.icon.replace(/^public\//, '/')"
+              :alt="tool.title + ' icon'"
+              class="w-10 h-10 object-contain rounded-full"
+              format="webp"
+              loading="lazy"
+              decoding="async"
+              width="40"
+              height="40"
+            />
             <Icon
               v-else
               :name="tool.icon || 'i-heroicons-sparkles'"
@@ -267,6 +259,7 @@ function getHoverShadow(gradient: string | undefined) {
       <button
         @click="handleClear"
         class="rounded-lg border border-primary-300 dark:border-primary-700 bg-white dark:bg-gray-900 px-4 py-2 text-base text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900 focus:ring-2 focus:ring-primary-500 focus:outline-none transition"
+        aria-label="Clear all filters"
       >
         Clear all filters
       </button>

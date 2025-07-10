@@ -15,31 +15,22 @@
               : undefined
           "
         />
-        <picture
+        <NuxtImg
           v-else-if="iconPath && /\.(png|jpe?g|gif|svg|webp)$/i.test(iconPath)"
-        >
-          <source
-            v-if="iconPath.endsWith('.png')"
-            :srcset="
-              iconPath.replace('.png', '.webp').replace(/^public\//, '/')
-            "
-            type="image/webp"
-          />
-          <img
-            :src="iconPath.replace(/^public\//, '/')"
-            :alt="`${title} icon`"
-            class="w-12 h-12 object-contain rounded-full"
-            :style="
-              props.iconZoom !== 1
-                ? { transform: `scale(${props.iconZoom})` }
-                : undefined
-            "
-            loading="lazy"
-            decoding="async"
-            width="48"
-            height="48"
-          />
-        </picture>
+          :src="iconPath.replace(/^public\//, '/')"
+          :alt="`${title} icon`"
+          class="w-12 h-12 object-contain rounded-full"
+          :style="
+            props.iconZoom !== 1
+              ? { transform: `scale(${props.iconZoom})` }
+              : undefined
+          "
+          format="webp"
+          loading="lazy"
+          decoding="async"
+          width="48"
+          height="48"
+        />
         <svg
           v-else
           class="w-6 h-6 text-white"

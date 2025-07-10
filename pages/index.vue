@@ -89,7 +89,7 @@ useHead({
   <ToolLayout
     title="Gold Phantom - Dark Souls Tools & Calculators"
     description="Essential Dark Souls 1 tools and calculators for your playthrough. Calculate soul levels, optimize armor, track weapons, and more for Dark Souls Remastered."
-    icon-path="/favicon.png"
+    icon-path="/favicon.webp"
   >
     <!-- Empty hero slot - hero content is handled by the Home component -->
     <template #hero />

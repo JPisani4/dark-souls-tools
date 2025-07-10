@@ -12,6 +12,7 @@
           variant="outline"
           @click="goToPage(currentPage - 1)"
           class="flex items-center gap-1 text-xs sm:text-sm"
+          aria-label="Go to previous page"
         >
           <Icon name="i-heroicons-chevron-left" class="w-3 h-3 sm:w-4 sm:h-4" />
           <span class="hidden sm:inline">Previous</span>
@@ -27,6 +28,8 @@
             size="sm"
             @click="goToPage(page)"
             class="min-w-[2rem] sm:min-w-[2.5rem] text-xs sm:text-sm"
+            :aria-label="`Go to page ${page}`"
+            :aria-current="page === currentPage ? 'page' : false"
           >
             {{ page }}
           </UButton>
@@ -44,6 +47,7 @@
           variant="outline"
           @click="goToPage(currentPage + 1)"
           class="flex items-center gap-1 text-xs sm:text-sm"
+          aria-label="Go to next page"
         >
           <span class="hidden sm:inline">Next</span>
           <Icon

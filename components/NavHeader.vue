@@ -46,10 +46,11 @@ const handleMobileMenuKeydown = (event: KeyboardEvent) => {
       <!-- Left: Logo + Site Name -->
       <div class="flex items-center gap-3 flex-shrink-0 min-w-[170px]">
         <NuxtLink to="/" class="flex items-center gap-2 group">
-          <img
-            src="/favicon.png"
+          <NuxtImg
+            src="/favicon.webp"
             alt="Gold Phantom Icon"
             class="w-8 h-8 object-contain"
+            format="webp"
           />
           <span
             class="text-xl font-bold tracking-tight text-gray-900 dark:text-white hover:text-primary transition-colors group-hover:text-primary"

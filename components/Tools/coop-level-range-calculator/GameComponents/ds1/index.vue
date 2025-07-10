@@ -270,7 +270,7 @@ useToolLayout({
 
             <!-- Multiplayer Item Dropdown -->
             <SelectField
-              :label="`${terminology.multiplayerItem || 'Multiplayer Item'} (optional)`"
+              :label="`${terminology.multiplayerItem || 'Multiplayer Item'} (optional - filter results)`"
               id="multiplayerItem"
               :options="multiplayerItems"
               :model-value="state.multiplayerItem"
@@ -329,7 +329,7 @@ useToolLayout({
               </div>
               <!-- Weapon/Shield Dropdown -->
               <SelectField
-                :label="terminology.weaponOrShield || 'Weapon or Shield'"
+                :label="`${terminology.weaponOrShield || 'Weapon or Shield'} (optional - for weapon level matchmaking)`"
                 id="itemSelect"
                 :options="flatOptions"
                 :model-value="state.selectedItem ? state.selectedItem.name : ''"

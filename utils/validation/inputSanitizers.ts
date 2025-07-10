@@ -19,11 +19,28 @@ export const onlyAllowNumbers = (e: KeyboardEvent) => {
   }
 };
 
-// Prevent pasting non-numeric input
+// Sanitize pasted input to allow only numeric characters
 export const sanitizeOnPaste = (e: ClipboardEvent) => {
   const pasted = e.clipboardData?.getData("text") ?? "";
-  if (!/^\d+$/.test(pasted.trim())) {
+  const sanitized = pasted.replace(/[^\d]/g, ""); // Remove all non-digit characters
+
+  if (sanitized !== pasted) {
     e.preventDefault();
+    // Create a new input event with the sanitized value
+    const target = e.target as HTMLInputElement;
+    if (target) {
+      const start = target.selectionStart || 0;
+      const end = target.selectionEnd || 0;
+      const value = target.value;
+      const newValue =
+        value.substring(0, start) + sanitized + value.substring(end);
+      target.value = newValue;
+      target.setSelectionRange(
+        start + sanitized.length,
+        start + sanitized.length
+      );
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    }
   }
 };
 

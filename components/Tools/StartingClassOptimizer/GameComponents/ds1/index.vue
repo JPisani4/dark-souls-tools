@@ -867,7 +867,11 @@ function handleRemovePyromancy(index: number) {
             />
             <h3 class="text-lg font-semibold">
               Weapons/Shields Selection
-              <span class="text-gray-500">(optional)</span>
+              <span
+                class="text-gray-600 dark:text-gray-300"
+                aria-label="This section is optional"
+                >(optional)</span
+              >
             </h3>
           </div>
           <UButton
@@ -904,7 +908,7 @@ function handleRemovePyromancy(index: number) {
             <!-- Weapons -->
             <CategorizedItemSelector
               id="weapons"
-              label="Weapons"
+              label="Select Weapons"
               placeholder="Select weapons..."
               :options="weaponOptions"
               :selected-items="state.selectedItems.weapons"
@@ -926,7 +930,7 @@ function handleRemovePyromancy(index: number) {
             <!-- Shields -->
             <CategorizedItemSelector
               id="shields"
-              label="Shields"
+              label="Select Shields"
               placeholder="Select shields..."
               :options="shieldOptions"
               :selected-items="state.selectedItems.shields"
@@ -950,7 +954,7 @@ function handleRemovePyromancy(index: number) {
             <!-- Catalysts -->
             <CategorizedItemSelector
               id="catalysts"
-              label="Catalysts"
+              label="Select Catalysts"
               placeholder="Select catalysts..."
               :options="catalystOptions"
               :selected-items="state.selectedItems.catalysts"
@@ -973,7 +977,7 @@ function handleRemovePyromancy(index: number) {
             <!-- Talismans -->
             <CategorizedItemSelector
               id="talismans"
-              label="Talismans"
+              label="Select Talismans"
               placeholder="Select talismans..."
               :options="talismanOptions"
               :selected-items="state.selectedItems.talismans"
@@ -1032,7 +1036,12 @@ function handleRemovePyromancy(index: number) {
               aria-hidden="true"
             />
             <h3 class="text-lg font-semibold">
-              Spell Selection <span class="text-gray-500">(optional)</span>
+              Spell Selection
+              <span
+                class="text-gray-600 dark:text-gray-300"
+                aria-label="This section is optional"
+                >(optional)</span
+              >
             </h3>
           </div>
           <UButton
@@ -1067,7 +1076,7 @@ function handleRemovePyromancy(index: number) {
           <!-- Sorceries -->
           <CategorizedItemSelector
             id="sorceries"
-            label="Sorceries"
+            label="Select Sorceries"
             placeholder="Select sorceries..."
             :options="sorceryOptions"
             :selected-items="state.selectedItems.sorceries"
@@ -1081,7 +1090,7 @@ function handleRemovePyromancy(index: number) {
           <!-- Miracles -->
           <CategorizedItemSelector
             id="miracles"
-            label="Miracles"
+            label="Select Miracles"
             placeholder="Select miracles..."
             :options="miracleOptions"
             :selected-items="state.selectedItems.miracles"
@@ -1095,7 +1104,7 @@ function handleRemovePyromancy(index: number) {
           <!-- Pyromancies -->
           <CategorizedItemSelector
             id="pyromancies"
-            label="Pyromancies"
+            label="Select Pyromancies"
             placeholder="Select pyromancies..."
             :options="pyromancyOptions"
             :selected-items="state.selectedItems.pyromancies"
@@ -1144,7 +1153,12 @@ function handleRemovePyromancy(index: number) {
               aria-hidden="true"
             />
             <h3 class="text-lg font-semibold">
-              Armor Selection <span class="text-gray-500">(optional)</span>
+              Armor Selection
+              <span
+                class="text-gray-600 dark:text-gray-300"
+                aria-label="This section is optional"
+                >(optional)</span
+              >
             </h3>
           </div>
           <UButton
@@ -1222,7 +1236,12 @@ function handleRemovePyromancy(index: number) {
               aria-hidden="true"
             />
             <h3 class="text-lg font-semibold">
-              Ring Selection <span class="text-gray-500">(optional)</span>
+              Ring Selection
+              <span
+                class="text-gray-600 dark:text-gray-300"
+                aria-label="This section is optional"
+                >(optional)</span
+              >
             </h3>
           </div>
           <UButton
