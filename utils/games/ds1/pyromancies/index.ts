@@ -11,8 +11,6 @@ import support from "./support";
 import status from "./status";
 import special from "./special";
 
-export { offensive, support, status, special };
-
 // Combine all pyromancy data
 const pyromancyData: AllPyromancies = {
   offensive,
