@@ -6,8 +6,8 @@ import type {
   PyromancyCategory,
   AllPyromancies,
 } from "~/types/game/ds1/pyromancies";
-import offensive from "./offensive";
-import support from "./support";
+import { offensive } from "./offensive";
+import { support } from "./support";
 import status from "./status";
 import special from "./special";
 
