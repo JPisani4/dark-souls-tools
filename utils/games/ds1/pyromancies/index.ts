@@ -6,10 +6,12 @@ import type {
   PyromancyCategory,
   AllPyromancies,
 } from "~/types/game/ds1/pyromancies";
-import { offensive } from "./offensive";
-import { support } from "./support";
-import { status } from "./status";
-import { special } from "./special";
+import offensive from "./offensive";
+import support from "./support";
+import status from "./status";
+import special from "./special";
+
+export { offensive, support, status, special };
 
 // Combine all pyromancy data
 const pyromancyData: AllPyromancies = {

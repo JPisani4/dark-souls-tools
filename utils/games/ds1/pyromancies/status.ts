@@ -1,6 +1,6 @@
 import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 
-export const status: Pyromancy[] = [
+const status: Pyromancy[] = [
   {
     icon: "/pyromancies/poison-mist.png",
     name: "Poison Mist",
@@ -61,3 +61,5 @@ export const status: Pyromancy[] = [
     affinity: "acid",
   },
 ];
+
+export default status;

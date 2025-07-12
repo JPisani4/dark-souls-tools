@@ -1,6 +1,6 @@
 import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 
-export const offensive: Pyromancy[] = [
+const offensive: Pyromancy[] = [
   {
     icon: "/pyromancies/fireball.png",
     name: "Fireball",
@@ -254,3 +254,5 @@ export const offensive: Pyromancy[] = [
     affinity: "fire",
   },
 ];
+
+export default offensive;

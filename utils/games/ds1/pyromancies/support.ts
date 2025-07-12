@@ -1,6 +1,6 @@
 import type { Pyromancy } from "~/types/game/ds1/pyromancies";
 
-export const support: Pyromancy[] = [
+const support: Pyromancy[] = [
   {
     icon: "/pyromancies/flash-sweat.png",
     name: "Flash Sweat",
@@ -69,3 +69,5 @@ export const support: Pyromancy[] = [
     affinity: "physical",
   },
 ];
+
+export default support;
