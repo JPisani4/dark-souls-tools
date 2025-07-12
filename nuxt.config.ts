@@ -39,6 +39,11 @@ export default defineNuxtConfig({
   ui: {
     colorMode: false, // Disabled in favor of custom theme system
   },
+  // Add this block to force static provider for @nuxt/image
+  image: {
+    provider: "static",
+    // Optionally, you can add staticFilename or dir if needed
+  },
   // App configuration with comprehensive SEO and performance optimizations
   app: {
     head: {
