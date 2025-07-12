@@ -39,10 +39,10 @@ export default defineNuxtConfig({
   ui: {
     colorMode: false, // Disabled in favor of custom theme system
   },
-  // Add this block to force static provider for @nuxt/image
+  // Configure @nuxt/image to use the ipx provider for local images
   image: {
-    provider: "static",
-    // Optionally, you can add staticFilename or dir if needed
+    provider: "ipx",
+    // No additional config needed for local images in /public
   },
   // App configuration with comprehensive SEO and performance optimizations
   app: {
