@@ -37,7 +37,7 @@ function toPascalCase(str: string): string {
 
 const kebabName = toKebabCase(toolName);
 const pascalName = toPascalCase(toolName);
-const toolDir = path.resolve(process.cwd(), `components/Tools/${pascalName}`);
+const toolDir = path.resolve(process.cwd(), `components/Tools/${kebabName}`);
 
 // Check if tool already exists
 if (fs.existsSync(toolDir)) {

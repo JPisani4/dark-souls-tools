@@ -1,56 +1,41 @@
 /* AUTO-GENERATED FILE — DO NOT EDIT */
-import type { Tool } from "~/types/tools/tool";
+import type { Tool } from '~/types/tools/tool'
 
 export const tools: Tool[] = [
   {
     title: "Co-op Level Range Calculator",
-    description:
-      "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
+    description: "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
     slug: "coop-level-range-calculator",
     icon: "/warrior-of-sunlight-covenant-dks.png",
     category: "calculator",
-    tags: [
-      "co-op",
-      "level range",
-      "multiplayer",
-      "weapon level",
-      "calculator",
-      "dark souls",
-      "remastered",
-    ],
+    tags: ["co-op","level range","multiplayer","weapon level","calculator","dark souls","remastered"],
     order: 1,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/coop-level-range-calculator/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.737Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Co-op Level Range Calculator",
-      description:
-        "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
-      icon: "/warrior-of-sunlight-covenant-dks.png",
-      category: "calculator",
-      order: 1,
-      tags: [
+      "title": "Co-op Level Range Calculator",
+      "description": "Calculate co-op and invasion soul and weapon level ranges for all multiplayer items",
+      "icon": "/warrior-of-sunlight-covenant-dks.png",
+      "category": "calculator",
+      "order": 1,
+      "tags": [
         "co-op",
         "level range",
         "multiplayer",
         "weapon level",
         "calculator",
         "dark souls",
-        "remastered",
+        "remastered"
       ],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-06-23",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Co-op Level Range Calculator - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Calculate co-op and invasion soul level ranges for Dark Souls Remastered. Find valid matchmaking ranges for all multiplayer items including White Sign Soapstone, Red Eye Orb, and covenant items. Includes weapon level matchmaking calculations.",
-        keywords: [
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-06-23",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Co-op Level Range Calculator - Dark Souls Remastered | Gold Phantom",
+        "description": "Calculate co-op and invasion soul level ranges for Dark Souls Remastered. Find valid matchmaking ranges for all multiplayer items including White Sign Soapstone, Red Eye Orb, and covenant items. Includes weapon level matchmaking calculations.",
+        "keywords": [
           "co-op",
           "level range",
           "multiplayer",
@@ -65,10 +50,10 @@ export const tools: Tool[] = [
           "red eye orb",
           "covenant",
           "multiplayer calculator",
-          "soul level range",
+          "soul level range"
         ],
-        ogImage: "/warrior-of-sunlight-covenant-dks.png",
-      },
+        "ogImage": "/warrior-of-sunlight-covenant-dks.png"
+      }
     },
   },
   {
@@ -77,30 +62,31 @@ export const tools: Tool[] = [
     slug: "soul-level-calculator",
     icon: "/soul-level-calculator-icon.png",
     category: "calculator",
-    tags: ["souls", "leveling", "calculator", "dark souls"],
+    tags: ["souls","leveling","calculator","dark souls"],
     order: 1,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/soul-level-calculator/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Soul Level Calculator",
-      description: "Calculate the souls required to level up your character",
-      icon: "/soul-level-calculator-icon.png",
-      category: "calculator",
-      order: 1,
-      tags: ["souls", "leveling", "calculator", "dark souls"],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-20",
-      gameCategory: "ds1",
-      seo: {
-        title: "Soul Level Calculator - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Calculate exactly how many souls you need to level up in Dark Souls Remastered. Find the total souls required to reach any level from your current level. Perfect for planning your character progression and build optimization.",
-        keywords: [
+      "title": "Soul Level Calculator",
+      "description": "Calculate the souls required to level up your character",
+      "icon": "/soul-level-calculator-icon.png",
+      "category": "calculator",
+      "order": 1,
+      "tags": [
+        "souls",
+        "leveling",
+        "calculator",
+        "dark souls"
+      ],
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-20",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Soul Level Calculator - Dark Souls Remastered | Gold Phantom",
+        "description": "Calculate exactly how many souls you need to level up in Dark Souls Remastered. Find the total souls required to reach any level from your current level. Perfect for planning your character progression and build optimization.",
+        "keywords": [
           "soul level",
           "calculator",
           "dark souls",
@@ -112,45 +98,43 @@ export const tools: Tool[] = [
           "dark souls remastered",
           "souls calculator",
           "character building",
-          "rpg calculator",
+          "rpg calculator"
         ],
-        ogImage: "/soul-level-calculator-icon.png",
-      },
+        "ogImage": "/soul-level-calculator-icon.png"
+      }
     },
   },
   {
     title: "Starting Class Optimizer",
-    description:
-      "Find the optimal starting class for your desired character stats and equipment",
+    description: "Find the optimal starting class for your desired character stats and equipment",
     slug: "starting-class-optimizer",
     icon: "/starting-class-optimizer-icon.png",
     category: "planner",
-    tags: ["starting-class-optimizer", "character-planner", "ds1", "planner"],
+    tags: ["starting-class-optimizer","character-planner","ds1","planner"],
     order: 1,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/StartingClassOptimizer/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Starting Class Optimizer",
-      description:
-        "Find the optimal starting class for your desired character stats and equipment",
-      icon: "/starting-class-optimizer-icon.png",
-      category: "planner",
-      order: 1,
-      tags: ["starting-class-optimizer", "character-planner", "ds1", "planner"],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-06-22",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Starting Class Optimizer - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Find the optimal starting class for your Dark Souls Remastered build. Compare all 10 starting classes and see which one requires the fewest soul levels to reach your desired stats and equipment requirements.",
-        keywords: [
+      "title": "Starting Class Optimizer",
+      "description": "Find the optimal starting class for your desired character stats and equipment",
+      "icon": "/starting-class-optimizer-icon.png",
+      "category": "planner",
+      "order": 1,
+      "tags": [
+        "starting-class-optimizer",
+        "character-planner",
+        "ds1",
+        "planner"
+      ],
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-06-22",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Starting Class Optimizer - Dark Souls Remastered | Gold Phantom",
+        "description": "Find the optimal starting class for your Dark Souls Remastered build. Compare all 10 starting classes and see which one requires the fewest soul levels to reach your desired stats and equipment requirements.",
+        "keywords": [
           "starting class",
           "optimizer",
           "character planner",
@@ -160,10 +144,10 @@ export const tools: Tool[] = [
           "soul level calculator",
           "character optimization",
           "dark souls remastered",
-          "starting class comparison",
+          "starting class comparison"
         ],
-        ogImage: "/starting-class-optimizer-icon.png",
-      },
+        "ogImage": "/starting-class-optimizer-icon.png"
+      }
     },
   },
   {
@@ -172,32 +156,32 @@ export const tools: Tool[] = [
     slug: "weapon-upgrade-calculator",
     icon: "/weapon-upgrade-calculator-icon.png",
     category: "calculator",
-    tags: ["weapons", "upgrades", "materials", "calculator", "dark souls"],
+    tags: ["weapons","upgrades","materials","calculator","dark souls"],
     order: 2,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/weapon-upgrade-calculator/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Weapon Upgrade Calculator",
-      description:
-        "Calculate the souls and materials needed to upgrade weapons",
-      icon: "/weapon-upgrade-calculator-icon.png",
-      category: "calculator",
-      order: 2,
-      tags: ["weapons", "upgrades", "materials", "calculator", "dark souls"],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-20",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Weapon Upgrade Calculator - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Calculate the exact souls and materials needed to upgrade weapons in Dark Souls Remastered. Plan your weapon reinforcement from +0 to +15, including all upgrade paths like Fire, Magic, Lightning, and Divine. Find the cheapest merchant prices for materials.",
-        keywords: [
+      "title": "Weapon Upgrade Calculator",
+      "description": "Calculate the souls and materials needed to upgrade weapons",
+      "icon": "/weapon-upgrade-calculator-icon.png",
+      "category": "calculator",
+      "order": 2,
+      "tags": [
+        "weapons",
+        "upgrades",
+        "materials",
+        "calculator",
+        "dark souls"
+      ],
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-20",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Weapon Upgrade Calculator - Dark Souls Remastered | Gold Phantom",
+        "description": "Calculate the exact souls and materials needed to upgrade weapons in Dark Souls Remastered. Plan your weapon reinforcement from +0 to +15, including all upgrade paths like Fire, Magic, Lightning, and Divine. Find the cheapest merchant prices for materials.",
+        "keywords": [
           "weapon upgrade",
           "calculator",
           "dark souls",
@@ -214,10 +198,10 @@ export const tools: Tool[] = [
           "souls cost",
           "material cost",
           "merchant prices",
-          "dark souls remastered",
+          "dark souls remastered"
         ],
-        ogImage: "/favicon.webp",
-      },
+        "ogImage": "/favicon.webp"
+      }
     },
   },
   {
@@ -226,30 +210,18 @@ export const tools: Tool[] = [
     slug: "npc-quest-tracker",
     icon: "i-heroicons-user-group",
     category: "tracker",
-    tags: [
-      "npc",
-      "quest",
-      "tracker",
-      "progress",
-      "ds1",
-      "dark souls",
-      "remastered",
-      "questline",
-    ],
+    tags: ["npc","quest","tracker","progress","ds1","dark souls","remastered","questline"],
     order: 10,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/npc-quest-tracker/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "NPC Quest Tracker",
-      description: "Tracks your progress through NPC questlines.",
-      icon: "i-heroicons-user-group",
-      category: "tracker",
-      order: 10,
-      tags: [
+      "title": "NPC Quest Tracker",
+      "description": "Tracks your progress through NPC questlines.",
+      "icon": "i-heroicons-user-group",
+      "category": "tracker",
+      "order": 10,
+      "tags": [
         "npc",
         "quest",
         "tracker",
@@ -257,18 +229,16 @@ export const tools: Tool[] = [
         "ds1",
         "dark souls",
         "remastered",
-        "questline",
+        "questline"
       ],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-27",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Dark Souls Remastered NPC Quest Tracker - Complete All Questlines | Gold Phantom",
-        description:
-          "Complete Dark Souls Remastered NPC quest tracker. Track Siegmeyer, Solaire, Big Hat Logan, Reah, and other NPC questlines. Avoid fail conditions, find locations, and get all rewards.",
-        keywords: [
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Dark Souls Remastered NPC Quest Tracker - Complete All Questlines | Gold Phantom",
+        "description": "Complete Dark Souls Remastered NPC quest tracker. Track Siegmeyer, Solaire, Big Hat Logan, Reah, and other NPC questlines. Avoid fail conditions, find locations, and get all rewards.",
+        "keywords": [
           "dark souls remastered",
           "npc quest tracker",
           "siegmeyer quest",
@@ -282,45 +252,30 @@ export const tools: Tool[] = [
           "ds1 quests",
           "side quests",
           "quest progression",
-          "gold phantom",
+          "gold phantom"
         ],
-        ogImage: "/favicon.webp",
-      },
+        "ogImage": "/favicon.webp"
+      }
     },
   },
   {
     title: "Weapon Attack Rating Calculator",
-    description:
-      "Calculate and compare weapon attack ratings based on your character stats.",
+    description: "Calculate and compare weapon attack ratings based on your character stats.",
     slug: "weapon-attack-rating-calculator",
     icon: "i-heroicons-sword",
     category: "calculator",
-    tags: [
-      "weapon",
-      "attack",
-      "rating",
-      "calculator",
-      "scaling",
-      "damage",
-      "ds1",
-      "dark souls",
-      "remastered",
-    ],
+    tags: ["weapon","attack","rating","calculator","scaling","damage","ds1","dark souls","remastered"],
     order: 10,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/WeaponAttackRatingCalculator/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/WeaponAttackRatingCalculator/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Weapon Attack Rating Calculator",
-      description:
-        "Calculate and compare weapon attack ratings based on your character stats.",
-      icon: "i-heroicons-sword",
-      category: "calculator",
-      order: 10,
-      tags: [
+      "title": "Weapon Attack Rating Calculator",
+      "description": "Calculate and compare weapon attack ratings based on your character stats.",
+      "icon": "i-heroicons-sword",
+      "category": "calculator",
+      "order": 10,
+      "tags": [
         "weapon",
         "attack",
         "rating",
@@ -329,18 +284,16 @@ export const tools: Tool[] = [
         "damage",
         "ds1",
         "dark souls",
-        "remastered",
+        "remastered"
       ],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-27",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Calculate and compare weapon attack ratings for all weapons in Dark Souls Remastered. See scaling, requirements, and optimize your build for maximum damage output.",
-        keywords: [
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Weapon Attack Rating Calculator - Dark Souls Remastered | Gold Phantom",
+        "description": "Calculate and compare weapon attack ratings for all weapons in Dark Souls Remastered. See scaling, requirements, and optimize your build for maximum damage output.",
+        "keywords": [
           "weapon attack rating",
           "dark souls remastered",
           "weapon damage calculator",
@@ -361,43 +314,30 @@ export const tools: Tool[] = [
           "lightning damage",
           "scaling bonus",
           "weapon damage calculator",
-          "gold phantom",
+          "gold phantom"
         ],
-        ogImage: "/favicon.webp",
-      },
+        "ogImage": "/favicon.webp"
+      }
     },
   },
   {
     title: "Armor Optimizer",
-    description:
-      "Calculate and compare armor based on your character stats and equipment.",
+    description: "Calculate and compare armor based on your character stats and equipment.",
     slug: "armor-optimizer",
     icon: "i-heroicons-shield-check",
     category: "calculator",
-    tags: [
-      "armor",
-      "optimizer",
-      "planner",
-      "defense",
-      "poise",
-      "weight",
-      "ds1",
-      "dark souls",
-      "remastered",
-    ],
+    tags: ["armor","optimizer","planner","defense","poise","weight","ds1","dark souls","remastered"],
     order: 12,
-    loadComponent: () =>
-      import("~/components/Tools/ArmorOptimizer/GameComponents/ds1/index.vue"),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/ArmorOptimizer/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Armor Optimizer",
-      description:
-        "Calculate and compare armor based on your character stats and equipment.",
-      icon: "i-heroicons-shield-check",
-      category: "calculator",
-      order: 12,
-      tags: [
+      "title": "Armor Optimizer",
+      "description": "Calculate and compare armor based on your character stats and equipment.",
+      "icon": "i-heroicons-shield-check",
+      "category": "calculator",
+      "order": 12,
+      "tags": [
         "armor",
         "optimizer",
         "planner",
@@ -406,17 +346,16 @@ export const tools: Tool[] = [
         "weight",
         "ds1",
         "dark souls",
-        "remastered",
+        "remastered"
       ],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-27",
-      gameCategory: "ds1",
-      seo: {
-        title: "Armor Optimizer - Dark Souls Remastered | Gold Phantom",
-        description:
-          "Calculate and compare armor based on your character stats and equipment. Optimize for poise, weight, and defense. Find the best armor sets and mix-match combinations for your build.",
-        keywords: [
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Armor Optimizer - Dark Souls Remastered | Gold Phantom",
+        "description": "Calculate and compare armor based on your character stats and equipment. Optimize for poise, weight, and defense. Find the best armor sets and mix-match combinations for your build.",
+        "keywords": [
           "armor optimizer",
           "dark souls remastered",
           "armor comparison",
@@ -438,10 +377,10 @@ export const tools: Tool[] = [
           "poise breakpoints",
           "defense ratios",
           "armor efficiency",
-          "gold phantom",
+          "gold phantom"
         ],
-        ogImage: "/favicon.webp",
-      },
+        "ogImage": "/favicon.webp"
+      }
     },
   },
   {
@@ -450,47 +389,34 @@ export const tools: Tool[] = [
     slug: "achievement-tracker",
     icon: "i-heroicons-trophy",
     category: "tracker",
-    tags: [
-      "achievement",
-      "tracker",
-      "progress",
-      "completion",
-      "ds1",
-      "dark souls",
-      "remastered",
-    ],
+    tags: ["achievement","tracker","progress","completion","ds1","dark souls","remastered"],
     order: 15,
-    loadComponent: () =>
-      import(
-        "~/components/Tools/AchievementTracker/GameComponents/ds1/index.vue"
-      ),
-    createdAt: new Date("2025-07-12T15:44:19.082Z"),
+    loadComponent: () => import('~/components/Tools/achievement-tracker/GameComponents/ds1/index.vue'),
+    createdAt: new Date('2025-07-14T22:25:30.738Z'),
     gameCategories: ["ds1"],
     config: {
-      title: "Achievement Tracker",
-      description: "Tracks your achievement progress through game cycles.",
-      icon: "i-heroicons-trophy",
-      category: "tracker",
-      order: 15,
-      tags: [
+      "title": "Achievement Tracker",
+      "description": "Tracks your achievement progress through game cycles.",
+      "icon": "i-heroicons-trophy",
+      "category": "tracker",
+      "order": 15,
+      "tags": [
         "achievement",
         "tracker",
         "progress",
         "completion",
         "ds1",
         "dark souls",
-        "remastered",
+        "remastered"
       ],
-      version: "1.0.0",
-      author: "Gold Phantom",
-      lastUpdated: "2025-01-27",
-      gameCategory: "ds1",
-      seo: {
-        title:
-          "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
-        description:
-          "Track your achievement progress through all game cycles in Dark Souls Remastered. Never miss a rare weapon, spell, or boss soul. Plan your 100% completion efficiently.",
-        keywords: [
+      "version": "1.0.0",
+      "author": "Gold Phantom",
+      "lastUpdated": "2025-01-27",
+      "gameCategory": "ds1",
+      "seo": {
+        "title": "Dark Souls Remastered Achievement Tracker - Track All Achievements | Gold Phantom",
+        "description": "Track your achievement progress through all game cycles in Dark Souls Remastered. Never miss a rare weapon, spell, or boss soul. Plan your 100% completion efficiently.",
+        "keywords": [
           "dark souls remastered",
           "achievement tracker",
           "knight's honor",
@@ -508,12 +434,12 @@ export const tools: Tool[] = [
           "ds1 achievements",
           "100% completion",
           "achievement guide",
-          "gold phantom",
+          "gold phantom"
         ],
-        ogImage: "/favicon.webp",
-      },
+        "ogImage": "/favicon.webp"
+      }
     },
-  },
-];
+  }
+]
 
-export default tools;
+export default tools
